@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"os"
+	"time"
 
 	"github.com/OliveiraNt/kdash/internal/config"
 	"github.com/OliveiraNt/kdash/internal/core"
@@ -181,6 +182,17 @@ func (w *ClientWrapper) Close() {
 	w.Client.Close()
 }
 
+// IsHealthy checks if the cluster is reachable by attempting to fetch broker metadata.
+func (w *ClientWrapper) IsHealthy() bool {
+	if w == nil || w.Admin == nil {
+		return false
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	_, err := adminpkg.NewKadmAdmin(w.Admin).BrokerMetadata(ctx)
+	return err == nil
+}
+
 // ListTopics delegates to admin package to list topics using the admin client.
 func (w *ClientWrapper) ListTopics() (map[string]int, error) {
 	if w == nil || w.Admin == nil {
@@ -195,4 +207,28 @@ func (w *ClientWrapper) GetClusterInfo() (*core.Cluster, error) {
 		return nil, nil
 	}
 	return adminpkg.GetClusterInfo(context.Background(), adminpkg.NewKadmAdmin(w.Admin))
+}
+
+// GetClusterStats returns detailed statistics about the cluster
+func (w *ClientWrapper) GetClusterStats() (*core.ClusterStats, error) {
+	if w == nil || w.Admin == nil {
+		return nil, nil
+	}
+	return adminpkg.GetClusterStats(context.Background(), adminpkg.NewKadmAdmin(w.Admin))
+}
+
+// GetBrokerDetails returns detailed information about all brokers
+func (w *ClientWrapper) GetBrokerDetails() ([]core.BrokerDetail, error) {
+	if w == nil || w.Admin == nil {
+		return nil, nil
+	}
+	return adminpkg.GetBrokerDetails(context.Background(), adminpkg.NewKadmAdmin(w.Admin))
+}
+
+// ListConsumerGroups returns a list of consumer groups
+func (w *ClientWrapper) ListConsumerGroups() ([]core.ConsumerGroupSummary, error) {
+	if w == nil || w.Admin == nil {
+		return nil, nil
+	}
+	return adminpkg.ListConsumerGroups(context.Background(), adminpkg.NewKadmAdmin(w.Admin))
 }

@@ -1,0 +1,308 @@
+package pages
+
+import (
+    layout "github.com/OliveiraNt/kdash/internal/adapters/http/ui/templates/layout"
+    core "github.com/OliveiraNt/kdash/internal/core"
+    "fmt"
+)
+
+templ ClusterDetail(cluster core.Cluster, topics map[string]int, stats *core.ClusterStats, brokerDetails []core.BrokerDetail, consumerGroups []core.ConsumerGroupSummary) {
+	@layout.BaseWithSidebar(cluster.Name, cluster.Name) {
+		<!-- Breadcrumb -->
+		<div class="mb-6">
+			<nav class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+				<a href="/" class="hover:text-blue-600 dark:hover:text-blue-400">Clusters</a>
+				<i class="fas fa-chevron-right text-xs"></i>
+				<span class="text-gray-900 dark:text-white font-medium">{ cluster.Name }</span>
+			</nav>
+		</div>
+
+		<!-- Cluster Header -->
+		<div class="mb-6">
+			<div class="flex items-center justify-between">
+				<div class="flex items-center space-x-4">
+					<div class="bg-blue-100 dark:bg-blue-900/30 p-4 rounded-lg">
+						<i class="fas fa-server text-blue-600 dark:text-blue-400 text-3xl"></i>
+					</div>
+					<div>
+						<h2 class="text-3xl font-bold text-gray-900 dark:text-white">{ cluster.Name }</h2>
+						<p class="text-gray-600 dark:text-gray-400 mt-1">Cluster ID: { cluster.ID }</p>
+					</div>
+				</div>
+				if cluster.IsOnline {
+					<span class="px-3 py-1.5 text-sm font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">
+						<i class="fas fa-circle text-xs mr-2"></i>
+						Online
+					</span>
+				} else {
+					<span class="px-3 py-1.5 text-sm font-semibold rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">
+						<i class="fas fa-circle text-xs mr-2"></i>
+						Offline
+					</span>
+				}
+			</div>
+		</div>
+
+		<!-- Stats Grid -->
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm text-gray-600 dark:text-gray-400">Brokers</p>
+						<p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{ fmt.Sprintf("%d", len(cluster.Brokers)) }</p>
+					</div>
+					<div class="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-lg">
+						<i class="fas fa-server text-blue-600 dark:text-blue-400 text-2xl"></i>
+					</div>
+				</div>
+			</div>
+
+			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm text-gray-600 dark:text-gray-400">Tópicos</p>
+						if stats != nil {
+							<p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{ fmt.Sprintf("%d", stats.TotalTopics) }</p>
+						} else {
+							<p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{ fmt.Sprintf("%d", len(topics)) }</p>
+						}
+					</div>
+					<div class="bg-green-100 dark:bg-green-900/30 p-3 rounded-lg">
+						<i class="fas fa-list text-green-600 dark:text-green-400 text-2xl"></i>
+					</div>
+				</div>
+			</div>
+
+			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm text-gray-600 dark:text-gray-400">Partições Totais</p>
+						if stats != nil {
+							<p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{ fmt.Sprintf("%d", stats.TotalPartitions) }</p>
+						} else {
+							<p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{ fmt.Sprintf("%d", getTotalPartitions(topics)) }</p>
+						}
+					</div>
+					<div class="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-lg">
+						<i class="fas fa-layer-group text-purple-600 dark:text-purple-400 text-2xl"></i>
+					</div>
+				</div>
+			</div>
+
+			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm text-gray-600 dark:text-gray-400">Consumer Groups</p>
+						if stats != nil {
+							<p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{ fmt.Sprintf("%d", stats.TotalConsumerGroups) }</p>
+						} else {
+							<p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">-</p>
+						}
+					</div>
+					<div class="bg-orange-100 dark:bg-orange-900/30 p-3 rounded-lg">
+						<i class="fas fa-users text-orange-600 dark:text-orange-400 text-2xl"></i>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Health Indicators -->
+		if stats != nil && (stats.UnderReplicatedPartitions > 0 || stats.OfflinePartitions > 0) {
+			<div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+				<div class="flex items-start space-x-3">
+					<i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 text-xl mt-0.5"></i>
+					<div class="flex-1">
+						<h3 class="font-semibold text-yellow-900 dark:text-yellow-200 mb-2">Alertas de Saúde</h3>
+						<div class="space-y-1 text-sm text-yellow-800 dark:text-yellow-300">
+							if stats.UnderReplicatedPartitions > 0 {
+								<div>
+									<i class="fas fa-circle text-xs mr-2"></i>
+									{ fmt.Sprintf("%d partições sub-replicadas", stats.UnderReplicatedPartitions) }
+								</div>
+							}
+							if stats.OfflinePartitions > 0 {
+								<div>
+									<i class="fas fa-circle text-xs mr-2"></i>
+									{ fmt.Sprintf("%d partições offline", stats.OfflinePartitions) }
+								</div>
+							}
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+
+		<!-- Brokers Section -->
+		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+			<h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+				<i class="fas fa-server text-blue-600 dark:text-blue-400 mr-2"></i>
+				Brokers
+			</h3>
+			if len(brokerDetails) > 0 {
+				<div class="space-y-3">
+					for _, broker := range brokerDetails {
+						<div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+							<div class="flex items-center justify-between mb-3">
+								<div class="flex items-center space-x-3">
+									<span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 text-sm font-semibold rounded">
+										ID: { fmt.Sprintf("%d", broker.ID) }
+									</span>
+									if broker.IsController {
+										<span class="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400 text-xs font-semibold rounded">
+											<i class="fas fa-crown mr-1"></i>
+											Controller
+										</span>
+									}
+									if cluster.IsOnline {
+										<span class="text-green-600 dark:text-green-400 text-sm">
+											<i class="fas fa-circle text-xs mr-1"></i>
+											Ativo
+										</span>
+									} else {
+										<span class="text-red-600 dark:text-red-400 text-sm">
+											<i class="fas fa-circle text-xs mr-1"></i>
+											Inativo
+										</span>
+									}
+								</div>
+							</div>
+							<div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+								<div>
+									<span class="text-gray-600 dark:text-gray-400">Endereço:</span>
+									<code class="ml-2 text-gray-900 dark:text-white">{ fmt.Sprintf("%s:%d", broker.Host, broker.Port) }</code>
+								</div>
+								if broker.Rack != "" {
+									<div>
+										<span class="text-gray-600 dark:text-gray-400">Rack:</span>
+										<span class="ml-2 text-gray-900 dark:text-white">{ broker.Rack }</span>
+									</div>
+								}
+								<div>
+									<span class="text-gray-600 dark:text-gray-400">Partições Líder:</span>
+									<span class="ml-2 font-semibold text-gray-900 dark:text-white">{ fmt.Sprintf("%d", broker.LeaderPartitions) }</span>
+								</div>
+							</div>
+						</div>
+					}
+				</div>
+			} else {
+				<div class="space-y-2">
+					for i, broker := range cluster.Brokers {
+						<div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+							<div class="flex items-center space-x-3">
+								<span class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 text-xs font-semibold rounded">
+									Broker { fmt.Sprintf("%d", i) }
+								</span>
+								<code class="text-sm text-gray-700 dark:text-gray-300">{ broker }</code>
+							</div>
+							if cluster.IsOnline {
+								<span class="text-green-600 dark:text-green-400 text-sm">
+									<i class="fas fa-circle text-xs mr-1"></i>
+									Ativo
+								</span>
+							} else {
+								<span class="text-red-600 dark:text-red-400 text-sm">
+									<i class="fas fa-circle text-xs mr-1"></i>
+									Inativo
+								</span>
+							}
+						</div>
+					}
+				</div>
+			}
+		</div>
+
+		<!-- Consumer Groups Section -->
+		if len(consumerGroups) > 0 {
+			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+				<h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+					<i class="fas fa-users text-orange-600 dark:text-orange-400 mr-2"></i>
+					Consumer Groups
+				</h3>
+				<div class="overflow-x-auto">
+					<table class="w-full">
+						<thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
+							<tr>
+								<th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Group ID</th>
+								<th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Estado</th>
+								<th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Membros</th>
+							</tr>
+						</thead>
+						<tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+							for _, group := range consumerGroups {
+								<tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+									<td class="px-4 py-3">
+										<div class="flex items-center space-x-2">
+											<i class="fas fa-users text-gray-400 dark:text-gray-500"></i>
+											<span class="font-medium text-gray-900 dark:text-white">{ group.GroupID }</span>
+										</div>
+									</td>
+									<td class="px-4 py-3">
+										if group.State == "Stable" {
+											<span class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 text-xs font-semibold rounded-full">
+												{ group.State }
+											</span>
+										} else if group.State == "Empty" {
+											<span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-400 text-xs font-semibold rounded-full">
+												{ group.State }
+											</span>
+										} else {
+											<span class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 text-xs font-semibold rounded-full">
+												{ group.State }
+											</span>
+										}
+									</td>
+									<td class="px-4 py-3 text-gray-700 dark:text-gray-300">
+										{ fmt.Sprintf("%d", group.Members) }
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		}
+	}
+}
+
+templ TopicRow(topicName string, partitions int, clusterName string) {
+	<tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
+		<td class="px-4 py-4">
+			<div class="flex items-center space-x-2">
+				<i class="fas fa-stream text-gray-400 dark:text-gray-500"></i>
+				<span class="font-medium text-gray-900 dark:text-white">{ topicName }</span>
+			</div>
+		</td>
+		<td class="px-4 py-4">
+			<span class="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400 text-xs font-semibold rounded-full">
+				{ fmt.Sprintf("%d partições", partitions) }
+			</span>
+		</td>
+		<td class="px-4 py-4 text-right">
+			<div class="flex items-center justify-end space-x-2">
+				<button
+					class="px-3 py-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg text-sm font-medium transition"
+					title="Ver mensagens"
+				>
+					<i class="fas fa-eye mr-1"></i>
+					Ver
+				</button>
+				<button
+					class="px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg text-sm font-medium transition"
+					title="Configurações"
+				>
+					<i class="fas fa-cog"></i>
+				</button>
+			</div>
+		</td>
+	</tr>
+}
+
+func getTotalPartitions(topics map[string]int) int {
+	total := 0
+	for _, partitions := range topics {
+		total += partitions
+	}
+	return total
+}
+

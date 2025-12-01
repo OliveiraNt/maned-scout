@@ -29,6 +29,8 @@ func (s *Server) Run(addr string) error {
 
 	// Web UI routes
 	r.Get("/", s.uiHome)
+	r.Get("/cluster/{name}", s.uiClusterDetail)
+	r.Get("/cluster/{name}/topics", s.uiTopicsList)
 
 	// Cluster APIS
 	r.Get("/api/clusters", s.apiListClusters)
@@ -45,13 +47,135 @@ func (s *Server) Run(addr string) error {
 // uiHome renders the homepage listing clusters using templ + htmx + tailwind layout.
 func (s *Server) uiHome(w http.ResponseWriter, r *http.Request) {
 	cfgs := s.reg.ListClusters()
-	// Map config clusters to core.Cluster for UI components.
-	clusters := make([]core.Cluster, 0, len(cfgs))
+	// Map config clusters to core.Cluster for UI components with stats
+	clustersList := make([]pages.ClusterWithStats, 0, len(cfgs))
 	for _, c := range cfgs {
-		clusters = append(clusters, core.Cluster{ID: c.Name, Name: c.Name, Brokers: c.Brokers})
+		isOnline := false
+		var stats *core.ClusterStats
+
+		// Check if cluster is online
+		if client, ok := s.reg.GetClient(c.Name); ok {
+			isOnline = client.IsHealthy()
+			if isOnline {
+				// Get quick stats for the card
+				clusterStats, err := client.GetClusterStats()
+				if err != nil {
+					log.Printf("failed to get stats for cluster %s: %v", c.Name, err)
+				} else {
+					stats = clusterStats
+				}
+			}
+		}
+
+		clustersList = append(clustersList, pages.ClusterWithStats{
+			Cluster: core.Cluster{
+				ID:       c.Name,
+				Name:     c.Name,
+				Brokers:  c.Brokers,
+				IsOnline: isOnline,
+			},
+			Stats: stats,
+		})
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := pages.ClusterList(clusters).Render(r.Context(), w); err != nil {
+	if err := pages.ClusterList(clustersList).Render(r.Context(), w); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+// uiClusterDetail renders the cluster detail page with topics list
+func (s *Server) uiClusterDetail(w http.ResponseWriter, r *http.Request) {
+	name := chi.URLParam(r, "name")
+
+	// Get cluster config
+	cfg, ok := s.reg.GetCluster(name)
+	if !ok {
+		http.Error(w, "cluster not found", http.StatusNotFound)
+		return
+	}
+
+	isOnline := false
+	cluster := core.Cluster{ID: cfg.Name, Name: cfg.Name, Brokers: cfg.Brokers}
+
+	// Get topics for this cluster
+	topics := make(map[string]int)
+	var stats *core.ClusterStats
+	var brokerDetails []core.BrokerDetail
+	var consumerGroups []core.ConsumerGroupSummary
+
+	client, ok := s.reg.GetClient(name)
+	if ok {
+		isOnline = client.IsHealthy()
+		cluster.IsOnline = isOnline
+
+		if isOnline {
+			// Get topics
+			topicList, err := client.ListTopics()
+			if err != nil {
+				log.Printf("failed to list topics for cluster %s: %v", name, err)
+			} else {
+				topics = topicList
+			}
+
+			// Get cluster statistics
+			clusterStats, err := client.GetClusterStats()
+			if err != nil {
+				log.Printf("failed to get cluster stats for %s: %v", name, err)
+			} else {
+				stats = clusterStats
+			}
+
+			// Get broker details
+			brokers, err := client.GetBrokerDetails()
+			if err != nil {
+				log.Printf("failed to get broker details for %s: %v", name, err)
+			} else {
+				brokerDetails = brokers
+			}
+
+			// Get consumer groups
+			groups, err := client.ListConsumerGroups()
+			if err != nil {
+				log.Printf("failed to list consumer groups for %s: %v", name, err)
+			} else {
+				consumerGroups = groups
+			}
+		}
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := pages.ClusterDetail(cluster, topics, stats, brokerDetails, consumerGroups).Render(r.Context(), w); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+// uiTopicsList renders the topics list page for a cluster
+func (s *Server) uiTopicsList(w http.ResponseWriter, r *http.Request) {
+	name := chi.URLParam(r, "name")
+
+	// Get cluster config
+	_, ok := s.reg.GetCluster(name)
+	if !ok {
+		http.Error(w, "cluster not found", http.StatusNotFound)
+		return
+	}
+
+	// Get topics for this cluster
+	topics := make(map[string]int)
+	client, ok := s.reg.GetClient(name)
+	if ok {
+		topicList, err := client.ListTopics()
+		if err != nil {
+			log.Printf("failed to list topics for cluster %s: %v", name, err)
+		} else {
+			topics = topicList
+		}
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := pages.TopicsList(name, topics).Render(r.Context(), w); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

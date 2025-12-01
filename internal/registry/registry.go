@@ -267,6 +267,18 @@ func (r *Registry) ListClusters() []config.ClusterConfig {
 	return out
 }
 
+// GetCluster returns config for a specific cluster
+func (r *Registry) GetCluster(name string) (config.ClusterConfig, bool) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	for _, c := range r.config.Clusters {
+		if c.Name == name {
+			return c, true
+		}
+	}
+	return config.ClusterConfig{}, false
+}
+
 // GetClient returns wrapper for given cluster
 func (r *Registry) GetClient(name string) (*kafka.ClientWrapper, bool) {
 	r.mu.RLock()
