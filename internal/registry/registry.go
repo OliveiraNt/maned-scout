@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/OliveiraNt/kdash/internal/config"
 	"github.com/OliveiraNt/kdash/internal/infra/kafka"
@@ -186,14 +187,56 @@ func (r *Registry) Watch(path string) error {
 	}
 	r.watcher = w
 
+	// debounce timer to coalesce rapid sequences of events (atomic saves, etc.)
+	const debounceDelay = 350 * time.Millisecond
+
 	go func() {
-		for ev := range w.Events {
-			// only react when the target file is written
-			if ev.Name == abs && (ev.Op&fsnotify.Write == fsnotify.Write || ev.Op&fsnotify.Create == fsnotify.Create) {
-				log.Printf("config file changed: %s", ev.Name)
-				if err := r.LoadFromFile(path); err != nil {
-					log.Printf("failed to reload config: %v", err)
+		// fire reload with a small wait until the file is present again (for atomic replace flows)
+		reload := func() {
+			// wait up to ~1s for the file to exist
+			for i := 0; i < 10; i++ {
+				if _, err := os.Stat(abs); err == nil {
+					break
 				}
+				time.Sleep(100 * time.Millisecond)
+			}
+			log.Printf("config file changed: %s", abs)
+			if err := r.LoadFromFile(path); err != nil {
+				log.Printf("failed to reload config: %v", err)
+			}
+		}
+
+		var timer *time.Timer
+		for {
+			select {
+			case ev, ok := <-w.Events:
+				if !ok {
+					return
+				}
+				if ev.Name != abs {
+					continue
+				}
+				// react to common ops across OS: write/create/rename/remove/chmod
+				if ev.Op&(fsnotify.Write|fsnotify.Create|fsnotify.Rename|fsnotify.Remove|fsnotify.Chmod) != 0 {
+					if timer == nil {
+						timer = time.AfterFunc(debounceDelay, reload)
+					} else {
+						// Reset will schedule the timer again from now.
+						if !timer.Stop() {
+							// drain if needed
+							select {
+							case <-timer.C:
+							default:
+							}
+						}
+						timer.Reset(debounceDelay)
+					}
+				}
+			case err, ok := <-w.Errors:
+				if !ok {
+					return
+				}
+				log.Printf("fsnotify error: %v", err)
 			}
 		}
 	}()

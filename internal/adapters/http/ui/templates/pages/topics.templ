@@ -5,7 +5,7 @@ import (
     "fmt"
 )
 
-templ TopicsList(clusterName string, topics map[string]int) {
+templ TopicsList(clusterName string, topics map[string]int, showInternal bool) {
 	@layout.BaseWithSidebar("Tópicos", clusterName) {
 		<!-- Page Header -->
 		<div class="mb-6">
@@ -83,13 +83,43 @@ templ TopicsList(clusterName string, topics map[string]int) {
 							/>
 						</div>
 					</div>
-					<button class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-						<i class="fas fa-filter mr-2"></i>
-						Filtros
-					</button>
+					<!-- Toggle for Internal Topics -->
+					<div class="flex items-center space-x-3 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
+						<label class="flex items-center cursor-pointer">
+							<span class="mr-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+								<i class="fas fa-eye-slash mr-1"></i>
+								Tópicos Internos
+							</span>
+							<div class="relative">
+								<input
+									type="checkbox"
+									id="showInternalToggle"
+									class="sr-only"
+									if showInternal {
+										checked
+									}
+									onchange="toggleInternalTopics(this.checked)"
+								/>
+								<div class="block bg-gray-300 dark:bg-gray-600 w-14 h-8 rounded-full"></div>
+								<div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+							</div>
+						</label>
+					</div>
 				</div>
 			</div>
 		</div>
+
+		<style>
+			input:checked ~ .block {
+				background-color: #3B82F6;
+			}
+			input:checked ~ .dot {
+				transform: translateX(100%);
+			}
+			.dark input:checked ~ .block {
+				background-color: #60A5FA;
+			}
+		</style>
 
 		<!-- Topics Table -->
 		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
@@ -152,6 +182,16 @@ templ TopicsList(clusterName string, topics map[string]int) {
 						rows[i].style.display = 'none';
 					}
 				}
+			}
+
+			function toggleInternalTopics(show) {
+				const url = new URL(window.location);
+				if (show) {
+					url.searchParams.set('showInternal', 'true');
+				} else {
+					url.searchParams.delete('showInternal');
+				}
+				window.location.href = url.toString();
 			}
 		</script>
 	}

@@ -111,7 +111,7 @@ func (s *Server) uiClusterDetail(w http.ResponseWriter, r *http.Request) {
 
 		if isOnline {
 			// Get topics
-			topicList, err := client.ListTopics()
+			topicList, err := client.ListTopics(false)
 			if err != nil {
 				log.Printf("failed to list topics for cluster %s: %v", name, err)
 			} else {
@@ -162,11 +162,14 @@ func (s *Server) uiTopicsList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check if showInternal parameter is set (default: false)
+	showInternal := r.URL.Query().Get("showInternal") == "true"
+
 	// Get topics for this cluster
 	topics := make(map[string]int)
 	client, ok := s.reg.GetClient(name)
 	if ok {
-		topicList, err := client.ListTopics()
+		topicList, err := client.ListTopics(showInternal)
 		if err != nil {
 			log.Printf("failed to list topics for cluster %s: %v", name, err)
 		} else {
@@ -175,7 +178,7 @@ func (s *Server) uiTopicsList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := pages.TopicsList(name, topics).Render(r.Context(), w); err != nil {
+	if err := pages.TopicsList(name, topics, showInternal).Render(r.Context(), w); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -246,7 +249,7 @@ func (s *Server) apiListTopics(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "cluster not found", 404)
 		return
 	}
-	topics, err := client.ListTopics()
+	topics, err := client.ListTopics(true)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return

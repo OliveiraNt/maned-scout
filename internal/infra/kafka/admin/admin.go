@@ -12,6 +12,7 @@ import (
 // AdminClient defines the minimal interface used by admin helpers.
 type AdminClient interface {
 	ListTopics(ctx context.Context, topics ...string) (kadm.TopicDetails, error)
+	ListTopicsWithInternal(ctx context.Context, topics ...string) (kadm.TopicDetails, error)
 	BrokerMetadata(ctx context.Context) (kadm.Metadata, error)
 	ListGroups(ctx context.Context, groups ...string) (kadm.DescribedGroups, error)
 }
@@ -29,6 +30,10 @@ func (k *KadmAdmin) ListTopics(ctx context.Context, topics ...string) (kadm.Topi
 	return k.c.ListTopics(ctx, topics...)
 }
 
+func (k *KadmAdmin) ListTopicsWithInternal(ctx context.Context, topics ...string) (kadm.TopicDetails, error) {
+	return k.c.ListTopicsWithInternal(ctx, topics...)
+}
+
 func (k *KadmAdmin) BrokerMetadata(ctx context.Context) (kadm.Metadata, error) {
 	return k.c.BrokerMetadata(ctx)
 }
@@ -37,20 +42,28 @@ func (k *KadmAdmin) ListGroups(ctx context.Context, groups ...string) (kadm.Desc
 	return k.c.DescribeGroups(ctx, groups...)
 }
 
-// ListTopics returns non-internal topics simplified map name->partitions.
-func ListTopics(ctx context.Context, admin AdminClient) (map[string]int, error) {
+// ListTopics returns topics as a simplified map name->partitions.
+// If showInternal is true, includes internal topics; otherwise excludes them.
+func ListTopics(ctx context.Context, admin AdminClient, showInternal bool) (map[string]int, error) {
 	// use a reasonable timeout
 	cctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	m, err := admin.ListTopics(cctx)
+
+	var m kadm.TopicDetails
+	var err error
+
+	if showInternal {
+		m, err = admin.ListTopicsWithInternal(cctx)
+	} else {
+		m, err = admin.ListTopics(cctx)
+	}
+
 	if err != nil {
 		return nil, err
 	}
+
 	out := make(map[string]int)
 	for name, info := range m {
-		if info.IsInternal {
-			continue
-		}
 		out[name] = len(info.Partitions)
 	}
 	return out, nil

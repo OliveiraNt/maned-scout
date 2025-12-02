@@ -194,11 +194,11 @@ func (w *ClientWrapper) IsHealthy() bool {
 }
 
 // ListTopics delegates to admin package to list topics using the admin client.
-func (w *ClientWrapper) ListTopics() (map[string]int, error) {
+func (w *ClientWrapper) ListTopics(showInternal bool) (map[string]int, error) {
 	if w == nil || w.Admin == nil {
 		return nil, nil
 	}
-	return adminpkg.ListTopics(context.Background(), adminpkg.NewKadmAdmin(w.Admin))
+	return adminpkg.ListTopics(context.Background(), adminpkg.NewKadmAdmin(w.Admin), showInternal)
 }
 
 // GetClusterInfo delegates to admin package to fetch cluster info.
