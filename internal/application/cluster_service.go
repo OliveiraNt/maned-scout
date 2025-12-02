@@ -1,10 +1,9 @@
 package application
 
 import (
-	"log"
-
 	"github.com/OliveiraNt/kdash/internal/config"
 	"github.com/OliveiraNt/kdash/internal/domain"
+	"github.com/OliveiraNt/kdash/internal/registry"
 )
 
 // ClusterService handles cluster-related business operations
@@ -75,7 +74,7 @@ func (s *ClusterService) GetClusterWithStats(name string, client domain.KafkaCli
 	if cfg.HasCertificate() {
 		certInfo, err := cfg.GetCertificateInfo()
 		if err != nil {
-			log.Printf("failed to get certificate info for cluster %s: %v", cfg.Name, err)
+			registry.Logger.Warn("get certificate info failed", "cluster", cfg.Name, "err", err)
 		} else {
 			cluster.CertInfo = certInfo
 		}
@@ -89,7 +88,7 @@ func (s *ClusterService) GetClusterWithStats(name string, client domain.KafkaCli
 			var err error
 			stats, err = client.GetClusterStats()
 			if err != nil {
-				log.Printf("failed to get stats for cluster %s: %v", name, err)
+				registry.Logger.Error("get stats failed", "cluster", name, "err", err)
 			}
 		}
 	}

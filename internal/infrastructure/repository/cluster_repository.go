@@ -1,16 +1,15 @@
 package repository
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"sync"
-	"time"
 
 	"github.com/OliveiraNt/kdash/internal/application"
 	"github.com/OliveiraNt/kdash/internal/config"
 	"github.com/OliveiraNt/kdash/internal/domain"
 	"github.com/OliveiraNt/kdash/internal/infrastructure/kafka"
+	"github.com/OliveiraNt/kdash/internal/registry"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -161,55 +160,26 @@ func (r *ClusterRepository) Watch() error {
 
 	r.watcher = w
 
-	const debounceDelay = 350 * time.Millisecond
-
 	go func() {
-		reload := func() {
-			for i := 0; i < 10; i++ {
-				if _, err := os.Stat(abs); err == nil {
-					break
-				}
-				time.Sleep(100 * time.Millisecond)
-			}
-
-			log.Printf("config file changed: %s", abs)
-			if err := r.LoadFromFile(); err != nil {
-				log.Printf("failed to reload config: %v", err)
-			}
-		}
-
-		var timer *time.Timer
 		for {
 			select {
-			case ev, ok := <-w.Events:
+			case event, ok := <-r.watcher.Events:
 				if !ok {
 					return
 				}
-				if ev.Name != abs {
-					continue
+				abs := r.configPath
+				registry.Logger.Info("config file changed", "path", abs, "event", event)
+				if err := r.LoadFromFile(); err != nil {
+					registry.Logger.Error("failed to reload config", "err", err)
 				}
-				if ev.Op&(fsnotify.Write|fsnotify.Create|fsnotify.Rename|fsnotify.Remove|fsnotify.Chmod) != 0 {
-					if timer == nil {
-						timer = time.AfterFunc(debounceDelay, reload)
-					} else {
-						if !timer.Stop() {
-							select {
-							case <-timer.C:
-							default:
-							}
-						}
-						timer.Reset(debounceDelay)
-					}
-				}
-			case err, ok := <-w.Errors:
+			case err, ok := <-r.watcher.Errors:
 				if !ok {
 					return
 				}
-				log.Printf("fsnotify error: %v", err)
+				registry.Logger.Error("fsnotify error", "err", err)
 			}
 		}
 	}()
-
 	return nil
 }
 
@@ -227,10 +197,11 @@ func (r *ClusterRepository) reconcile(cfg config.FileConfig) error {
 			// Create new client
 			client, err := r.factory.CreateClient(c)
 			if err != nil {
-				log.Printf("failed to create client for %s: %v", c.Name, err)
+				registry.Logger.Error("failed to create client", "cluster", c.Name, "err", err)
 				continue
 			}
 			r.clients[c.Name] = client
+			registry.Logger.Info("client created", "cluster", c.Name)
 			continue
 		}
 
@@ -240,10 +211,11 @@ func (r *ClusterRepository) reconcile(cfg config.FileConfig) error {
 				cur.Close()
 				client, err := r.factory.CreateClient(c)
 				if err != nil {
-					log.Printf("failed to recreate client for %s: %v", c.Name, err)
+					registry.Logger.Error("failed to recreate client", "cluster", c.Name, "err", err)
 					continue
 				}
 				r.clients[c.Name] = client
+				registry.Logger.Info("client recreated", "cluster", c.Name)
 			}
 		}
 	}

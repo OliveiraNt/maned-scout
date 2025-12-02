@@ -2,14 +2,15 @@ package httpserver
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
+	"time"
 
 	"github.com/OliveiraNt/kdash/internal/adapters/http/ui/templates/pages"
 	"github.com/OliveiraNt/kdash/internal/application"
 	"github.com/OliveiraNt/kdash/internal/config"
 	"github.com/OliveiraNt/kdash/internal/domain"
 	"github.com/OliveiraNt/kdash/internal/infrastructure/repository"
+	"github.com/OliveiraNt/kdash/internal/registry"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -29,8 +30,24 @@ func New(clusterService *application.ClusterService, repo *repository.ClusterRep
 
 func (s *Server) Run(addr string) error {
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-
+	// replace default logger with simple request log using our logger
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
+			start := time.Now()
+			next.ServeHTTP(ww, r)
+			dur := time.Since(start)
+			registry.Logger.Info("http request",
+				"method", r.Method,
+				"path", r.URL.Path,
+				"status", ww.Status(),
+				"bytes", ww.BytesWritten(),
+				"duration", dur.String(),
+			)
+		})
+	})
 	// Web UI routes
 	r.Get("/", s.uiHome)
 	r.Get("/cluster/{name}", s.uiClusterDetail)
@@ -45,11 +62,13 @@ func (s *Server) Run(addr string) error {
 	// Topic Apis
 	r.Get("/api/cluster/{name}/topics", s.apiListTopics)
 
+	registry.Logger.Info("HTTP server listening", "addr", addr)
 	return http.ListenAndServe(addr, r)
 }
 
 // uiHome renders the homepage listing clusters using templ + htmx + tailwind layout.
 func (s *Server) uiHome(w http.ResponseWriter, r *http.Request) {
+	registry.Logger.Debug("render home")
 	cfgs := s.clusterService.ListClusters()
 	// Map config clusters to domain.Cluster for UI components with stats
 	clustersList := make([]pages.ClusterWithStats, 0, len(cfgs))
@@ -64,7 +83,7 @@ func (s *Server) uiHome(w http.ResponseWriter, r *http.Request) {
 				// Get quick stats for the card
 				clusterStats, err := client.GetClusterStats()
 				if err != nil {
-					log.Printf("failed to get stats for cluster %s: %v", c.Name, err)
+					registry.Logger.Error("get cluster stats failed", "cluster", c.Name, "err", err)
 				} else {
 					stats = clusterStats
 				}
@@ -76,7 +95,7 @@ func (s *Server) uiHome(w http.ResponseWriter, r *http.Request) {
 		if c.HasCertificate() {
 			info, err := c.GetCertificateInfo()
 			if err != nil {
-				log.Printf("failed to get certificate info for cluster %s: %v", c.Name, err)
+				registry.Logger.Warn("get certificate info failed", "cluster", c.Name, "err", err)
 			} else {
 				certInfo = info
 			}
@@ -96,6 +115,7 @@ func (s *Server) uiHome(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := pages.ClusterList(clustersList).Render(r.Context(), w); err != nil {
+		registry.Logger.Error("render home failed", "err", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -104,6 +124,7 @@ func (s *Server) uiHome(w http.ResponseWriter, r *http.Request) {
 // uiClusterDetail renders the cluster detail page with topics list
 func (s *Server) uiClusterDetail(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
+	registry.Logger.Debug("render cluster detail", "cluster", name)
 
 	// Get cluster config
 	cfg, ok := s.clusterService.GetCluster(name)
@@ -124,7 +145,7 @@ func (s *Server) uiClusterDetail(w http.ResponseWriter, r *http.Request) {
 	if cfg.HasCertificate() {
 		certInfo, err := cfg.GetCertificateInfo()
 		if err != nil {
-			log.Printf("failed to get certificate info for cluster %s: %v", cfg.Name, err)
+			registry.Logger.Warn("get certificate info failed", "cluster", cfg.Name, "err", err)
 		} else {
 			cluster.CertInfo = certInfo
 		}
@@ -145,7 +166,7 @@ func (s *Server) uiClusterDetail(w http.ResponseWriter, r *http.Request) {
 			// Get topics
 			topicList, err := client.ListTopics(false)
 			if err != nil {
-				log.Printf("failed to list topics for cluster %s: %v", name, err)
+				registry.Logger.Error("list topics failed", "cluster", name, "err", err)
 			} else {
 				topics = topicList
 			}
@@ -153,7 +174,7 @@ func (s *Server) uiClusterDetail(w http.ResponseWriter, r *http.Request) {
 			// Get cluster statistics
 			clusterStats, err := client.GetClusterStats()
 			if err != nil {
-				log.Printf("failed to get cluster stats for %s: %v", name, err)
+				registry.Logger.Error("get cluster stats failed", "cluster", name, "err", err)
 			} else {
 				stats = clusterStats
 			}
@@ -161,7 +182,7 @@ func (s *Server) uiClusterDetail(w http.ResponseWriter, r *http.Request) {
 			// Get broker details
 			brokers, err := client.GetBrokerDetails()
 			if err != nil {
-				log.Printf("failed to get broker details for %s: %v", name, err)
+				registry.Logger.Error("get broker details failed", "cluster", name, "err", err)
 			} else {
 				brokerDetails = brokers
 			}
@@ -169,7 +190,7 @@ func (s *Server) uiClusterDetail(w http.ResponseWriter, r *http.Request) {
 			// Get consumer groups
 			groups, err := client.ListConsumerGroups()
 			if err != nil {
-				log.Printf("failed to list consumer groups for %s: %v", name, err)
+				registry.Logger.Error("list consumer groups failed", "cluster", name, "err", err)
 			} else {
 				consumerGroups = groups
 			}
@@ -178,6 +199,7 @@ func (s *Server) uiClusterDetail(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := pages.ClusterDetail(cluster, topics, stats, brokerDetails, consumerGroups).Render(r.Context(), w); err != nil {
+		registry.Logger.Error("render cluster detail failed", "cluster", name, "err", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -186,6 +208,7 @@ func (s *Server) uiClusterDetail(w http.ResponseWriter, r *http.Request) {
 // uiTopicsList renders the topics list page for a cluster
 func (s *Server) uiTopicsList(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
+	registry.Logger.Debug("render topics list", "cluster", name)
 
 	// Get cluster config
 	_, ok := s.clusterService.GetCluster(name)
@@ -203,7 +226,7 @@ func (s *Server) uiTopicsList(w http.ResponseWriter, r *http.Request) {
 	if ok {
 		topicList, err := client.ListTopics(showInternal)
 		if err != nil {
-			log.Printf("failed to list topics for cluster %s: %v", name, err)
+			registry.Logger.Error("list topics failed", "cluster", name, "err", err)
 		} else {
 			topics = topicList
 		}
@@ -211,26 +234,35 @@ func (s *Server) uiTopicsList(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := pages.TopicsList(name, topics, showInternal).Render(r.Context(), w); err != nil {
+		registry.Logger.Error("render topics list failed", "cluster", name, "err", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
 
+// APIs
 func (s *Server) apiListClusters(w http.ResponseWriter, r *http.Request) {
+	_ = r
 	clusters := s.clusterService.ListClusters()
-	json.NewEncoder(w).Encode(clusters)
+	registry.Logger.Debug("api list clusters", "count", len(clusters))
+	if err := json.NewEncoder(w).Encode(clusters); err != nil {
+		registry.Logger.Error("encode clusters failed", "err", err)
+	}
 }
 
 func (s *Server) apiAddCluster(w http.ResponseWriter, r *http.Request) {
 	var c config.ClusterConfig
 	if err := json.NewDecoder(r.Body).Decode(&c); err != nil {
+		registry.Logger.Warn("api add cluster bad request", "err", err)
 		http.Error(w, err.Error(), 400)
 		return
 	}
 	if err := s.clusterService.AddCluster(c); err != nil {
+		registry.Logger.Error("api add cluster failed", "cluster", c.Name, "err", err)
 		http.Error(w, err.Error(), 500)
 		return
 	}
+	registry.Logger.Info("cluster added", "cluster", c.Name)
 	w.WriteHeader(201)
 }
 
@@ -238,22 +270,27 @@ func (s *Server) apiUpdateCluster(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
 	var c config.ClusterConfig
 	if err := json.NewDecoder(r.Body).Decode(&c); err != nil {
+		registry.Logger.Warn("api update cluster bad request", "cluster", name, "err", err)
 		http.Error(w, err.Error(), 400)
 		return
 	}
 	if err := s.clusterService.UpdateCluster(name, c); err != nil {
+		registry.Logger.Error("api update cluster failed", "cluster", name, "err", err)
 		http.Error(w, err.Error(), 500)
 		return
 	}
+	registry.Logger.Info("cluster updated", "cluster", name)
 	w.WriteHeader(204)
 }
 
 func (s *Server) apiDeleteCluster(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
 	if err := s.clusterService.DeleteCluster(name); err != nil {
+		registry.Logger.Error("api delete cluster failed", "cluster", name, "err", err)
 		http.Error(w, err.Error(), 404)
 		return
 	}
+	registry.Logger.Info("cluster deleted", "cluster", name)
 	w.WriteHeader(204)
 }
 
@@ -261,13 +298,17 @@ func (s *Server) apiListTopics(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
 	client, ok := s.repo.GetClient(name)
 	if !ok {
+		registry.Logger.Warn("api list topics cluster not found", "cluster", name)
 		http.Error(w, "cluster not found", 404)
 		return
 	}
 	topics, err := client.ListTopics(true)
 	if err != nil {
+		registry.Logger.Error("api list topics failed", "cluster", name, "err", err)
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	json.NewEncoder(w).Encode(topics)
+	if err := json.NewEncoder(w).Encode(topics); err != nil {
+		registry.Logger.Error("encode topics failed", "cluster", name, "err", err)
+	}
 }

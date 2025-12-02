@@ -2,7 +2,6 @@ package registry
 
 import (
 	"errors"
-	"log"
 	"os"
 	"path/filepath"
 	"sync"
@@ -10,7 +9,6 @@ import (
 
 	"github.com/OliveiraNt/kdash/internal/config"
 	"github.com/OliveiraNt/kdash/internal/infra/kafka"
-
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -59,7 +57,7 @@ func (r *Registry) reconcile(cfg config.FileConfig) error {
 			// add
 			w, err := kafka.NewKafkaClient(c)
 			if err != nil {
-				log.Printf("failed to create client for %s: %v", c.Name, err)
+				Logger.Error("failed to create client", "cluster", c.Name, "err", err)
 				continue
 			}
 			r.clients[c.Name] = w
@@ -70,7 +68,7 @@ func (r *Registry) reconcile(cfg config.FileConfig) error {
 			cur.Close()
 			w, err := kafka.NewKafkaClient(c)
 			if err != nil {
-				log.Printf("failed to recreate client for %s: %v", c.Name, err)
+				Logger.Error("failed to recreate client", "cluster", c.Name, "err", err)
 				continue
 			}
 			r.clients[c.Name] = w
@@ -200,9 +198,9 @@ func (r *Registry) Watch(path string) error {
 				}
 				time.Sleep(100 * time.Millisecond)
 			}
-			log.Printf("config file changed: %s", abs)
+			Logger.Info("config file changed", "path", abs)
 			if err := r.LoadFromFile(path); err != nil {
-				log.Printf("failed to reload config: %v", err)
+				Logger.Error("failed to reload config", "err", err)
 			}
 		}
 
@@ -236,7 +234,7 @@ func (r *Registry) Watch(path string) error {
 				if !ok {
 					return
 				}
-				log.Printf("fsnotify error: %v", err)
+				Logger.Error("fsnotify error", "err", err)
 			}
 		}
 	}()
