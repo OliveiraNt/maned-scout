@@ -2,13 +2,13 @@ package pages
 
 import (
     layout "github.com/OliveiraNt/kdash/internal/adapters/http/ui/templates/layout"
-    core "github.com/OliveiraNt/kdash/internal/core"
+    "github.com/OliveiraNt/kdash/internal/domain"
     "fmt"
 )
 
 type ClusterWithStats struct {
-	Cluster core.Cluster
-	Stats   *core.ClusterStats
+	Cluster domain.Cluster
+	Stats   *domain.ClusterStats
 }
 
 templ ClusterList(clusters []ClusterWithStats) {
@@ -28,7 +28,7 @@ templ ClusterList(clusters []ClusterWithStats) {
 	}
 }
 
-templ ClusterCard(cluster core.Cluster, stats *core.ClusterStats) {
+templ ClusterCard(cluster domain.Cluster, stats *domain.ClusterStats) {
 	<a
 		href={ templ.URL(fmt.Sprintf("/cluster/%s", cluster.Name)) }
 		class="block bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition cursor-pointer"
