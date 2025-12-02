@@ -1,7 +1,10 @@
 package config
 
 import (
+	"crypto/x509"
+	"encoding/pem"
 	"os"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -65,4 +68,92 @@ func WriteConfig(path string, cfg FileConfig) error {
 		return err
 	}
 	return os.WriteFile(path, b, 0644)
+}
+
+// GetAuthType returns a human-readable authentication type based on the cluster config
+func (c *ClusterConfig) GetAuthType() string {
+	// Check for AWS IAM
+	if c.AWS != nil && c.AWS.IAM {
+		return "AWS IAM"
+	}
+
+	// Check for SASL authentication
+	if c.SASL != nil && c.SASL.Mechanism != "" {
+		mechanism := c.SASL.Mechanism
+		// Check if TLS is also enabled
+		if c.TLS != nil && c.TLS.Enabled {
+			return "SASL/" + mechanism + " + TLS"
+		}
+		return "SASL/" + mechanism
+	}
+
+	// Check for mTLS (mutual TLS with client certificates)
+	if c.TLS != nil && c.TLS.Enabled {
+		if c.TLS.CertFile != "" && c.TLS.KeyFile != "" {
+			return "mTLS"
+		}
+		return "TLS"
+	}
+
+	// Default is plaintext
+	return "PLAINTEXT"
+}
+
+// CertificateInfo holds certificate validity information
+type CertificateInfo struct {
+	NotBefore    time.Time `json:"not_before"`
+	NotAfter     time.Time `json:"not_after"`
+	DaysToExpiry int       `json:"days_to_expiry"`
+	Status       string    `json:"status"` // "valid", "warning", "critical", "expired"
+}
+
+// GetCertificateInfo reads and parses the certificate file to extract validity information
+func (c *ClusterConfig) GetCertificateInfo() (*CertificateInfo, error) {
+	// Only applicable if TLS is enabled and cert file exists
+	if c.TLS == nil || !c.TLS.Enabled || c.TLS.CertFile == "" {
+		return nil, nil
+	}
+
+	// Read certificate file
+	certPEM, err := os.ReadFile(c.TLS.CertFile)
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse PEM block
+	block, _ := pem.Decode(certPEM)
+	if block == nil {
+		return nil, nil // Not a valid PEM format
+	}
+
+	// Parse certificate
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now()
+	daysToExpiry := int(time.Until(cert.NotAfter).Hours() / 24)
+
+	// Determine status based on days remaining
+	status := "valid"
+	if now.After(cert.NotAfter) {
+		status = "expired"
+	} else if daysToExpiry <= 7 {
+		status = "critical"
+	} else if daysToExpiry <= 30 {
+		status = "warning"
+	}
+
+	return &CertificateInfo{
+		NotBefore:    cert.NotBefore,
+		NotAfter:     cert.NotAfter,
+		DaysToExpiry: daysToExpiry,
+		Status:       status,
+	}, nil
+}
+
+// HasCertificate returns true if the cluster uses certificate-based authentication
+func (c *ClusterConfig) HasCertificate() bool {
+	return c.TLS != nil && c.TLS.Enabled && c.TLS.CertFile != ""
 }

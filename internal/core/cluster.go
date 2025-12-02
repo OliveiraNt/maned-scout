@@ -1,10 +1,14 @@
 package core
 
+import "github.com/OliveiraNt/kdash/internal/config"
+
 type Cluster struct {
-	ID       string   `json:"id"`
-	Name     string   `json:"name"`
-	Brokers  []string `json:"brokers"`
-	IsOnline bool     `json:"is_online"`
+	ID       string                  `json:"id"`
+	Name     string                  `json:"name"`
+	Brokers  []string                `json:"brokers"`
+	IsOnline bool                    `json:"is_online"`
+	AuthType string                  `json:"auth_type"` // e.g., "PLAINTEXT", "SASL/PLAIN", "SASL/SCRAM-SHA-256", "mTLS", "AWS IAM"
+	CertInfo *config.CertificateInfo `json:"cert_info,omitempty"`
 }
 
 // ClusterStats holds detailed statistics about a cluster

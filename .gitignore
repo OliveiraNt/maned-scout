@@ -33,6 +33,8 @@ main
 # OS X generated file
 .DS_Store
 
+# Certificate files for TLS testing
+certs/
 
 clusters.yml
 /TODO.md

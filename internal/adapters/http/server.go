@@ -67,12 +67,25 @@ func (s *Server) uiHome(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		// Get certificate info if applicable
+		var certInfo *config.CertificateInfo
+		if c.HasCertificate() {
+			info, err := c.GetCertificateInfo()
+			if err != nil {
+				log.Printf("failed to get certificate info for cluster %s: %v", c.Name, err)
+			} else {
+				certInfo = info
+			}
+		}
+
 		clustersList = append(clustersList, pages.ClusterWithStats{
 			Cluster: core.Cluster{
 				ID:       c.Name,
 				Name:     c.Name,
 				Brokers:  c.Brokers,
 				IsOnline: isOnline,
+				AuthType: c.GetAuthType(),
+				CertInfo: certInfo,
 			},
 			Stats: stats,
 		})
@@ -96,7 +109,22 @@ func (s *Server) uiClusterDetail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	isOnline := false
-	cluster := core.Cluster{ID: cfg.Name, Name: cfg.Name, Brokers: cfg.Brokers}
+	cluster := core.Cluster{
+		ID:       cfg.Name,
+		Name:     cfg.Name,
+		Brokers:  cfg.Brokers,
+		AuthType: cfg.GetAuthType(),
+	}
+
+	// Get certificate info if applicable
+	if cfg.HasCertificate() {
+		certInfo, err := cfg.GetCertificateInfo()
+		if err != nil {
+			log.Printf("failed to get certificate info for cluster %s: %v", cfg.Name, err)
+		} else {
+			cluster.CertInfo = certInfo
+		}
+	}
 
 	// Get topics for this cluster
 	topics := make(map[string]int)

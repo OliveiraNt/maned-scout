@@ -43,6 +43,68 @@ templ ClusterDetail(cluster core.Cluster, topics map[string]int, stats *core.Clu
 			</div>
 		</div>
 
+		<!-- Authentication Info -->
+		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
+			<div class="flex items-center justify-between">
+				<div class="flex items-center space-x-3">
+					<div class="bg-blue-50 dark:bg-blue-900/20 p-2 rounded">
+						<i class="fas fa-shield-alt text-blue-600 dark:text-blue-400 text-lg"></i>
+					</div>
+					<div>
+						<p class="text-sm text-gray-600 dark:text-gray-400">Tipo de Autenticação</p>
+						<p class="text-lg font-semibold text-gray-900 dark:text-white">{ cluster.AuthType }</p>
+					</div>
+				</div>
+				if cluster.CertInfo != nil {
+					<div class="flex items-center space-x-3">
+						<div>
+							<p class="text-sm text-gray-600 dark:text-gray-400 text-right">Validade do Certificado</p>
+							<div class="flex items-center justify-end space-x-2 mt-1">
+								if cluster.CertInfo.Status == "expired" {
+									<span class="px-3 py-1.5 text-sm font-semibold rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">
+										<i class="fas fa-exclamation-circle mr-1"></i>
+										Expirado
+									</span>
+								} else if cluster.CertInfo.Status == "critical" {
+									<span class="px-3 py-1.5 text-sm font-semibold rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">
+										<i class="fas fa-exclamation-triangle mr-1"></i>
+										{ fmt.Sprintf("%d dias restantes", cluster.CertInfo.DaysToExpiry) }
+									</span>
+								} else if cluster.CertInfo.Status == "warning" {
+									<span class="px-3 py-1.5 text-sm font-semibold rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400">
+										<i class="fas fa-exclamation-triangle mr-1"></i>
+										{ fmt.Sprintf("%d dias restantes", cluster.CertInfo.DaysToExpiry) }
+									</span>
+								} else {
+									<span class="px-3 py-1.5 text-sm font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">
+										<i class="fas fa-check-circle mr-1"></i>
+										{ fmt.Sprintf("%d dias restantes", cluster.CertInfo.DaysToExpiry) }
+									</span>
+								}
+							</div>
+						</div>
+						<div class="bg-gray-50 dark:bg-gray-700/50 p-2 rounded">
+							<i class="fas fa-certificate text-2xl text-gray-600 dark:text-gray-400"></i>
+						</div>
+					</div>
+				}
+			</div>
+			if cluster.CertInfo != nil {
+				<div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+						<div>
+							<span class="text-gray-600 dark:text-gray-400">Válido desde:</span>
+							<span class="ml-2 font-medium text-gray-900 dark:text-white">{ cluster.CertInfo.NotBefore.Format("02/01/2006 15:04") }</span>
+						</div>
+						<div>
+							<span class="text-gray-600 dark:text-gray-400">Expira em:</span>
+							<span class="ml-2 font-medium text-gray-900 dark:text-white">{ cluster.CertInfo.NotAfter.Format("02/01/2006 15:04") }</span>
+						</div>
+					</div>
+				</div>
+			}
+		</div>
+
 		<!-- Stats Grid -->
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
 			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
