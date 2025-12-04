@@ -1,0 +1,448 @@
+package pages
+
+import (
+    layout "github.com/OliveiraNt/kdash/internal/adapters/http/ui/templates/layout"
+    "github.com/OliveiraNt/kdash/internal/domain"
+    "fmt"
+    "sort"
+    "strings"
+)
+
+templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
+	@layout.BaseWithSidebar("Detalhes do Tópico", clusterName) {
+		<!-- Breadcrumb -->
+		<nav class="mb-6 text-sm">
+			<ol class="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+				<li><a href={ templ.URL(fmt.Sprintf("/cluster/%s", clusterName)) } class="hover:text-blue-600 dark:hover:text-blue-400">{ clusterName }</a></li>
+				<li><i class="fas fa-chevron-right text-xs"></i></li>
+				<li><a href={ templ.URL(fmt.Sprintf("/cluster/%s/topics", clusterName)) } class="hover:text-blue-600 dark:hover:text-blue-400">Tópicos</a></li>
+				<li><i class="fas fa-chevron-right text-xs"></i></li>
+				<li class="text-gray-900 dark:text-white font-medium">{ topic.Name }</li>
+			</ol>
+		</nav>
+
+		<!-- Page Header -->
+		<div class="mb-6">
+			<div class="flex items-center justify-between">
+				<div>
+					<h2 class="text-3xl font-bold text-gray-900 dark:text-white">{ topic.Name }</h2>
+					<p class="text-gray-600 dark:text-gray-400 mt-2">Detalhes e configurações do tópico</p>
+				</div>
+				<div class="flex space-x-3">
+					<button
+						onclick="showUpdateConfigModal()"
+						class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition flex items-center space-x-2">
+						<i class="fas fa-edit"></i>
+						<span>Editar Configs</span>
+					</button>
+					<button
+						onclick="showIncreasePartitionsModal()"
+						class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition flex items-center space-x-2">
+						<i class="fas fa-plus"></i>
+						<span>Aumentar Partições</span>
+					</button>
+					<button
+						onclick="confirmDeleteTopic()"
+						class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition flex items-center space-x-2">
+						<i class="fas fa-trash"></i>
+						<span>Deletar Tópico</span>
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Summary Stats -->
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm text-gray-600 dark:text-gray-400">Partições</p>
+						<p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{ fmt.Sprintf("%d", topic.Partitions) }</p>
+					</div>
+					<div class="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-lg">
+						<i class="fas fa-layer-group text-purple-600 dark:text-purple-400 text-2xl"></i>
+					</div>
+				</div>
+			</div>
+
+			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm text-gray-600 dark:text-gray-400">Fator de Replicação</p>
+						<p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{ fmt.Sprintf("%d", topic.ReplicationFactor) }</p>
+					</div>
+					<div class="bg-green-100 dark:bg-green-900/30 p-3 rounded-lg">
+						<i class="fas fa-copy text-green-600 dark:text-green-400 text-2xl"></i>
+					</div>
+				</div>
+			</div>
+
+			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm text-gray-600 dark:text-gray-400">Configurações</p>
+						<p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{ fmt.Sprintf("%d", len(topic.Configs)) }</p>
+					</div>
+					<div class="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-lg">
+						<i class="fas fa-cog text-blue-600 dark:text-blue-400 text-2xl"></i>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Partitions Table -->
+		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+			<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+				<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Detalhes das Partições</h3>
+			</div>
+			<div class="overflow-x-auto">
+				<table class="w-full">
+					<thead class="bg-gray-50 dark:bg-gray-900">
+						<tr>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Partição</th>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Leader</th>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Réplicas</th>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">ISR</th>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+						for _, partition := range topic.PartitionDetails {
+							<tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+								<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+									{ fmt.Sprintf("%d", partition.Partition) }
+								</td>
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+									if partition.Leader >= 0 {
+										{ fmt.Sprintf("%d", partition.Leader) }
+									} else {
+										<span class="text-red-600 dark:text-red-400">-1 (offline)</span>
+									}
+								</td>
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+									{ formatInt32Slice(partition.Replicas) }
+								</td>
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+									{ formatInt32Slice(partition.ISR) }
+								</td>
+								<td class="px-6 py-4 whitespace-nowrap">
+									if partition.Offline {
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+											<i class="fas fa-times-circle mr-1"></i> Offline
+										</span>
+									} else if len(partition.Replicas) != len(partition.ISR) {
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+											<i class="fas fa-exclamation-triangle mr-1"></i> Under-replicated
+										</span>
+									} else {
+										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+											<i class="fas fa-check-circle mr-1"></i> Healthy
+										</span>
+									}
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<!-- Configurations -->
+		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+			<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+				<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Configurações do Tópico</h3>
+			</div>
+			<div class="overflow-x-auto">
+				<table class="w-full">
+					<thead class="bg-gray-50 dark:bg-gray-900">
+						<tr>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Configuração</th>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Valor</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+						for _, key := range getSortedConfigKeys(topic.Configs) {
+							<tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+								<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+									{ key }
+								</td>
+								<td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-300 font-mono">
+									{ topic.Configs[key] }
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<!-- Modals -->
+		@updateConfigModal(clusterName, topic.Name)
+		@increasePartitionsModal(clusterName, topic.Name, topic.Partitions)
+		@deleteTopicModal(clusterName, topic.Name)
+
+		<script>
+			const clusterName = "{{ clusterName }}";
+			const topicName = "{{ topic.Name }}";
+
+			function showUpdateConfigModal() {
+				document.getElementById('updateConfigModal').classList.remove('hidden');
+			}
+
+			function closeUpdateConfigModal() {
+				document.getElementById('updateConfigModal').classList.add('hidden');
+			}
+
+			function showIncreasePartitionsModal() {
+				document.getElementById('increasePartitionsModal').classList.remove('hidden');
+			}
+
+			function closeIncreasePartitionsModal() {
+				document.getElementById('increasePartitionsModal').classList.add('hidden');
+			}
+
+			function confirmDeleteTopic() {
+				document.getElementById('deleteTopicModal').classList.remove('hidden');
+			}
+
+			function closeDeleteTopicModal() {
+				document.getElementById('deleteTopicModal').classList.add('hidden');
+			}
+
+			async function updateTopicConfig(event) {
+				event.preventDefault();
+				const form = event.target;
+				const formData = new FormData(form);
+
+				const configs = {};
+				for (const [key, value] of formData.entries()) {
+					if (value) {
+						configs[key] = value;
+					}
+				}
+
+				if (Object.keys(configs).length === 0) {
+					alert('Nenhuma configuração foi modificada');
+					return;
+				}
+
+				try {
+					const response = await fetch(`/api/cluster/${clusterName}/topics/${topicName}/config`, {
+						method: 'PUT',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ configs })
+					});
+
+					if (response.ok) {
+						alert('Configurações atualizadas com sucesso!');
+						closeUpdateConfigModal();
+						location.reload();
+					} else {
+						const error = await response.text();
+						alert(`Erro: ${error}`);
+					}
+				} catch (error) {
+					alert(`Erro: ${error.message}`);
+				}
+			}
+
+			async function increasePartitions(event) {
+				event.preventDefault();
+				const form = event.target;
+				const formData = new FormData(form);
+				const totalPartitions = parseInt(formData.get('totalPartitions'));
+
+				try {
+					const response = await fetch(`/api/cluster/${clusterName}/topics/${topicName}/partitions`, {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ totalPartitions })
+					});
+
+					if (response.ok) {
+						alert('Partições aumentadas com sucesso!');
+						closeIncreasePartitionsModal();
+						location.reload();
+					} else {
+						const error = await response.text();
+						alert(`Erro: ${error}`);
+					}
+				} catch (error) {
+					alert(`Erro: ${error.message}`);
+				}
+			}
+
+			async function deleteTopic() {
+				try {
+					const response = await fetch(`/api/cluster/${clusterName}/topics/${topicName}`, {
+						method: 'DELETE'
+					});
+
+					if (response.ok) {
+						alert('Tópico deletado com sucesso!');
+						window.location.href = `/cluster/${clusterName}/topics`;
+					} else {
+						const error = await response.text();
+						alert(`Erro: ${error}`);
+					}
+				} catch (error) {
+					alert(`Erro: ${error.message}`);
+				}
+			}
+		</script>
+	}
+}
+
+templ updateConfigModal(clusterName, topicName string) {
+	<div id="updateConfigModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4">
+			<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+				<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Atualizar Configurações</h3>
+			</div>
+			<div class="px-6 py-4">
+				<p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+					Atualize as configurações do tópico. Use <code>null</code> para remover uma configuração.
+				</p>
+				<form id="updateConfigForm" onsubmit="updateTopicConfig(event)">
+					<div class="space-y-4">
+						<div>
+							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+								Retention MS
+							</label>
+							<input type="number" name="retention.ms"
+								class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+								placeholder="604800000 (7 days)">
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+								Cleanup Policy
+							</label>
+							<select name="cleanup.policy"
+								class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+								<option value="">-- Manter Atual --</option>
+								<option value="delete">delete</option>
+								<option value="compact">compact</option>
+								<option value="compact,delete">compact,delete</option>
+							</select>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+								Compression Type
+							</label>
+							<select name="compression.type"
+								class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+								<option value="">-- Manter Atual --</option>
+								<option value="uncompressed">uncompressed</option>
+								<option value="gzip">gzip</option>
+								<option value="snappy">snappy</option>
+								<option value="lz4">lz4</option>
+								<option value="zstd">zstd</option>
+							</select>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+								Max Message Bytes
+							</label>
+							<input type="number" name="max.message.bytes"
+								class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+								placeholder="1048576 (1 MB)">
+						</div>
+					</div>
+					<div class="flex justify-end space-x-3 mt-6">
+						<button type="button" onclick="closeUpdateConfigModal()"
+							class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+							Cancelar
+						</button>
+						<button type="submit"
+							class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+							Atualizar
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+}
+
+templ increasePartitionsModal(clusterName, topicName string, currentPartitions int) {
+	<div id="increasePartitionsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+			<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+				<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Aumentar Partições</h3>
+			</div>
+			<div class="px-6 py-4">
+				<p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+					O tópico atualmente tem <strong>{ fmt.Sprintf("%d", currentPartitions) }</strong> partições.
+					Defina o novo total de partições (deve ser maior que o atual).
+				</p>
+				<form id="increasePartitionsForm" onsubmit="increasePartitions(event)">
+					<div class="mb-4">
+						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+							Total de Partições
+						</label>
+						<input type="number" name="totalPartitions" required
+							min={ fmt.Sprintf("%d", currentPartitions + 1) }
+							class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+					</div>
+					<div class="flex justify-end space-x-3">
+						<button type="button" onclick="closeIncreasePartitionsModal()"
+							class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+							Cancelar
+						</button>
+						<button type="submit"
+							class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg">
+							Aumentar
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+}
+
+templ deleteTopicModal(clusterName, topicName string) {
+	<div id="deleteTopicModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+			<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+				<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Deletar Tópico</h3>
+			</div>
+			<div class="px-6 py-4">
+				<p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+					Tem certeza que deseja deletar o tópico <strong>{ topicName }</strong>?
+					Esta ação não pode ser desfeita e todos os dados serão perdidos.
+				</p>
+				<div class="flex justify-end space-x-3">
+					<button type="button" onclick="closeDeleteTopicModal()"
+						class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+						Cancelar
+					</button>
+					<button type="button" onclick="deleteTopic()"
+						class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
+						Deletar
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+func formatInt32Slice(slice []int32) string {
+	if len(slice) == 0 {
+		return "[]"
+	}
+	parts := make([]string, len(slice))
+	for i, v := range slice {
+		parts[i] = fmt.Sprintf("%d", v)
+	}
+	return "[" + strings.Join(parts, ", ") + "]"
+}
+
+func getSortedConfigKeys(configs map[string]string) []string {
+	keys := make([]string, 0, len(configs))
+	for k := range configs {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
+

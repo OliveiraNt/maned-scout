@@ -44,6 +44,21 @@ type KafkaClient interface {
 	// ListConsumerGroups returns consumer group information
 	ListConsumerGroups() ([]ConsumerGroupSummary, error)
 
+	// GetTopicDetail returns detailed information about a topic
+	GetTopicDetail(topicName string) (*TopicDetail, error)
+
+	// CreateTopic creates a new topic
+	CreateTopic(req CreateTopicRequest) error
+
+	// DeleteTopic deletes a topic
+	DeleteTopic(topicName string) error
+
+	// UpdateTopicConfig updates topic configurations
+	UpdateTopicConfig(topicName string, req UpdateTopicConfigRequest) error
+
+	// IncreasePartitions increases the number of partitions for a topic
+	IncreasePartitions(topicName string, req IncreasePartitionsRequest) error
+
 	// Close releases resources
 	Close()
 }

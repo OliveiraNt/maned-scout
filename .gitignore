@@ -38,3 +38,4 @@ certs/
 
 clusters.yml
 /TODO.md
+*.prompt.md

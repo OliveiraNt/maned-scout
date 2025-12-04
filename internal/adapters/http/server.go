@@ -52,6 +52,7 @@ func (s *Server) Run(addr string) error {
 	r.Get("/", s.uiHome)
 	r.Get("/cluster/{name}", s.uiClusterDetail)
 	r.Get("/cluster/{name}/topics", s.uiTopicsList)
+	r.Get("/cluster/{name}/topics/{topic}", s.uiTopicDetail)
 
 	// Cluster APIS
 	r.Get("/api/clusters", s.apiListClusters)
@@ -61,6 +62,16 @@ func (s *Server) Run(addr string) error {
 
 	// Topic Apis
 	r.Get("/api/cluster/{name}/topics", s.apiListTopics)
+	r.Get("/api/cluster/{name}/topics/{topic}", s.apiGetTopicDetail)
+	r.Post("/api/cluster/{name}/topics", s.apiCreateTopic)
+	r.Delete("/api/cluster/{name}/topics/{topic}", s.apiDeleteTopic)
+	r.Put("/api/cluster/{name}/topics/{topic}/config", s.apiUpdateTopicConfig)
+	r.Post("/api/cluster/{name}/topics/{topic}/partitions", s.apiIncreasePartitions)
+	r.Get("/api/cluster/{name}/topics/{topic}", s.apiGetTopicDetail)
+	r.Post("/api/cluster/{name}/topics", s.apiCreateTopic)
+	r.Delete("/api/cluster/{name}/topics/{topic}", s.apiDeleteTopic)
+	r.Put("/api/cluster/{name}/topics/{topic}/config", s.apiUpdateTopicConfig)
+	r.Post("/api/cluster/{name}/topics/{topic}/partitions", s.apiIncreasePartitions)
 
 	registry.Logger.Info("HTTP server listening", "addr", addr)
 	return http.ListenAndServe(addr, r)
@@ -240,6 +251,43 @@ func (s *Server) uiTopicsList(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// uiTopicDetail renders the topic detail page
+func (s *Server) uiTopicDetail(w http.ResponseWriter, r *http.Request) {
+	clusterName := chi.URLParam(r, "name")
+	topicName := chi.URLParam(r, "topic")
+	registry.Logger.Debug("render topic detail", "cluster", clusterName, "topic", topicName)
+
+	// Get cluster config
+	_, ok := s.clusterService.GetCluster(clusterName)
+	if !ok {
+		http.Error(w, "cluster not found", http.StatusNotFound)
+		return
+	}
+
+	// Get topic detail
+	var topicDetail *domain.TopicDetail
+	client, ok := s.repo.GetClient(clusterName)
+	if ok {
+		detail, err := client.GetTopicDetail(topicName)
+		if err != nil {
+			registry.Logger.Error("get topic detail failed", "cluster", clusterName, "topic", topicName, "err", err)
+			http.Error(w, "topic not found", http.StatusNotFound)
+			return
+		}
+		topicDetail = detail
+	} else {
+		http.Error(w, "cluster not available", http.StatusServiceUnavailable)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := pages.TopicDetail(clusterName, topicDetail).Render(r.Context(), w); err != nil {
+		registry.Logger.Error("render topic detail failed", "cluster", clusterName, "topic", topicName, "err", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
 // APIs
 func (s *Server) apiListClusters(w http.ResponseWriter, r *http.Request) {
 	_ = r
@@ -310,5 +358,166 @@ func (s *Server) apiListTopics(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := json.NewEncoder(w).Encode(topics); err != nil {
 		registry.Logger.Error("encode topics failed", "cluster", name, "err", err)
+	}
+}
+
+func (s *Server) apiGetTopicDetail(w http.ResponseWriter, r *http.Request) {
+	clusterName := chi.URLParam(r, "name")
+	topicName := chi.URLParam(r, "topic")
+
+	client, ok := s.repo.GetClient(clusterName)
+	if !ok {
+		registry.Logger.Warn("api get topic detail cluster not found", "cluster", clusterName)
+		http.Error(w, "cluster not found", 404)
+		return
+	}
+
+	topicDetail, err := client.GetTopicDetail(topicName)
+	if err != nil {
+		registry.Logger.Error("api get topic detail failed", "cluster", clusterName, "topic", topicName, "err", err)
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(topicDetail); err != nil {
+		registry.Logger.Error("encode topic detail failed", "cluster", clusterName, "topic", topicName, "err", err)
+	}
+}
+
+func (s *Server) apiCreateTopic(w http.ResponseWriter, r *http.Request) {
+	clusterName := chi.URLParam(r, "name")
+
+	var req domain.CreateTopicRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		registry.Logger.Warn("api create topic bad request", "cluster", clusterName, "err", err)
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	// Validate request
+	if req.Name == "" {
+		http.Error(w, "topic name is required", 400)
+		return
+	}
+	if req.NumPartitions <= 0 {
+		http.Error(w, "number of partitions must be greater than 0", 400)
+		return
+	}
+	if req.ReplicationFactor <= 0 {
+		http.Error(w, "replication factor must be greater than 0", 400)
+		return
+	}
+
+	client, ok := s.repo.GetClient(clusterName)
+	if !ok {
+		registry.Logger.Warn("api create topic cluster not found", "cluster", clusterName)
+		http.Error(w, "cluster not found", 404)
+		return
+	}
+
+	if err := client.CreateTopic(req); err != nil {
+		registry.Logger.Error("api create topic failed", "cluster", clusterName, "topic", req.Name, "err", err)
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	registry.Logger.Info("topic created", "cluster", clusterName, "topic", req.Name)
+	w.WriteHeader(201)
+	if err := json.NewEncoder(w).Encode(map[string]string{"message": "topic created successfully"}); err != nil {
+		registry.Logger.Error("encode response failed", "err", err)
+	}
+}
+
+func (s *Server) apiDeleteTopic(w http.ResponseWriter, r *http.Request) {
+	clusterName := chi.URLParam(r, "name")
+	topicName := chi.URLParam(r, "topic")
+
+	client, ok := s.repo.GetClient(clusterName)
+	if !ok {
+		registry.Logger.Warn("api delete topic cluster not found", "cluster", clusterName)
+		http.Error(w, "cluster not found", 404)
+		return
+	}
+
+	if err := client.DeleteTopic(topicName); err != nil {
+		registry.Logger.Error("api delete topic failed", "cluster", clusterName, "topic", topicName, "err", err)
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	registry.Logger.Info("topic deleted", "cluster", clusterName, "topic", topicName)
+	w.WriteHeader(204)
+}
+
+func (s *Server) apiUpdateTopicConfig(w http.ResponseWriter, r *http.Request) {
+	clusterName := chi.URLParam(r, "name")
+	topicName := chi.URLParam(r, "topic")
+
+	var req domain.UpdateTopicConfigRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		registry.Logger.Warn("api update topic config bad request", "cluster", clusterName, "topic", topicName, "err", err)
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	if len(req.Configs) == 0 {
+		http.Error(w, "configs are required", 400)
+		return
+	}
+
+	client, ok := s.repo.GetClient(clusterName)
+	if !ok {
+		registry.Logger.Warn("api update topic config cluster not found", "cluster", clusterName)
+		http.Error(w, "cluster not found", 404)
+		return
+	}
+
+	if err := client.UpdateTopicConfig(topicName, req); err != nil {
+		registry.Logger.Error("api update topic config failed", "cluster", clusterName, "topic", topicName, "err", err)
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	registry.Logger.Info("topic config updated", "cluster", clusterName, "topic", topicName)
+	w.WriteHeader(200)
+	if err := json.NewEncoder(w).Encode(map[string]string{"message": "topic config updated successfully"}); err != nil {
+		registry.Logger.Error("encode response failed", "err", err)
+	}
+}
+
+func (s *Server) apiIncreasePartitions(w http.ResponseWriter, r *http.Request) {
+	clusterName := chi.URLParam(r, "name")
+	topicName := chi.URLParam(r, "topic")
+
+	var req domain.IncreasePartitionsRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		registry.Logger.Warn("api increase partitions bad request", "cluster", clusterName, "topic", topicName, "err", err)
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	if req.TotalPartitions <= 0 {
+		http.Error(w, "total partitions must be greater than 0", 400)
+		return
+	}
+
+	client, ok := s.repo.GetClient(clusterName)
+	if !ok {
+		registry.Logger.Warn("api increase partitions cluster not found", "cluster", clusterName)
+		http.Error(w, "cluster not found", 404)
+		return
+	}
+
+	if err := client.IncreasePartitions(topicName, req); err != nil {
+		registry.Logger.Error("api increase partitions failed", "cluster", clusterName, "topic", topicName, "err", err)
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	registry.Logger.Info("topic partitions increased", "cluster", clusterName, "topic", topicName, "partitions", req.TotalPartitions)
+	w.WriteHeader(200)
+	if err := json.NewEncoder(w).Encode(map[string]string{"message": "partitions increased successfully"}); err != nil {
+		registry.Logger.Error("encode response failed", "err", err)
 	}
 }

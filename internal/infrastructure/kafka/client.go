@@ -134,6 +134,46 @@ func (c *Client) ListConsumerGroups() ([]domain.ConsumerGroupSummary, error) {
 	return c.admin.ListConsumerGroups(context.Background())
 }
 
+// GetTopicDetail returns detailed information about a topic
+func (c *Client) GetTopicDetail(topicName string) (*domain.TopicDetail, error) {
+	if c == nil || c.admin == nil {
+		return nil, nil
+	}
+	return c.admin.GetTopicDetail(context.Background(), topicName)
+}
+
+// CreateTopic creates a new topic
+func (c *Client) CreateTopic(req domain.CreateTopicRequest) error {
+	if c == nil || c.admin == nil {
+		return nil
+	}
+	return c.admin.CreateTopic(context.Background(), req)
+}
+
+// DeleteTopic deletes a topic
+func (c *Client) DeleteTopic(topicName string) error {
+	if c == nil || c.admin == nil {
+		return nil
+	}
+	return c.admin.DeleteTopic(context.Background(), topicName)
+}
+
+// UpdateTopicConfig updates topic configurations
+func (c *Client) UpdateTopicConfig(topicName string, req domain.UpdateTopicConfigRequest) error {
+	if c == nil || c.admin == nil {
+		return nil
+	}
+	return c.admin.UpdateTopicConfig(context.Background(), topicName, req)
+}
+
+// IncreasePartitions increases the number of partitions for a topic
+func (c *Client) IncreasePartitions(topicName string, req domain.IncreasePartitionsRequest) error {
+	if c == nil || c.admin == nil {
+		return nil
+	}
+	return c.admin.IncreasePartitions(context.Background(), topicName, req)
+}
+
 // Close releases resources
 func (c *Client) Close() {
 	if c != nil && c.client != nil {

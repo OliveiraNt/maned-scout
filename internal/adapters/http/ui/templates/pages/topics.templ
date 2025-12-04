@@ -16,7 +16,7 @@ templ TopicsList(clusterName string, topics map[string]int, showInternal bool) {
 						Gerencie os tópicos do cluster <span class="font-semibold">{ clusterName }</span>
 					</p>
 				</div>
-				<button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition flex items-center space-x-2">
+				<button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition flex items-center space-x-2" onclick="showCreateTopicModal()">
 					<i class="fas fa-plus"></i>
 					<span>Criar Tópico</span>
 				</button>
@@ -129,7 +129,7 @@ templ TopicsList(clusterName string, topics map[string]int, showInternal bool) {
 						<i class="fas fa-inbox text-gray-400 dark:text-gray-600 text-6xl mb-4"></i>
 						<p class="text-xl text-gray-600 dark:text-gray-400 mb-2">Nenhum tópico encontrado</p>
 						<p class="text-sm text-gray-500 dark:text-gray-500 mb-6">Crie seu primeiro tópico para começar</p>
-						<button class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition">
+						<button class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition" onclick="showCreateTopicModal()">
 							<i class="fas fa-plus mr-2"></i>
 							Criar Primeiro Tópico
 						</button>
@@ -194,6 +194,9 @@ templ TopicsList(clusterName string, topics map[string]int, showInternal bool) {
 				window.location.href = url.toString();
 			}
 		</script>
+
+		<!-- Create Topic Modal -->
+		@createTopicModal(clusterName)
 	}
 }
 
@@ -205,7 +208,10 @@ templ TopicTableRow(topicName string, partitions int, clusterName string) {
 					<i class="fas fa-stream text-blue-600 dark:text-blue-400 text-sm"></i>
 				</div>
 				<div>
-					<p class="font-medium text-gray-900 dark:text-white">{ topicName }</p>
+					<a href={ templ.URL(fmt.Sprintf("/cluster/%s/topics/%s", clusterName, topicName)) }
+						class="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400">
+						{ topicName }
+					</a>
 					<p class="text-xs text-gray-500 dark:text-gray-400">
 						{ fmt.Sprintf("cluster: %s", clusterName) }
 					</p>
@@ -220,25 +226,14 @@ templ TopicTableRow(topicName string, partitions int, clusterName string) {
 		</td>
 		<td class="px-6 py-4 text-right">
 			<div class="flex items-center justify-end space-x-2">
-				<button
+				<a
+					href={ templ.URL(fmt.Sprintf("/cluster/%s/topics/%s", clusterName, topicName)) }
 					class="px-3 py-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg text-sm font-medium transition"
-					title="Ver mensagens"
+					title="Ver detalhes"
 				>
 					<i class="fas fa-eye mr-1"></i>
-					Ver
-				</button>
-				<button
-					class="px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg text-sm font-medium transition"
-					title="Configurações"
-				>
-					<i class="fas fa-cog"></i>
-				</button>
-				<button
-					class="px-3 py-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg text-sm font-medium transition"
-					title="Deletar"
-				>
-					<i class="fas fa-trash"></i>
-				</button>
+					Detalhes
+				</a>
 			</div>
 		</td>
 	</tr>
@@ -250,5 +245,144 @@ func getTotalPartitionsHelper(topics map[string]int) int {
 		total += partitions
 	}
 	return total
+}
+
+templ createTopicModal(clusterName string) {
+	<div id="createTopicModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4">
+			<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+				<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Criar Novo Tópico</h3>
+			</div>
+			<div class="px-6 py-4">
+				<form id="createTopicForm" onsubmit="createTopic(event)">
+					<div class="space-y-4">
+						<div>
+							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+								Nome do Tópico <span class="text-red-500">*</span>
+							</label>
+							<input type="text" name="name" required
+								class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+								placeholder="my-topic">
+						</div>
+						<div class="grid grid-cols-2 gap-4">
+							<div>
+								<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+									Número de Partições <span class="text-red-500">*</span>
+								</label>
+								<input type="number" name="numPartitions" required min="1" value="1"
+									class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+							</div>
+							<div>
+								<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+									Fator de Replicação <span class="text-red-500">*</span>
+								</label>
+								<input type="number" name="replicationFactor" required min="1" value="1"
+									class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+							</div>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+								Retention MS (opcional)
+							</label>
+							<input type="number" name="retention.ms"
+								class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+								placeholder="604800000 (7 dias)">
+							<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Tempo de retenção em milissegundos</p>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+								Cleanup Policy (opcional)
+							</label>
+							<select name="cleanup.policy"
+								class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+								<option value="">-- Default --</option>
+								<option value="delete">delete</option>
+								<option value="compact">compact</option>
+								<option value="compact,delete">compact,delete</option>
+							</select>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+								Compression Type (opcional)
+							</label>
+							<select name="compression.type"
+								class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+								<option value="">-- Default --</option>
+								<option value="uncompressed">uncompressed</option>
+								<option value="gzip">gzip</option>
+								<option value="snappy">snappy</option>
+								<option value="lz4">lz4</option>
+								<option value="zstd">zstd</option>
+							</select>
+						</div>
+					</div>
+					<div class="flex justify-end space-x-3 mt-6">
+						<button type="button" onclick="closeCreateTopicModal()"
+							class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+							Cancelar
+						</button>
+						<button type="submit"
+							class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+							Criar Tópico
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		const clusterName = "{{ clusterName }}";
+
+		function showCreateTopicModal() {
+			document.getElementById('createTopicModal').classList.remove('hidden');
+		}
+
+		function closeCreateTopicModal() {
+			document.getElementById('createTopicModal').classList.add('hidden');
+			document.getElementById('createTopicForm').reset();
+		}
+
+		async function createTopic(event) {
+			event.preventDefault();
+			const form = event.target;
+			const formData = new FormData(form);
+
+			const configs = {};
+			const retentionMs = formData.get('retention.ms');
+			const cleanupPolicy = formData.get('cleanup.policy');
+			const compressionType = formData.get('compression.type');
+
+			if (retentionMs) configs['retention.ms'] = retentionMs;
+			if (cleanupPolicy) configs['cleanup.policy'] = cleanupPolicy;
+			if (compressionType) configs['compression.type'] = compressionType;
+
+			const request = {
+				name: formData.get('name'),
+				numPartitions: parseInt(formData.get('numPartitions')),
+				replicationFactor: parseInt(formData.get('replicationFactor')),
+				configs: Object.keys(configs).length > 0 ? configs : null
+			};
+
+			try {
+				const response = await fetch(`/api/cluster/${clusterName}/topics`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(request)
+				});
+
+				if (response.ok) {
+					alert('Tópico criado com sucesso!');
+					closeCreateTopicModal();
+					location.reload();
+				} else {
+					const error = await response.text();
+					alert(`Erro: ${error}`);
+				}
+			} catch (error) {
+				alert(`Erro: ${error.message}`);
+			}
+		}
+	</script>
 }
 

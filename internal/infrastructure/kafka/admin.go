@@ -184,3 +184,143 @@ func (a *Admin) ListConsumerGroups(ctx context.Context) ([]domain.ConsumerGroupS
 
 	return result, nil
 }
+
+// GetTopicDetail returns detailed information about a topic including all configurations
+func (a *Admin) GetTopicDetail(ctx context.Context, topicName string) (*domain.TopicDetail, error) {
+	cctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	// Get topic details
+	topics, err := a.client.ListTopics(cctx, topicName)
+	if err != nil {
+		return nil, err
+	}
+
+	topicInfo, exists := topics[topicName]
+	if !exists {
+		return nil, err
+	}
+
+	// Build partition details
+	partitionDetails := make([]domain.PartitionDetail, 0, len(topicInfo.Partitions))
+	for _, p := range topicInfo.Partitions {
+		partitionDetails = append(partitionDetails, domain.PartitionDetail{
+			Partition: p.Partition,
+			Leader:    p.Leader,
+			Replicas:  p.Replicas,
+			ISR:       p.ISR,
+			Offline:   p.Leader == -1,
+		})
+	}
+
+	// Get topic configs
+	configs := make(map[string]string)
+	configRes, err := a.client.DescribeTopicConfigs(cctx, topicName)
+	if err == nil {
+		for _, res := range configRes {
+			for _, config := range res.Configs {
+				if config.Value != nil {
+					configs[config.Key] = *config.Value
+				}
+			}
+		}
+	}
+
+	replicationFactor := 0
+	if len(topicInfo.Partitions) > 0 {
+		replicationFactor = len(topicInfo.Partitions[0].Replicas)
+	}
+
+	return &domain.TopicDetail{
+		Name:              topicName,
+		Partitions:        len(topicInfo.Partitions),
+		ReplicationFactor: replicationFactor,
+		Configs:           configs,
+		PartitionDetails:  partitionDetails,
+	}, nil
+}
+
+// CreateTopic creates a new topic with the specified configuration
+func (a *Admin) CreateTopic(ctx context.Context, req domain.CreateTopicRequest) error {
+	cctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	resp, err := a.client.CreateTopics(cctx, req.NumPartitions, req.ReplicationFactor, req.Configs, req.Name)
+	if err != nil {
+		return err
+	}
+
+	// Check for errors in the response
+	for _, r := range resp {
+		if r.Err != nil {
+			return r.Err
+		}
+	}
+
+	return nil
+}
+
+// DeleteTopic deletes a topic
+func (a *Admin) DeleteTopic(ctx context.Context, topicName string) error {
+	cctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	resp, err := a.client.DeleteTopics(cctx, topicName)
+	if err != nil {
+		return err
+	}
+
+	// Check for errors in the response
+	for _, r := range resp {
+		if r.Err != nil {
+			return r.Err
+		}
+	}
+
+	return nil
+}
+
+// UpdateTopicConfig updates topic configurations
+func (a *Admin) UpdateTopicConfig(ctx context.Context, topicName string, req domain.UpdateTopicConfigRequest) error {
+	cctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	// AlterTopicConfigs expects individual configs to be set
+	var configs []kadm.AlterConfig
+
+	for key, value := range req.Configs {
+		configs = append(configs, kadm.AlterConfig{
+			Op:    kadm.SetConfig,
+			Name:  key,
+			Value: value,
+		})
+	}
+
+	// TODO: handle response
+	_, err := a.client.AlterTopicConfigs(cctx, configs, topicName)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// IncreasePartitions increases the number of partitions for a topic
+func (a *Admin) IncreasePartitions(ctx context.Context, topicName string, req domain.IncreasePartitionsRequest) error {
+	cctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	resp, err := a.client.UpdatePartitions(cctx, int(req.TotalPartitions), topicName)
+	if err != nil {
+		return err
+	}
+
+	// Check for errors in the response
+	for _, r := range resp {
+		if r.Err != nil {
+			return r.Err
+		}
+	}
+
+	return nil
+}
