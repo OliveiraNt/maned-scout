@@ -372,15 +372,14 @@ templ createTopicModal(clusterName string) {
 				});
 
 				if (response.ok) {
-					alert('Tópico criado com sucesso!');
-					closeCreateTopicModal();
+					queueNotification('Tópico criado com sucesso!', 'success');
 					location.reload();
 				} else {
 					const error = await response.text();
-					alert(`Erro: ${error}`);
+					showNotification(`Erro: ${error}`, 'error');
 				}
 			} catch (error) {
-				alert(`Erro: ${error.message}`);
+				showNotification(`Erro: ${error.message}`, 'error');
 			}
 		}
 	</script>

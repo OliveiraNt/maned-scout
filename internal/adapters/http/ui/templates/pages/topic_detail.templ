@@ -222,7 +222,7 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 				}
 
 				if (Object.keys(configs).length === 0) {
-					alert('Nenhuma configuração foi modificada');
+					showNotification('Nenhuma configuração foi modificada', 'error');
 					return;
 				}
 
@@ -234,15 +234,14 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 					});
 
 					if (response.ok) {
-						alert('Configurações atualizadas com sucesso!');
-						closeUpdateConfigModal();
+						queueNotification('Configurações atualizadas com sucesso!', 'success');
 						location.reload();
 					} else {
 						const error = await response.text();
-						alert(`Erro: ${error}`);
+						showNotification(`Erro: ${error}`, 'error');
 					}
 				} catch (error) {
-					alert(`Erro: ${error.message}`);
+					showNotification(`Erro: ${error.message}`, 'error');
 				}
 			}
 
@@ -260,15 +259,15 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 					});
 
 					if (response.ok) {
-						alert('Partições aumentadas com sucesso!');
+						showNotification('Partições aumentadas com sucesso!', 'success');
 						closeIncreasePartitionsModal();
 						location.reload();
 					} else {
 						const error = await response.text();
-						alert(`Erro: ${error}`);
+						showNotification(`Erro: ${error}`, 'error');
 					}
 				} catch (error) {
-					alert(`Erro: ${error.message}`);
+					showNotification(`Erro: ${error.message}`, 'error');
 				}
 			}
 
@@ -279,14 +278,14 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 					});
 
 					if (response.ok) {
-						alert('Tópico deletado com sucesso!');
+						queueNotification('Tópico deletado com sucesso!', 'success');
 						window.location.href = `/cluster/${clusterName}/topics`;
 					} else {
 						const error = await response.text();
-						alert(`Erro: ${error}`);
+						showNotification(`Erro: ${error}`, 'error');
 					}
 				} catch (error) {
-					alert(`Erro: ${error.message}`);
+					showNotification(`Erro: ${error.message}`, 'error');
 				}
 			}
 		</script>

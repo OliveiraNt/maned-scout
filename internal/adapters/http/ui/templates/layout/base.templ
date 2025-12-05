@@ -26,15 +26,96 @@ templ Base(title string) {
 				.htmx-request.htmx-indicator {
 					display: inline-block;
 				}
+				/* Notification animations */
+				@keyframes slideInDown {
+					from {
+						transform: translateY(-100%);
+						opacity: 0;
+					}
+					to {
+						transform: translateY(0);
+						opacity: 1;
+					}
+				}
+				@keyframes slideOutUp {
+					from {
+						transform: translateY(0);
+						opacity: 1;
+					}
+					to {
+						transform: translateY(-100%);
+						opacity: 0;
+					}
+				}
+				.notification-enter {
+					animation: slideInDown 0.3s ease-out;
+				}
+				.notification-exit {
+					animation: slideOutUp 0.3s ease-in;
+				}
 			</style>
 			<script>
 				// Dark mode initialization
 				if (localStorage.getItem('darkMode') === 'true' || (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
 					document.documentElement.classList.add('dark');
 				}
+
+				// Notification system
+				function showNotification(message, type = 'success') {
+					const container = document.getElementById('notification-container');
+					const notification = document.createElement('div');
+
+					const bgColor = type === 'success'
+						? 'bg-green-100 dark:bg-green-900/30 border-green-400 dark:border-green-600'
+						: 'bg-red-100 dark:bg-red-900/30 border-red-400 dark:border-red-600';
+
+					const textColor = type === 'success'
+						? 'text-green-800 dark:text-green-200'
+						: 'text-red-800 dark:text-red-200';
+
+					const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+
+					notification.className = `notification-enter ${bgColor} ${textColor} border-l-4 p-4 mb-3 rounded-lg shadow-lg flex items-center justify-between max-w-2xl mx-auto`;
+					notification.innerHTML = `
+						<div class="flex items-center space-x-3">
+							<i class="fas ${icon} text-xl"></i>
+							<span class="font-medium">${message}</span>
+						</div>
+						<button onclick="this.parentElement.remove()" class="ml-4 ${textColor} hover:opacity-75 transition">
+							<i class="fas fa-times"></i>
+						</button>
+					`;
+
+					container.appendChild(notification);
+
+					// Auto remove after 5 seconds
+					setTimeout(() => {
+						notification.classList.remove('notification-enter');
+						notification.classList.add('notification-exit');
+						setTimeout(() => notification.remove(), 300);
+					}, 5000);
+				}
+
+				// Queue notification to be shown after navigation
+				function queueNotification(message, type = 'success') {
+					sessionStorage.setItem('pendingNotification', JSON.stringify({ message, type }));
+				}
+
+				// Check for pending notifications on page load
+				window.addEventListener('DOMContentLoaded', function() {
+					const pending = sessionStorage.getItem('pendingNotification');
+					if (pending) {
+						const { message, type } = JSON.parse(pending);
+						sessionStorage.removeItem('pendingNotification');
+						showNotification(message, type);
+					}
+				});
 			</script>
 		</head>
 		<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+			<!-- Notification Container -->
+			<div id="notification-container" class="fixed top-4 left-0 right-0 z-50 px-4"></div>
+
 			@Header()
 			<main class="p-6">
 				{ children... }
@@ -69,15 +150,96 @@ templ BaseWithSidebar(title string, clusterName string) {
 				.htmx-request.htmx-indicator {
 					display: inline-block;
 				}
+				/* Notification animations */
+				@keyframes slideInDown {
+					from {
+						transform: translateY(-100%);
+						opacity: 0;
+					}
+					to {
+						transform: translateY(0);
+						opacity: 1;
+					}
+				}
+				@keyframes slideOutUp {
+					from {
+						transform: translateY(0);
+						opacity: 1;
+					}
+					to {
+						transform: translateY(-100%);
+						opacity: 0;
+					}
+				}
+				.notification-enter {
+					animation: slideInDown 0.3s ease-out;
+				}
+				.notification-exit {
+					animation: slideOutUp 0.3s ease-in;
+				}
 			</style>
 			<script>
 				// Dark mode initialization
 				if (localStorage.getItem('darkMode') === 'true' || (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
 					document.documentElement.classList.add('dark');
 				}
+
+				// Notification system
+				function showNotification(message, type = 'success') {
+					const container = document.getElementById('notification-container');
+					const notification = document.createElement('div');
+
+					const bgColor = type === 'success'
+						? 'bg-green-100 dark:bg-green-900/30 border-green-400 dark:border-green-600'
+						: 'bg-red-100 dark:bg-red-900/30 border-red-400 dark:border-red-600';
+
+					const textColor = type === 'success'
+						? 'text-green-800 dark:text-green-200'
+						: 'text-red-800 dark:text-red-200';
+
+					const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+
+					notification.className = `notification-enter ${bgColor} ${textColor} border-l-4 p-4 mb-3 rounded-lg shadow-lg flex items-center justify-between max-w-2xl mx-auto`;
+					notification.innerHTML = `
+						<div class="flex items-center space-x-3">
+							<i class="fas ${icon} text-xl"></i>
+							<span class="font-medium">${message}</span>
+						</div>
+						<button onclick="this.parentElement.remove()" class="ml-4 ${textColor} hover:opacity-75 transition">
+							<i class="fas fa-times"></i>
+						</button>
+					`;
+
+					container.appendChild(notification);
+
+					// Auto remove after 5 seconds
+					setTimeout(() => {
+						notification.classList.remove('notification-enter');
+						notification.classList.add('notification-exit');
+						setTimeout(() => notification.remove(), 300);
+					}, 5000);
+				}
+
+				// Queue notification to be shown after navigation
+				function queueNotification(message, type = 'success') {
+					sessionStorage.setItem('pendingNotification', JSON.stringify({ message, type }));
+				}
+
+				// Check for pending notifications on page load
+				window.addEventListener('DOMContentLoaded', function() {
+					const pending = sessionStorage.getItem('pendingNotification');
+					if (pending) {
+						const { message, type } = JSON.parse(pending);
+						sessionStorage.removeItem('pendingNotification');
+						showNotification(message, type);
+					}
+				});
 			</script>
 		</head>
 		<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+			<!-- Notification Container -->
+			<div id="notification-container" class="fixed top-4 left-0 right-0 z-50 px-4"></div>
+
 			@Header()
 			<div class="flex">
 				@Sidebar(clusterName)

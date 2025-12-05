@@ -296,10 +296,16 @@ func (a *Admin) UpdateTopicConfig(ctx context.Context, topicName string, req dom
 		})
 	}
 
-	// TODO: handle response
-	_, err := a.client.AlterTopicConfigs(cctx, configs, topicName)
+	resp, err := a.client.AlterTopicConfigs(cctx, configs, topicName)
 	if err != nil {
 		return err
+	}
+
+	// Check for errors in the response
+	for _, r := range resp {
+		if r.Err != nil {
+			return r.Err
+		}
 	}
 
 	return nil
