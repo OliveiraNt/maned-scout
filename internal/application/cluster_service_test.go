@@ -50,7 +50,7 @@ type mockClientFactory struct {
 	err error
 }
 
-func (f mockClientFactory) CreateClient(cfg config.ClusterConfig) (domain.KafkaClient, error) {
+func (f mockClientFactory) CreateClient(_ config.ClusterConfig) (domain.KafkaClient, error) {
 	return f.ret, f.err
 }
 
@@ -61,12 +61,21 @@ type mockClient struct {
 }
 
 func (c *mockClient) IsHealthy() bool                                            { return c.healthy }
-func (c *mockClient) ListTopics(bool) (map[string]int, error)                    { return nil, nil }
+func (c *mockClient) ListTopics(_ bool) (map[string]int, error)                  { return nil, nil }
 func (c *mockClient) GetClusterInfo() (*domain.Cluster, error)                   { return nil, nil }
 func (c *mockClient) GetClusterStats() (*domain.ClusterStats, error)             { return c.stats, c.statsErr }
 func (c *mockClient) GetBrokerDetails() ([]domain.BrokerDetail, error)           { return nil, nil }
 func (c *mockClient) ListConsumerGroups() ([]domain.ConsumerGroupSummary, error) { return nil, nil }
-func (c *mockClient) Close()                                                     {}
+func (c *mockClient) GetTopicDetail(_ string) (*domain.TopicDetail, error)       { return nil, nil }
+func (c *mockClient) CreateTopic(_ domain.CreateTopicRequest) error              { return nil }
+func (c *mockClient) DeleteTopic(_ string) error                                 { return nil }
+func (c *mockClient) UpdateTopicConfig(_ string, _ domain.UpdateTopicConfigRequest) error {
+	return nil
+}
+func (c *mockClient) IncreasePartitions(_ string, _ domain.IncreasePartitionsRequest) error {
+	return nil
+}
+func (c *mockClient) Close() {}
 
 func TestListAndGetClusters(t *testing.T) {
 	repo := newMockRepo()

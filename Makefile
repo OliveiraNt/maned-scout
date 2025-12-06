@@ -25,6 +25,7 @@ build: templ-install
 
 # Run the application
 run:
+	@templ generate
 	@go run main.go
 # Create DB container
 docker-run:

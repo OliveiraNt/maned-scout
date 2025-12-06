@@ -1,9 +1,9 @@
 package pages
 
 import (
-    layout "github.com/OliveiraNt/kdash/internal/adapters/http/ui/templates/layout"
-    "github.com/OliveiraNt/kdash/internal/domain"
-    "fmt"
+	"fmt"
+	layout "github.com/OliveiraNt/kdash/internal/adapters/http/ui/templates/layout"
+	"github.com/OliveiraNt/kdash/internal/domain"
 )
 
 templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain.ClusterStats, brokerDetails []domain.BrokerDetail, consumerGroups []domain.ConsumerGroupSummary) {
@@ -16,7 +16,6 @@ templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain
 				<span class="text-gray-900 dark:text-white font-medium">{ cluster.Name }</span>
 			</nav>
 		</div>
-
 		<!-- Cluster Header -->
 		<div class="mb-6">
 			<div class="flex items-center justify-between">
@@ -42,7 +41,6 @@ templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain
 				}
 			</div>
 		</div>
-
 		<!-- Authentication Info -->
 		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
 			<div class="flex items-center justify-between">
@@ -104,7 +102,6 @@ templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain
 				</div>
 			}
 		</div>
-
 		<!-- Stats Grid -->
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
 			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
@@ -118,23 +115,23 @@ templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain
 					</div>
 				</div>
 			</div>
-
 			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-				<div class="flex items-center justify-between">
-					<div>
-						<p class="text-sm text-gray-600 dark:text-gray-400">Tópicos</p>
-						if stats != nil {
-							<p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{ fmt.Sprintf("%d", stats.TotalTopics) }</p>
-						} else {
-							<p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{ fmt.Sprintf("%d", len(topics)) }</p>
-						}
+				<a href={ templ.URL("/cluster/" + cluster.Name + "/topics") }>
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="text-sm text-gray-600 dark:text-gray-400">Tópicos</p>
+							if stats != nil {
+								<p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{ fmt.Sprintf("%d", stats.TotalTopics) }</p>
+							} else {
+								<p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{ fmt.Sprintf("%d", len(topics)) }</p>
+							}
+						</div>
+						<div class="bg-green-100 dark:bg-green-900/30 p-3 rounded-lg">
+							<i class="fas fa-list text-green-600 dark:text-green-400 text-2xl"></i>
+						</div>
 					</div>
-					<div class="bg-green-100 dark:bg-green-900/30 p-3 rounded-lg">
-						<i class="fas fa-list text-green-600 dark:text-green-400 text-2xl"></i>
-					</div>
-				</div>
+				</a>
 			</div>
-
 			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
 				<div class="flex items-center justify-between">
 					<div>
@@ -150,7 +147,6 @@ templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain
 					</div>
 				</div>
 			</div>
-
 			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
 				<div class="flex items-center justify-between">
 					<div>
@@ -167,7 +163,6 @@ templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain
 				</div>
 			</div>
 		</div>
-
 		<!-- Health Indicators -->
 		if stats != nil && (stats.UnderReplicatedPartitions > 0 || stats.OfflinePartitions > 0) {
 			<div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
@@ -193,7 +188,6 @@ templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain
 				</div>
 			</div>
 		}
-
 		<!-- Brokers Section -->
 		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
 			<h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
@@ -273,7 +267,6 @@ templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain
 				</div>
 			}
 		</div>
-
 		<!-- Consumer Groups Section -->
 		if len(consumerGroups) > 0 {
 			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
@@ -367,4 +360,3 @@ func getTotalPartitions(topics map[string]int) int {
 	}
 	return total
 }
-
