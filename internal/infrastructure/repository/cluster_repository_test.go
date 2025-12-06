@@ -27,7 +27,7 @@ func (d *dummyClient) Close()                                                   
 
 func TestSaveFindDelete(t *testing.T) {
 	tdir := t.TempDir()
-	repo := NewClusterRepository(tdir+"/clusters.yml", repoTestFactory{})
+	repo := NewClusterRepository(tdir+"/config.yml", repoTestFactory{})
 
 	// Save two clusters
 	c1 := config.ClusterConfig{Name: "dev", Brokers: []string{"localhost:9092"}}
@@ -66,7 +66,7 @@ func TestSaveFindDelete(t *testing.T) {
 
 func TestLoadFromFileReconcile(t *testing.T) {
 	tdir := t.TempDir()
-	path := tdir + "/clusters.yml"
+	path := tdir + "/config.yml"
 	repo := NewClusterRepository(path, repoTestFactory{})
 
 	// write initial config via Save

@@ -42,7 +42,7 @@ func (f testFactory) CreateClient(cfg config.ClusterConfig) (domain.KafkaClient,
 func buildServer(t *testing.T) *Server {
 	t.Helper()
 	tdir := t.TempDir()
-	cfgPath := tdir + "/clusters.yml"
+	cfgPath := tdir + "/config.yml"
 	repo := repository.NewClusterRepository(cfgPath, testFactory{})
 	svc := application.NewClusterService(repo, testFactory{})
 	registry.InitLogger()

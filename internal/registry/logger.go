@@ -17,7 +17,7 @@ func InitLogger() {
 		return
 	}
 	l := chlog.New(os.Stdout)
-	l.SetTimeFormat(chlog.DefaultTimeFormat)
+	l.SetTimeFormat("2006-01-02 15:04:05.000")
 	l.SetReportTimestamp(true)
 	// derive level from env
 	levelStr := strings.ToLower(strings.TrimSpace(os.Getenv("KDASH_LOG_LEVEL")))

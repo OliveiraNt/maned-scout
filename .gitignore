@@ -36,6 +36,5 @@ main
 # Certificate files for TLS testing
 certs/
 
-clusters.yml
-/TODO.md
+config.yml
 *.prompt.md
