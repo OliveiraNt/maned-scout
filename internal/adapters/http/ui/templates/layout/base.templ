@@ -4,115 +4,13 @@ package layout
 templ Base(title string) {
 	<!DOCTYPE html>
 	<html lang="pt-BR">
-		<head>
-			<meta charset="UTF-8"/>
-			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<title>{ title } - KDash</title>
-			<script src="https://unpkg.com/htmx.org@1.9.10"></script>
-			<script src="https://cdn.tailwindcss.com"></script>
-			<script>
-				tailwind.config = {
-					darkMode: 'class',
-				}
-			</script>
-			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-			<style>
-				.htmx-indicator {
-					display: none;
-				}
-				.htmx-request .htmx-indicator {
-					display: inline-block;
-				}
-				.htmx-request.htmx-indicator {
-					display: inline-block;
-				}
-				/* Notification animations */
-				@keyframes slideInDown {
-					from {
-						transform: translateY(-100%);
-						opacity: 0;
-					}
-					to {
-						transform: translateY(0);
-						opacity: 1;
-					}
-				}
-				@keyframes slideOutUp {
-					from {
-						transform: translateY(0);
-						opacity: 1;
-					}
-					to {
-						transform: translateY(-100%);
-						opacity: 0;
-					}
-				}
-				.notification-enter {
-					animation: slideInDown 0.3s ease-out;
-				}
-				.notification-exit {
-					animation: slideOutUp 0.3s ease-in;
-				}
-			</style>
-			<script>
-				// Dark mode initialization
-				if (localStorage.getItem('darkMode') === 'true' || (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-					document.documentElement.classList.add('dark');
-				}
-
-				// Notification system
-				function showNotification(message, type = 'success') {
-					const container = document.getElementById('notification-container');
-					const notification = document.createElement('div');
-
-					const bgColor = type === 'success'
-						? 'bg-green-100 dark:bg-green-900/30 border-green-400 dark:border-green-600'
-						: 'bg-red-100 dark:bg-red-900/30 border-red-400 dark:border-red-600';
-
-					const textColor = type === 'success'
-						? 'text-green-800 dark:text-green-200'
-						: 'text-red-800 dark:text-red-200';
-
-					const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
-
-					notification.className = `notification-enter ${bgColor} ${textColor} border-l-4 p-4 mb-3 rounded-lg shadow-lg flex items-center justify-between max-w-2xl mx-auto`;
-					notification.innerHTML = `
-						<div class="flex items-center space-x-3">
-							<i class="fas ${icon} text-xl"></i>
-							<span class="font-medium">${message}</span>
-						</div>
-						<button onclick="this.parentElement.remove()" class="ml-4 ${textColor} hover:opacity-75 transition">
-							<i class="fas fa-times"></i>
-						</button>
-					`;
-
-					container.appendChild(notification);
-
-					// Auto remove after 5 seconds
-					setTimeout(() => {
-						notification.classList.remove('notification-enter');
-						notification.classList.add('notification-exit');
-						setTimeout(() => notification.remove(), 300);
-					}, 5000);
-				}
-
-				// Queue notification to be shown after navigation
-				function queueNotification(message, type = 'success') {
-					sessionStorage.setItem('pendingNotification', JSON.stringify({ message, type }));
-				}
-
-				// Check for pending notifications on page load
-				window.addEventListener('DOMContentLoaded', function() {
-					const pending = sessionStorage.getItem('pendingNotification');
-					if (pending) {
-						const { message, type } = JSON.parse(pending);
-						sessionStorage.removeItem('pendingNotification');
-						showNotification(message, type);
-					}
-				});
-			</script>
-		</head>
+        @Head(title)
 		<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+			<!-- Global Loading Indicator -->
+			<div id="page-loading" class="htmx-indicator fixed top-0 left-0 w-full h-1 bg-blue-600 z-50">
+				<div class="h-full bg-blue-400 animate-pulse"></div>
+			</div>
+
 			<!-- Notification Container -->
 			<div id="notification-container" class="fixed top-4 left-0 right-0 z-50 px-4"></div>
 
@@ -128,28 +26,68 @@ templ Base(title string) {
 templ BaseWithSidebar(title string, clusterName string) {
 	<!DOCTYPE html>
 	<html lang="pt-BR">
+        @Head(title)
+		<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+			<!-- Global Loading Indicator -->
+			<div id="page-loading" class="htmx-indicator fixed top-0 left-0 w-full h-1 bg-blue-600 z-50">
+				<div class="h-full bg-blue-400 animate-pulse"></div>
+			</div>
+
+			<!-- Notification Container -->
+			<div id="notification-container" class="fixed top-4 left-0 right-0 z-50 px-4"></div>
+
+			@Header()
+			<div class="flex">
+				@Sidebar(clusterName)
+				<main class="flex-1 p-6">
+					{ children... }
+				</main>
+			</div>
+		</body>
+	</html>
+}
+
+templ Head(title string) {
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<title>{ title } - KDash</title>
-			<script src="https://unpkg.com/htmx.org@1.9.10"></script>
 			<script src="https://cdn.tailwindcss.com"></script>
 			<script>
 				tailwind.config = {
 					darkMode: 'class',
 				}
 			</script>
+			<script src="https://unpkg.com/htmx.org@2.0.0"></script>
 			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 			<style>
+				/* htmx loading indicator */
 				.htmx-indicator {
 					display: none;
 				}
 				.htmx-request .htmx-indicator {
-					display: inline-block;
+					display: block;
 				}
 				.htmx-request.htmx-indicator {
-					display: inline-block;
+					display: block;
 				}
+
+				/* Loading bar animation */
+				#page-loading {
+					transition: opacity 0.3s ease;
+				}
+				#page-loading > div {
+					animation: loading-pulse 1.5s ease-in-out infinite;
+				}
+				@keyframes loading-pulse {
+					0%, 100% {
+						opacity: 1;
+					}
+					50% {
+						opacity: 0.5;
+					}
+				}
+
 				/* Notification animations */
 				@keyframes slideInDown {
 					from {
@@ -184,7 +122,7 @@ templ BaseWithSidebar(title string, clusterName string) {
 					document.documentElement.classList.add('dark');
 				}
 
-				// Notification system
+				// Notification system integrated with htmx
 				function showNotification(message, type = 'success') {
 					const container = document.getElementById('notification-container');
 					const notification = document.createElement('div');
@@ -200,16 +138,27 @@ templ BaseWithSidebar(title string, clusterName string) {
 					const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
 
 					notification.className = `notification-enter ${bgColor} ${textColor} border-l-4 p-4 mb-3 rounded-lg shadow-lg flex items-center justify-between max-w-2xl mx-auto`;
-					notification.innerHTML = `
-						<div class="flex items-center space-x-3">
-							<i class="fas ${icon} text-xl"></i>
-							<span class="font-medium">${message}</span>
-						</div>
-						<button onclick="this.parentElement.remove()" class="ml-4 ${textColor} hover:opacity-75 transition">
-							<i class="fas fa-times"></i>
-						</button>
+
+					// Create notification content
+					const contentDiv = document.createElement('div');
+					contentDiv.className = 'flex items-center space-x-3';
+					contentDiv.innerHTML = `
+						<i class="fas ${icon} text-xl"></i>
+						<span class="font-medium">${message}</span>
 					`;
 
+					// Create close button with event listener
+					const closeButton = document.createElement('button');
+					closeButton.className = `ml-4 ${textColor} hover:opacity-75 transition`;
+					closeButton.innerHTML = '<i class="fas fa-times"></i>';
+					closeButton.addEventListener('click', function() {
+						notification.classList.remove('notification-enter');
+						notification.classList.add('notification-exit');
+						setTimeout(() => notification.remove(), 300);
+					});
+
+					notification.appendChild(contentDiv);
+					notification.appendChild(closeButton);
 					container.appendChild(notification);
 
 					// Auto remove after 5 seconds
@@ -220,13 +169,23 @@ templ BaseWithSidebar(title string, clusterName string) {
 					}, 5000);
 				}
 
-				// Queue notification to be shown after navigation
+				// Queue notification to be shown after navigation (for non-htmx navigations)
 				function queueNotification(message, type = 'success') {
 					sessionStorage.setItem('pendingNotification', JSON.stringify({ message, type }));
 				}
 
-				// Check for pending notifications on page load
+				// Initialize on page load
 				window.addEventListener('DOMContentLoaded', function() {
+					// Listen for htmx events to trigger notifications
+					document.body.addEventListener('htmx:afterSwap', function(evt) {
+						const notification = evt.detail.xhr.getResponseHeader('X-Notification');
+						const notificationType = evt.detail.xhr.getResponseHeader('X-Notification-Type');
+						if (notification) {
+							showNotification(notification, notificationType || 'success');
+						}
+					});
+
+					// Check for pending notifications
 					const pending = sessionStorage.getItem('pendingNotification');
 					if (pending) {
 						const { message, type } = JSON.parse(pending);
@@ -236,19 +195,6 @@ templ BaseWithSidebar(title string, clusterName string) {
 				});
 			</script>
 		</head>
-		<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-			<!-- Notification Container -->
-			<div id="notification-container" class="fixed top-4 left-0 right-0 z-50 px-4"></div>
-
-			@Header()
-			<div class="flex">
-				@Sidebar(clusterName)
-				<main class="flex-1 p-6">
-					{ children... }
-				</main>
-			</div>
-		</body>
-	</html>
 }
 
 templ Header() {
@@ -261,7 +207,7 @@ templ Header() {
 				</div>
 				<div class="flex items-center space-x-4">
 					<button
-						onclick="toggleDarkMode()"
+						hx-on:click="document.documentElement.classList.toggle('dark'); localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'))"
 						class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
 						title="Alternar modo escuro"
 					>
@@ -277,13 +223,6 @@ templ Header() {
 				</div>
 			</div>
 		</div>
-		<script>
-			function toggleDarkMode() {
-				const html = document.documentElement;
-				const isDark = html.classList.toggle('dark');
-				localStorage.setItem('darkMode', isDark);
-			}
-		</script>
 	</header>
 }
 
@@ -304,31 +243,31 @@ templ Sidebar(clusterName string) {
 			<!-- Navigation Links -->
 			<ul class="space-y-2">
 				<li>
-					<a href={ templ.URL("/cluster/" + clusterName) } class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
+					<a href={ templ.URL("/cluster/" + clusterName) } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
 						<i class="fas fa-tachometer-alt"></i>
 						<span>Dashboard</span>
 					</a>
 				</li>
 				<li>
-					<a href={ templ.URL("/cluster/" + clusterName + "/topics") } class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
+					<a href={ templ.URL("/cluster/" + clusterName + "/topics") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
 						<i class="fas fa-list"></i>
 						<span>Tópicos</span>
 					</a>
 				</li>
 				<li>
-					<a href={ templ.URL("/cluster/" + clusterName + "/consumers") } class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
+					<a href={ templ.URL("/cluster/" + clusterName + "/consumers") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
 						<i class="fas fa-users"></i>
 						<span>Consumer Groups</span>
 					</a>
 				</li>
 				<li>
-					<a href={ templ.URL("/cluster/" + clusterName + "/brokers") } class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
+					<a href={ templ.URL("/cluster/" + clusterName + "/brokers") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
 						<i class="fas fa-network-wired"></i>
 						<span>Brokers</span>
 					</a>
 				</li>
 				<li>
-					<a href={ templ.URL("/cluster/" + clusterName + "/metrics") } class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
+					<a href={ templ.URL("/cluster/" + clusterName + "/metrics") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
 						<i class="fas fa-chart-line"></i>
 						<span>Métricas</span>
 					</a>
@@ -337,7 +276,7 @@ templ Sidebar(clusterName string) {
 
 			<!-- Back to Clusters -->
 			<div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-				<a href="/" class="flex items-center space-x-3 px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white rounded-lg transition">
+				<a href="/" hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white rounded-lg transition">
 					<i class="fas fa-arrow-left"></i>
 					<span>Voltar para Clusters</span>
 				</a>

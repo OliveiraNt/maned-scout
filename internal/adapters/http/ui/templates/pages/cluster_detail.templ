@@ -11,7 +11,7 @@ templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain
 		<!-- Breadcrumb -->
 		<div class="mb-6">
 			<nav class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-				<a href="/" class="hover:text-blue-600 dark:hover:text-blue-400">Clusters</a>
+				<a href="/" hx-boost="true" hx-indicator="#page-loading" class="hover:text-blue-600 dark:hover:text-blue-400">Clusters</a>
 				<i class="fas fa-chevron-right text-xs"></i>
 				<span class="text-gray-900 dark:text-white font-medium">{ cluster.Name }</span>
 			</nav>
