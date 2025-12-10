@@ -320,39 +320,6 @@ templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain
 	}
 }
 
-templ TopicRow(topicName string, partitions int, clusterName string) {
-	<tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
-		<td class="px-4 py-4">
-			<div class="flex items-center space-x-2">
-				<i class="fas fa-stream text-gray-400 dark:text-gray-500"></i>
-				<span class="font-medium text-gray-900 dark:text-white">{ topicName }</span>
-			</div>
-		</td>
-		<td class="px-4 py-4">
-			<span class="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400 text-xs font-semibold rounded-full">
-				{ fmt.Sprintf("%d partições", partitions) }
-			</span>
-		</td>
-		<td class="px-4 py-4 text-right">
-			<div class="flex items-center justify-end space-x-2">
-				<button
-					class="px-3 py-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg text-sm font-medium transition"
-					title="Ver mensagens"
-				>
-					<i class="fas fa-eye mr-1"></i>
-					Ver
-				</button>
-				<button
-					class="px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg text-sm font-medium transition"
-					title="Configurações"
-				>
-					<i class="fas fa-cog"></i>
-				</button>
-			</div>
-		</td>
-	</tr>
-}
-
 func getTotalPartitions(topics map[string]int) int {
 	total := 0
 	for _, partitions := range topics {

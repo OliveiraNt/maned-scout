@@ -87,7 +87,6 @@ templ ClusterCard(cluster domain.Cluster, stats *domain.ClusterStats) {
 				<i class="fas fa-shield-alt text-gray-500 dark:text-gray-400"></i>
 				<span class="text-gray-600 dark:text-gray-400">Autenticação:</span>
 				<span class="font-medium text-gray-900 dark:text-white">{ cluster.AuthType }</span>
-			</div>
 			<!-- Certificate Validity -->
 			if cluster.CertInfo != nil {
 				<div class="flex items-center space-x-2 text-sm">
@@ -116,6 +115,7 @@ templ ClusterCard(cluster domain.Cluster, stats *domain.ClusterStats) {
 					}
 				</div>
 			}
+			</div>
 		} else {
 			<div class="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
 				<div class="flex items-center justify-between">
