@@ -1,0 +1,257 @@
+package httpserver
+
+import (
+	"bytes"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/OliveiraNt/kdash/internal/config"
+	"github.com/OliveiraNt/kdash/internal/domain"
+)
+
+func TestAPIListTopics(t *testing.T) {
+	s := buildServer(t)
+	// Add a cluster via API to ensure client exists in repo
+	body, _ := json.Marshal(config.ClusterConfig{Name: "dev", Brokers: []string{"localhost:9092"}})
+	s.apiAddCluster(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, "/api/clusters", bytes.NewReader(body)))
+
+	// Inject topics into existing client
+	if cl, ok := s.repo.GetClient("dev"); ok {
+		if tc, ok2 := cl.(*testClient); ok2 {
+			tc.topics = map[string]int{"a": 1, "b": 3}
+		}
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/api/cluster/dev/topics", nil)
+	rec := httptest.NewRecorder()
+	ctx := chiCtxWithParam("name", "dev", req)
+	s.apiListTopics(rec, req.WithContext(ctx))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", rec.Code)
+	}
+	var topics map[string]int
+	if err := json.Unmarshal(rec.Body.Bytes(), &topics); err != nil {
+		t.Fatalf("bad json: %v", err)
+	}
+	if len(topics) != 2 || topics["a"] != 1 || topics["b"] != 3 {
+		t.Fatalf("unexpected topics: %+v", topics)
+	}
+}
+
+func TestAPIGetTopicDetail(t *testing.T) {
+	s := buildServer(t)
+	// Add a cluster via API
+	body, _ := json.Marshal(config.ClusterConfig{Name: "dev", Brokers: []string{"localhost:9092"}})
+	s.apiAddCluster(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, "/api/clusters", bytes.NewReader(body)))
+
+	// Test successful topic detail retrieval
+	req := httptest.NewRequest(http.MethodGet, "/api/cluster/dev/topics/test-topic", nil)
+	rec := httptest.NewRecorder()
+	ctx := chiCtxWithParams(map[string]string{"name": "dev", "topic": "test-topic"}, req)
+	s.apiGetTopicDetail(rec, req.WithContext(ctx))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", rec.Code)
+	}
+
+	// Test with non-existent cluster
+	req = httptest.NewRequest(http.MethodGet, "/api/cluster/nonexistent/topics/test-topic", nil)
+	rec = httptest.NewRecorder()
+	ctx = chiCtxWithParams(map[string]string{"name": "nonexistent", "topic": "test-topic"}, req)
+	s.apiGetTopicDetail(rec, req.WithContext(ctx))
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", rec.Code)
+	}
+}
+
+func TestAPICreateTopic(t *testing.T) {
+	s := buildServer(t)
+	// Add a cluster via API
+	body, _ := json.Marshal(config.ClusterConfig{Name: "dev", Brokers: []string{"localhost:9092"}})
+	s.apiAddCluster(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, "/api/clusters", bytes.NewReader(body)))
+
+	// Test successful topic creation
+	createReq := domain.CreateTopicRequest{
+		Name:              "new-topic",
+		NumPartitions:     3,
+		ReplicationFactor: 1,
+	}
+	body, _ = json.Marshal(createReq)
+	req := httptest.NewRequest(http.MethodPost, "/api/cluster/dev/topics", bytes.NewReader(body))
+	rec := httptest.NewRecorder()
+	ctx := chiCtxWithParam("name", "dev", req)
+	s.apiCreateTopic(rec, req.WithContext(ctx))
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("expected 201, got %d", rec.Code)
+	}
+
+	// Test with missing topic name
+	badReq := domain.CreateTopicRequest{
+		Name:              "",
+		NumPartitions:     3,
+		ReplicationFactor: 1,
+	}
+	body, _ = json.Marshal(badReq)
+	req = httptest.NewRequest(http.MethodPost, "/api/cluster/dev/topics", bytes.NewReader(body))
+	rec = httptest.NewRecorder()
+	ctx = chiCtxWithParam("name", "dev", req)
+	s.apiCreateTopic(rec, req.WithContext(ctx))
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for empty name, got %d", rec.Code)
+	}
+
+	// Test with invalid partitions
+	badReq = domain.CreateTopicRequest{
+		Name:              "topic",
+		NumPartitions:     0,
+		ReplicationFactor: 1,
+	}
+	body, _ = json.Marshal(badReq)
+	req = httptest.NewRequest(http.MethodPost, "/api/cluster/dev/topics", bytes.NewReader(body))
+	rec = httptest.NewRecorder()
+	ctx = chiCtxWithParam("name", "dev", req)
+	s.apiCreateTopic(rec, req.WithContext(ctx))
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for zero partitions, got %d", rec.Code)
+	}
+
+	// Test with invalid replication factor
+	badReq = domain.CreateTopicRequest{
+		Name:              "topic",
+		NumPartitions:     3,
+		ReplicationFactor: 0,
+	}
+	body, _ = json.Marshal(badReq)
+	req = httptest.NewRequest(http.MethodPost, "/api/cluster/dev/topics", bytes.NewReader(body))
+	rec = httptest.NewRecorder()
+	ctx = chiCtxWithParam("name", "dev", req)
+	s.apiCreateTopic(rec, req.WithContext(ctx))
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for zero replication factor, got %d", rec.Code)
+	}
+
+	// Test with non-existent cluster
+	body, _ = json.Marshal(createReq)
+	req = httptest.NewRequest(http.MethodPost, "/api/cluster/nonexistent/topics", bytes.NewReader(body))
+	rec = httptest.NewRecorder()
+	ctx = chiCtxWithParam("name", "nonexistent", req)
+	s.apiCreateTopic(rec, req.WithContext(ctx))
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", rec.Code)
+	}
+}
+
+func TestAPIDeleteTopic(t *testing.T) {
+	s := buildServer(t)
+	// Add a cluster via API
+	body, _ := json.Marshal(config.ClusterConfig{Name: "dev", Brokers: []string{"localhost:9092"}})
+	s.apiAddCluster(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, "/api/clusters", bytes.NewReader(body)))
+
+	// Test successful topic deletion
+	req := httptest.NewRequest(http.MethodDelete, "/api/cluster/dev/topics/test-topic", nil)
+	rec := httptest.NewRecorder()
+	ctx := chiCtxWithParams(map[string]string{"name": "dev", "topic": "test-topic"}, req)
+	s.apiDeleteTopic(rec, req.WithContext(ctx))
+	if rec.Code != http.StatusNoContent {
+		t.Fatalf("expected 204, got %d", rec.Code)
+	}
+
+	// Test with non-existent cluster
+	req = httptest.NewRequest(http.MethodDelete, "/api/cluster/nonexistent/topics/test-topic", nil)
+	rec = httptest.NewRecorder()
+	ctx = chiCtxWithParams(map[string]string{"name": "nonexistent", "topic": "test-topic"}, req)
+	s.apiDeleteTopic(rec, req.WithContext(ctx))
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", rec.Code)
+	}
+}
+
+func TestAPIUpdateTopicConfig(t *testing.T) {
+	s := buildServer(t)
+	// Add a cluster via API
+	body, _ := json.Marshal(config.ClusterConfig{Name: "dev", Brokers: []string{"localhost:9092"}})
+	s.apiAddCluster(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, "/api/clusters", bytes.NewReader(body)))
+
+	// Test successful config update
+	val := "1000"
+	updateReq := domain.UpdateTopicConfigRequest{
+		Configs: map[string]*string{
+			"retention.ms": &val,
+		},
+	}
+	body, _ = json.Marshal(updateReq)
+	req := httptest.NewRequest(http.MethodPut, "/api/cluster/dev/topics/test-topic/config", bytes.NewReader(body))
+	rec := httptest.NewRecorder()
+	ctx := chiCtxWithParams(map[string]string{"name": "dev", "topic": "test-topic"}, req)
+	s.apiUpdateTopicConfig(rec, req.WithContext(ctx))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", rec.Code)
+	}
+
+	// Test with empty configs
+	emptyReq := domain.UpdateTopicConfigRequest{
+		Configs: map[string]*string{},
+	}
+	body, _ = json.Marshal(emptyReq)
+	req = httptest.NewRequest(http.MethodPut, "/api/cluster/dev/topics/test-topic/config", bytes.NewReader(body))
+	rec = httptest.NewRecorder()
+	ctx = chiCtxWithParams(map[string]string{"name": "dev", "topic": "test-topic"}, req)
+	s.apiUpdateTopicConfig(rec, req.WithContext(ctx))
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for empty configs, got %d", rec.Code)
+	}
+
+	// Test with non-existent cluster
+	body, _ = json.Marshal(updateReq)
+	req = httptest.NewRequest(http.MethodPut, "/api/cluster/nonexistent/topics/test-topic/config", bytes.NewReader(body))
+	rec = httptest.NewRecorder()
+	ctx = chiCtxWithParams(map[string]string{"name": "nonexistent", "topic": "test-topic"}, req)
+	s.apiUpdateTopicConfig(rec, req.WithContext(ctx))
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", rec.Code)
+	}
+}
+
+func TestAPIIncreasePartitions(t *testing.T) {
+	s := buildServer(t)
+	// Add a cluster via API
+	body, _ := json.Marshal(config.ClusterConfig{Name: "dev", Brokers: []string{"localhost:9092"}})
+	s.apiAddCluster(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, "/api/clusters", bytes.NewReader(body)))
+
+	// Test successful partition increase
+	increaseReq := domain.IncreasePartitionsRequest{
+		TotalPartitions: 5,
+	}
+	body, _ = json.Marshal(increaseReq)
+	req := httptest.NewRequest(http.MethodPost, "/api/cluster/dev/topics/test-topic/partitions", bytes.NewReader(body))
+	rec := httptest.NewRecorder()
+	ctx := chiCtxWithParams(map[string]string{"name": "dev", "topic": "test-topic"}, req)
+	s.apiIncreasePartitions(rec, req.WithContext(ctx))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", rec.Code)
+	}
+
+	// Test with invalid partitions
+	badReq := domain.IncreasePartitionsRequest{
+		TotalPartitions: 0,
+	}
+	body, _ = json.Marshal(badReq)
+	req = httptest.NewRequest(http.MethodPost, "/api/cluster/dev/topics/test-topic/partitions", bytes.NewReader(body))
+	rec = httptest.NewRecorder()
+	ctx = chiCtxWithParams(map[string]string{"name": "dev", "topic": "test-topic"}, req)
+	s.apiIncreasePartitions(rec, req.WithContext(ctx))
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for zero partitions, got %d", rec.Code)
+	}
+
+	// Test with non-existent cluster
+	body, _ = json.Marshal(increaseReq)
+	req = httptest.NewRequest(http.MethodPost, "/api/cluster/nonexistent/topics/test-topic/partitions", bytes.NewReader(body))
+	rec = httptest.NewRecorder()
+	ctx = chiCtxWithParams(map[string]string{"name": "nonexistent", "topic": "test-topic"}, req)
+	s.apiIncreasePartitions(rec, req.WithContext(ctx))
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", rec.Code)
+	}
+}
