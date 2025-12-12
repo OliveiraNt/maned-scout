@@ -1,9 +1,13 @@
 package httpserver
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
+	"strconv"
+	"strings"
 
+	pages "github.com/OliveiraNt/kdash/internal/adapters/http/ui/templates/pages"
 	"github.com/OliveiraNt/kdash/internal/domain"
 	"github.com/OliveiraNt/kdash/internal/registry"
 
@@ -15,17 +19,28 @@ func (s *Server) apiListTopics(w http.ResponseWriter, r *http.Request) {
 	client, ok := s.repo.GetClient(name)
 	if !ok {
 		registry.Logger.Warn("api list topics cluster not found", "cluster", name)
-		http.Error(w, "cluster not found", 404)
+		w.Header().Set("X-Notification-Type", "error")
+		w.Header().Set("X-Notification", "Cluster não encontrado")
+		w.Header().Set("X-Notification-Base64", base64.StdEncoding.EncodeToString([]byte("Cluster não encontrado")))
+		http.Error(w, "cluster not found", http.StatusNotFound)
 		return
 	}
-	topics, err := client.ListTopics(true)
+	// Preserve current filter
+	showInternal := r.URL.Query().Get("showInternal") == "true"
+	topics, err := client.ListTopics(showInternal)
 	if err != nil {
 		registry.Logger.Error("api list topics failed", "cluster", name, "err", err)
-		http.Error(w, err.Error(), 500)
+		w.Header().Set("X-Notification-Type", "error")
+		w.Header().Set("X-Notification", "Falha ao listar tópicos")
+		w.Header().Set("X-Notification-Base64", base64.StdEncoding.EncodeToString([]byte("Falha ao listar tópicos")))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if err := json.NewEncoder(w).Encode(topics); err != nil {
-		registry.Logger.Error("encode topics failed", "cluster", name, "err", err)
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := pages.TopicsListFragment(name, topics, showInternal, true).Render(r.Context(), w); err != nil {
+		registry.Logger.Error("render topics list fragment failed", "cluster", name, "err", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -55,47 +70,151 @@ func (s *Server) apiGetTopicDetail(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) apiCreateTopic(w http.ResponseWriter, r *http.Request) {
 	clusterName := chi.URLParam(r, "name")
-
+	// Determine if request is JSON or form (htmx form submission)
 	var req domain.CreateTopicRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		registry.Logger.Warn("api create topic bad request", "cluster", clusterName, "err", err)
-		http.Error(w, err.Error(), 400)
-		return
+	ct := r.Header.Get("Content-Type")
+	if strings.HasPrefix(ct, "application/json") {
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			registry.Logger.Warn("api create topic bad request", "cluster", clusterName, "err", err)
+			w.Header().Set("X-Notification-Type", "error")
+			{
+				msg := "Requisição inválida: " + err.Error()
+				w.Header().Set("X-Notification", msg)
+				w.Header().Set("X-Notification-Base64", base64.StdEncoding.EncodeToString([]byte(msg)))
+			}
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	} else {
+		// Parse form values
+		_ = r.ParseForm()
+		req.Name = strings.TrimSpace(r.FormValue("name"))
+		if np, err := strconv.Atoi(r.FormValue("numPartitions")); err == nil {
+			req.NumPartitions = int32(np)
+		}
+		if rf, err := strconv.Atoi(r.FormValue("replicationFactor")); err == nil {
+			req.ReplicationFactor = int16(rf)
+		}
+		// Optional configs (pass-through as strings)
+		cfgs := map[string]*string{}
+		if v := strings.TrimSpace(r.FormValue("retention.ms")); v != "" {
+			cfgs["retention.ms"] = &v
+		}
+		if v := strings.TrimSpace(r.FormValue("cleanup.policy")); v != "" {
+			cfgs["cleanup.policy"] = &v
+		}
+		if v := strings.TrimSpace(r.FormValue("compression.type")); v != "" {
+			cfgs["compression.type"] = &v
+		}
+		if len(cfgs) > 0 {
+			req.Configs = cfgs
+		}
 	}
 
 	// Validate request
 	if req.Name == "" {
-		http.Error(w, "topic name is required", 400)
+		w.Header().Set("X-Notification-Type", "error")
+		{
+			msg := "Nome do tópico é obrigatório"
+			w.Header().Set("X-Notification", msg)
+			w.Header().Set("X-Notification-Base64", base64.StdEncoding.EncodeToString([]byte(msg)))
+		}
+		http.Error(w, "topic name is required", http.StatusBadRequest)
 		return
 	}
 	if req.NumPartitions <= 0 {
-		http.Error(w, "number of partitions must be greater than 0", 400)
+		w.Header().Set("X-Notification-Type", "error")
+		{
+			msg := "Número de partições deve ser maior que 0"
+			w.Header().Set("X-Notification", msg)
+			w.Header().Set("X-Notification-Base64", base64.StdEncoding.EncodeToString([]byte(msg)))
+		}
+		http.Error(w, "number of partitions must be greater than 0", http.StatusBadRequest)
 		return
 	}
 	if req.ReplicationFactor <= 0 {
-		http.Error(w, "replication factor must be greater than 0", 400)
+		w.Header().Set("X-Notification-Type", "error")
+		{
+			msg := "Fator de replicação deve ser maior que 0"
+			w.Header().Set("X-Notification", msg)
+			w.Header().Set("X-Notification-Base64", base64.StdEncoding.EncodeToString([]byte(msg)))
+		}
+		http.Error(w, "replication factor must be greater than 0", http.StatusBadRequest)
 		return
 	}
 
 	client, ok := s.repo.GetClient(clusterName)
 	if !ok {
 		registry.Logger.Warn("api create topic cluster not found", "cluster", clusterName)
-		http.Error(w, "cluster not found", 404)
+		w.Header().Set("X-Notification-Type", "error")
+		{
+			msg := "Cluster não encontrado"
+			w.Header().Set("X-Notification", msg)
+			w.Header().Set("X-Notification-Base64", base64.StdEncoding.EncodeToString([]byte(msg)))
+		}
+		http.Error(w, "cluster not found", http.StatusNotFound)
 		return
 	}
 
 	if err := client.CreateTopic(req); err != nil {
 		registry.Logger.Error("api create topic failed", "cluster", clusterName, "topic", req.Name, "err", err)
-		http.Error(w, err.Error(), 500)
+		w.Header().Set("X-Notification-Type", "error")
+		{
+			msg := "Falha ao criar tópico: " + err.Error()
+			w.Header().Set("X-Notification", msg)
+			w.Header().Set("X-Notification-Base64", base64.StdEncoding.EncodeToString([]byte(msg)))
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// On success, return updated list fragment (HTML) suitable for htmx swap
 	registry.Logger.Info("topic created", "cluster", clusterName, "topic", req.Name)
-	w.WriteHeader(201)
-	if err := json.NewEncoder(w).Encode(map[string]string{"message": "topic created successfully"}); err != nil {
-		registry.Logger.Error("encode response failed", "err", err)
+
+	// Check if caller wants to include internal topics
+	showInternal := false
+	// from form
+	if r.FormValue("showInternal") == "true" {
+		showInternal = true
+	}
+	// or query param (JSON callers)
+	if r.URL.Query().Get("showInternal") == "true" {
+		showInternal = true
+	}
+
+	topics, err := client.ListTopics(showInternal)
+	if err != nil {
+		registry.Logger.Error("list topics after create failed", "cluster", clusterName, "err", err)
+		w.Header().Set("X-Notification-Type", "error")
+		{
+			msg := "Tópico criado, mas falhou ao atualizar a lista"
+			w.Header().Set("X-Notification", msg)
+			w.Header().Set("X-Notification-Base64", base64.StdEncoding.EncodeToString([]byte(msg)))
+		}
+		// Don't attempt to render list; return 200 so frontend keeps working
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	// Success: render fragment and notify
+	w.Header().Set("X-Notification-Type", "success")
+	{
+		msg := "Tópico criado com sucesso"
+		w.Header().Set("X-Notification", msg)
+		w.Header().Set("X-Notification-Base64", base64.StdEncoding.EncodeToString([]byte(msg)))
+	}
+	// Ask HTMX to trigger a custom event so the client can close the modal & reset the form
+	// Use After-Swap to ensure OOB updates are applied before closing the modal
+	w.Header().Set("HX-Trigger-After-Swap", "topic-created")
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := pages.TopicsListFragment(clusterName, topics, showInternal, true).Render(r.Context(), w); err != nil {
+		registry.Logger.Error("render topics list fragment after create failed", "cluster", clusterName, "err", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
+
+// removed HTML string builders in favor of templ components
 
 func (s *Server) apiDeleteTopic(w http.ResponseWriter, r *http.Request) {
 	clusterName := chi.URLParam(r, "name")

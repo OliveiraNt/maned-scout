@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/OliveiraNt/kdash/internal/config"
@@ -31,12 +32,13 @@ func TestAPIListTopics(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("expected 200, got %d", rec.Code)
 	}
-	var topics map[string]int
-	if err := json.Unmarshal(rec.Body.Bytes(), &topics); err != nil {
-		t.Fatalf("bad json: %v", err)
+	// Now returns HTML fragment for HTMX; assert content type and that topic names appear
+	if ct := rec.Header().Get("Content-Type"); ct == "" || ct[:9] != "text/html" {
+		t.Fatalf("expected text/html content type, got %q", rec.Header().Get("Content-Type"))
 	}
-	if len(topics) != 2 || topics["a"] != 1 || topics["b"] != 3 {
-		t.Fatalf("unexpected topics: %+v", topics)
+	htmlBody := rec.Body.String()
+	if !strings.Contains(htmlBody, ">a<") || !strings.Contains(htmlBody, ">b<") {
+		t.Fatalf("expected HTML to contain topic names, got: %s", htmlBody)
 	}
 }
 
@@ -79,11 +81,12 @@ func TestAPICreateTopic(t *testing.T) {
 	}
 	body, _ = json.Marshal(createReq)
 	req := httptest.NewRequest(http.MethodPost, "/api/cluster/dev/topics", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
 	ctx := chiCtxWithParam("name", "dev", req)
 	s.apiCreateTopic(rec, req.WithContext(ctx))
-	if rec.Code != http.StatusCreated {
-		t.Fatalf("expected 201, got %d", rec.Code)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", rec.Code)
 	}
 
 	// Test with missing topic name
@@ -94,6 +97,7 @@ func TestAPICreateTopic(t *testing.T) {
 	}
 	body, _ = json.Marshal(badReq)
 	req = httptest.NewRequest(http.MethodPost, "/api/cluster/dev/topics", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
 	rec = httptest.NewRecorder()
 	ctx = chiCtxWithParam("name", "dev", req)
 	s.apiCreateTopic(rec, req.WithContext(ctx))
@@ -109,6 +113,7 @@ func TestAPICreateTopic(t *testing.T) {
 	}
 	body, _ = json.Marshal(badReq)
 	req = httptest.NewRequest(http.MethodPost, "/api/cluster/dev/topics", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
 	rec = httptest.NewRecorder()
 	ctx = chiCtxWithParam("name", "dev", req)
 	s.apiCreateTopic(rec, req.WithContext(ctx))
@@ -124,6 +129,7 @@ func TestAPICreateTopic(t *testing.T) {
 	}
 	body, _ = json.Marshal(badReq)
 	req = httptest.NewRequest(http.MethodPost, "/api/cluster/dev/topics", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
 	rec = httptest.NewRecorder()
 	ctx = chiCtxWithParam("name", "dev", req)
 	s.apiCreateTopic(rec, req.WithContext(ctx))
@@ -134,6 +140,7 @@ func TestAPICreateTopic(t *testing.T) {
 	// Test with non-existent cluster
 	body, _ = json.Marshal(createReq)
 	req = httptest.NewRequest(http.MethodPost, "/api/cluster/nonexistent/topics", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
 	rec = httptest.NewRecorder()
 	ctx = chiCtxWithParam("name", "nonexistent", req)
 	s.apiCreateTopic(rec, req.WithContext(ctx))
