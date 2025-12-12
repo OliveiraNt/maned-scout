@@ -41,19 +41,15 @@ function queueNotification(message, type) {
 }
 
 window.addEventListener('DOMContentLoaded', function(){
-    // Read notification headers once per request (avoids duplicates with OOB swaps)
-    // De-dup notifications and avoid double showing across OOB swaps
     window.__htmxNotifSeen = window.__htmxNotifSeen || {};
     document.body.addEventListener('htmx:afterRequest', function(evt){
         try {
             const xhr = (evt.detail && evt.detail.xhr) ? evt.detail.xhr : null;
             if (xhr) {
-                let notification = null;
-                // Prefer Base64 header for safe non-ASCII transport
+                let notification;
                 const b64 = xhr.getResponseHeader('X-Notification-Base64');
                 if (b64) {
                     try {
-                        // Decode base64 into UTF-8 string
                         const binStr = atob(b64);
                         if (window.TextDecoder) {
                             const len = binStr.length;
@@ -61,11 +57,9 @@ window.addEventListener('DOMContentLoaded', function(){
                             for (let i = 0; i < len; i++) bytes[i] = binStr.charCodeAt(i);
                             notification = new TextDecoder('utf-8').decode(bytes);
                         } else {
-                            // Fallback for very old browsers
                             notification = decodeURIComponent(escape(binStr));
                         }
                     } catch (e) {
-                        // Fallback to plain header if decoding fails
                         notification = xhr.getResponseHeader('X-Notification');
                     }
                 } else {
@@ -76,7 +70,6 @@ window.addEventListener('DOMContentLoaded', function(){
                     const key = (xhr.responseURL || '') + '|' + (notificationType || 'success') + '|' + notification;
                     if (!window.__htmxNotifSeen[key]) {
                         window.__htmxNotifSeen[key] = Date.now();
-                        // Clean up old entries after 10s
                         setTimeout(function(){ delete window.__htmxNotifSeen[key]; }, 10000);
                         showNotification(notification, notificationType || 'success');
                     }
