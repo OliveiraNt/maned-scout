@@ -26,7 +26,6 @@ func TestUITopicsList(t *testing.T) {
 	body, _ := json.Marshal(config.ClusterConfig{Name: "dev", Brokers: []string{"localhost:9092"}})
 	s.apiAddCluster(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, "/api/clusters", bytes.NewReader(body)))
 
-	// Test without showInternal parameter
 	req = httptest.NewRequest(http.MethodGet, "/cluster/dev/topics", nil)
 	rec = httptest.NewRecorder()
 	ctx = chiCtxWithParam("name", "dev", req)
@@ -35,14 +34,6 @@ func TestUITopicsList(t *testing.T) {
 		t.Fatalf("expected 200, got %d", rec.Code)
 	}
 
-	// Test with showInternal=true parameter
-	req = httptest.NewRequest(http.MethodGet, "/cluster/dev/topics?showInternal=true", nil)
-	rec = httptest.NewRecorder()
-	ctx = chiCtxWithParam("name", "dev", req)
-	s.uiTopicsList(rec, req.WithContext(ctx))
-	if rec.Code != http.StatusOK {
-		t.Fatalf("expected 200, got %d", rec.Code)
-	}
 }
 
 func TestUITopicDetail(t *testing.T) {

@@ -18,11 +18,10 @@ func (s *Server) uiTopicsList(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "cluster not found", http.StatusNotFound)
 		return
 	}
-	showInternal := r.URL.Query().Get("showInternal") == "true"
 	topics := make(map[string]int)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := pages.TopicsList(name, topics, showInternal).Render(r.Context(), w); err != nil {
+	if err := pages.TopicsList(name, topics).Render(r.Context(), w); err != nil {
 		registry.Logger.Error("render topics list failed", "cluster", name, "err", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -36,7 +36,7 @@ func (s *Server) apiListTopics(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := pages.TopicsListFragment(name, topics, showInternal, false).Render(r.Context(), w); err != nil {
+	if err := pages.TopicsListFragment(name, topics, false).Render(r.Context(), w); err != nil {
 		registry.Logger.Error("render topics list fragment failed", "cluster", name, "err", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -5,7 +5,7 @@ import (
 	layout "github.com/OliveiraNt/kdash/internal/adapters/http/ui/templates/layout"
 )
 
-templ TopicsList(clusterName string, topics map[string]int, showInternal bool) {
+templ TopicsList(clusterName string, topics map[string]int) {
 	@layout.BaseWithSidebar("Tópicos", clusterName) {
 		<div class="mb-6">
 			<div class="flex items-center justify-between">
@@ -64,7 +64,7 @@ templ TopicsList(clusterName string, topics map[string]int, showInternal bool) {
 							<i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
 							<input
 								type="text"
-								placeholder="Buscar tópicos... (em breve)"
+								placeholder="Buscar tópicos"
 								class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
 							/>
 						</div>
@@ -78,12 +78,13 @@ templ TopicsList(clusterName string, topics map[string]int, showInternal bool) {
 							<div class="relative">
 								<input
 									type="checkbox"
-									id="showInternalToggle"
+									id="showInternal"
+									name="showInternal"
+									value="true"
 									class="sr-only"
-									if showInternal {
-										checked
-									}
-									onchange="window.location.href=(function(ch){const u=new URL(window.location); if(ch){u.searchParams.set('showInternal','true');} else {u.searchParams.delete('showInternal');} return u.toString();})(this.checked)"
+									hx-get={ templ.URL(fmt.Sprintf("/api/cluster/%s/topics", clusterName)) }
+									hx-include="[name=showInternal]"
+									hx-target="#topics-list"
 								/>
 								<div class="block bg-gray-300 dark:bg-gray-600 w-14 h-8 rounded-full"></div>
 								<div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
@@ -106,7 +107,8 @@ templ TopicsList(clusterName string, topics map[string]int, showInternal bool) {
 		</style>
 		<div
 			id="topics-list"
-			hx-get={ templ.URL(fmt.Sprintf("/api/cluster/%s/topics?showInternal=%t", clusterName, showInternal)) }
+			hx-get={ templ.URL(fmt.Sprintf("/api/cluster/%s/topics", clusterName)) }
+			hx-include="[name=showInternal]"
 			hx-trigger="load, topic-created from:body"
 			hx-target="#topics-list"
 			hx-swap="outerHTML"
@@ -116,15 +118,16 @@ templ TopicsList(clusterName string, topics map[string]int, showInternal bool) {
 				<i class="fas fa-rotate fa-spin mr-2"></i> Carregando tópicos...
 			</div>
 		</div>
-		@createTopicModal(clusterName, showInternal)
+		@createTopicModal(clusterName)
 	}
 }
 
-templ TopicsListFragment(clusterName string, topics map[string]int, showInternal bool, oob bool) {
+templ TopicsListFragment(clusterName string, topics map[string]int, oob bool) {
 	<div
 		id="topics-list"
 		class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
-		hx-get={ templ.URL(fmt.Sprintf("/api/cluster/%s/topics?showInternal=%t", clusterName, showInternal)) }
+		hx-get={ templ.URL(fmt.Sprintf("/api/cluster/%s/topics", clusterName)) }
+		hx-include="[name=showInternal]"
 		hx-trigger="topic-created from:body"
 		hx-target="#topics-list"
 		hx-swap="outerHTML"
@@ -216,15 +219,7 @@ templ TopicTableRow(topicName string, partitions int, clusterName string) {
 	</tr>
 }
 
-func getTotalPartitionsHelper(topics map[string]int) int {
-	total := 0
-	for _, partitions := range topics {
-		total += partitions
-	}
-	return total
-}
-
-templ createTopicModal(clusterName string, showInternal bool) {
+templ createTopicModal(clusterName string) {
 	<div id="createTopicModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
 		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4">
 			<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -233,7 +228,6 @@ templ createTopicModal(clusterName string, showInternal bool) {
 			<div class="px-6 py-4">
 				<div id="create-topic-error"></div>
 				<form id="createTopicForm" hx-post={ templ.URL(fmt.Sprintf("/api/cluster/%s/topics", clusterName)) } hx-swap="none">
-					<input type="hidden" name="showInternal" value={ fmt.Sprintf("%t", showInternal) }/>
 					<div class="space-y-4">
 						<div>
 							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
