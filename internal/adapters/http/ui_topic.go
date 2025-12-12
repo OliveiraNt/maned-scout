@@ -25,17 +25,8 @@ func (s *Server) uiTopicsList(w http.ResponseWriter, r *http.Request) {
 	// Check if showInternal parameter is set (default: false)
 	showInternal := r.URL.Query().Get("showInternal") == "true"
 
-	// Get topics for this cluster
+	// Não carregue os tópicos no backend; a lista será carregada via HTMX no cliente
 	topics := make(map[string]int)
-	client, ok := s.repo.GetClient(name)
-	if ok {
-		topicList, err := client.ListTopics(showInternal)
-		if err != nil {
-			registry.Logger.Error("list topics failed", "cluster", name, "err", err)
-		} else {
-			topics = topicList
-		}
-	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := pages.TopicsList(name, topics, showInternal).Render(r.Context(), w); err != nil {

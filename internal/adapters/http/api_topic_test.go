@@ -85,8 +85,12 @@ func TestAPICreateTopic(t *testing.T) {
 	rec := httptest.NewRecorder()
 	ctx := chiCtxWithParam("name", "dev", req)
 	s.apiCreateTopic(rec, req.WithContext(ctx))
-	if rec.Code != http.StatusOK {
-		t.Fatalf("expected 200, got %d", rec.Code)
+	if rec.Code != http.StatusNoContent {
+		t.Fatalf("expected 204, got %d", rec.Code)
+	}
+	// Should trigger topic-created event for HTMX clients
+	if trig := rec.Result().Header.Get("HX-Trigger"); !strings.Contains(trig, "topic-created") {
+		t.Fatalf("expected HX-Trigger to contain 'topic-created', got %q", trig)
 	}
 
 	// Test with missing topic name

@@ -2,6 +2,9 @@ package httpserver
 
 import (
 	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/OliveiraNt/kdash/internal/application"
@@ -44,6 +47,11 @@ func (s *Server) Run(addr string) error {
 			)
 		})
 	})
+
+	// Statics Handler
+	cacheDuration := 7 * 24 * time.Hour
+	r.Handle("/static/*", http.StripPrefix("/static/", StaticWithCache("./internal/adapters/http/ui/static", cacheDuration)))
+
 	// Web UI routes
 	r.Get("/", s.uiHome)
 	r.Get("/cluster/{name}", s.uiClusterDetail)
@@ -66,4 +74,23 @@ func (s *Server) Run(addr string) error {
 
 	registry.Logger.Info("HTTP server listening", "addr", addr)
 	return http.ListenAndServe(addr, r)
+}
+
+func StaticWithCache(dir string, maxAge time.Duration) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		fullPath := filepath.Join(dir, filepath.Clean(path))
+
+		// Verifica existência
+		info, err := os.Stat(fullPath)
+		if err != nil || info.IsDir() {
+			http.NotFound(w, r)
+			return
+		}
+
+		// Header de cache
+		w.Header().Set("Cache-Control", "public, max-age="+strconv.Itoa(int(maxAge.Seconds())))
+
+		http.ServeFile(w, r, fullPath)
+	}
 }

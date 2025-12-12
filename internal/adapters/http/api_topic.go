@@ -37,10 +37,29 @@ func (s *Server) apiListTopics(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := pages.TopicsListFragment(name, topics, showInternal, true).Render(r.Context(), w); err != nil {
+	// Return the HTML fragment of the topics list (with HTMX attrs) and OOB metrics to update the cards
+	if err := pages.TopicsListFragment(name, topics, showInternal, false).Render(r.Context(), w); err != nil {
 		registry.Logger.Error("render topics list fragment failed", "cluster", name, "err", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+	// Render metrics OOB so the totals get updated alongside the list
+	{
+		totalTopics := len(topics)
+		totalPartitions := 0
+		for _, p := range topics {
+			totalPartitions += p
+		}
+		avg := 0.0
+		if totalTopics > 0 {
+			avg = float64(totalPartitions) / float64(totalTopics)
+		}
+		// Write minimal OOB fragments
+		// Using Write instead of templ to avoid needing a generated component
+		_, _ = w.Write([]byte("<p class=\"text-3xl font-bold text-gray-900 dark:text-white mt-2\" id=\"topics-total\" hx-swap-oob=\"true\">" + strconv.Itoa(totalTopics) + "</p>"))
+		_, _ = w.Write([]byte("<p class=\"text-3xl font-bold text-gray-900 dark:text-white mt-2\" id=\"partitions-total\" hx-swap-oob=\"true\">" + strconv.Itoa(totalPartitions) + "</p>"))
+		// Format avg with 2 decimals
+		_, _ = w.Write([]byte("<p class=\"text-3xl font-bold text-gray-900 dark:text-white mt-2\" id=\"partitions-avg\" hx-swap-oob=\"true\">" + strconv.FormatFloat(avg, 'f', 2, 64) + "</p>"))
 	}
 }
 
@@ -168,53 +187,23 @@ func (s *Server) apiCreateTopic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// On success, return updated list fragment (HTML) suitable for htmx swap
+	// On success, only trigger an event; the page will reload the topics list via HTMX
 	registry.Logger.Info("topic created", "cluster", clusterName, "topic", req.Name)
 
-	// Check if caller wants to include internal topics
-	showInternal := false
-	// from form
-	if r.FormValue("showInternal") == "true" {
-		showInternal = true
-	}
-	// or query param (JSON callers)
-	if r.URL.Query().Get("showInternal") == "true" {
-		showInternal = true
-	}
-
-	topics, err := client.ListTopics(showInternal)
-	if err != nil {
-		registry.Logger.Error("list topics after create failed", "cluster", clusterName, "err", err)
-		w.Header().Set("X-Notification-Type", "error")
-		{
-			msg := "Tópico criado, mas falhou ao atualizar a lista"
-			w.Header().Set("X-Notification", msg)
-			w.Header().Set("X-Notification-Base64", base64.StdEncoding.EncodeToString([]byte(msg)))
-		}
-		// Don't attempt to render list; return 200 so frontend keeps working
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	// Success: render fragment and notify
+	// Success notification headers
 	w.Header().Set("X-Notification-Type", "success")
 	{
 		msg := "Tópico criado com sucesso"
 		w.Header().Set("X-Notification", msg)
 		w.Header().Set("X-Notification-Base64", base64.StdEncoding.EncodeToString([]byte(msg)))
 	}
-	// Ask HTMX to trigger a custom event so the client can close the modal & reset the form
-	// Use After-Swap to ensure OOB updates are applied before closing the modal
-	w.Header().Set("HX-Trigger-After-Swap", "topic-created")
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := pages.TopicsListFragment(clusterName, topics, showInternal, true).Render(r.Context(), w); err != nil {
-		registry.Logger.Error("render topics list fragment after create failed", "cluster", clusterName, "err", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-}
 
-// removed HTML string builders in favor of templ components
+	// Trigger a custom event for HTMX clients to react (e.g., close modal and reload list)
+	// Use HX-Trigger since there is no swap occurring on this response
+	w.Header().Set("HX-Trigger", "topic-created")
+	w.WriteHeader(http.StatusNoContent)
+	return
+}
 
 func (s *Server) apiDeleteTopic(w http.ResponseWriter, r *http.Request) {
 	clusterName := chi.URLParam(r, "name")
