@@ -13,7 +13,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
-// ClusterRepository manages cluster configurations and their clients
+// ClusterRepository manages cluster configurations and their clients.
 type ClusterRepository struct {
 	mu         sync.RWMutex
 	clients    map[string]domain.KafkaClient
@@ -23,7 +23,7 @@ type ClusterRepository struct {
 	factory    application.ClientFactory
 }
 
-// NewClusterRepository creates a new cluster repository
+// NewClusterRepository creates a new cluster repository.
 func NewClusterRepository(configPath string, factory application.ClientFactory) *ClusterRepository {
 	return &ClusterRepository{
 		clients:    make(map[string]domain.KafkaClient),
@@ -32,7 +32,7 @@ func NewClusterRepository(configPath string, factory application.ClientFactory) 
 	}
 }
 
-// LoadFromFile loads configuration from file
+// LoadFromFile loads configuration from file.
 func (r *ClusterRepository) LoadFromFile() error {
 	cfg, err := config.ReadConfig(r.configPath)
 	if err != nil {
@@ -46,24 +46,19 @@ func (r *ClusterRepository) LoadFromFile() error {
 	return r.reconcile(cfg)
 }
 
-// Save persists a cluster configuration
+// Save persists a cluster configuration.
 func (r *ClusterRepository) Save(cfg config.ClusterConfig) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	// Create or update client
 	client, err := r.factory.CreateClient(cfg)
 	if err != nil {
 		return err
 	}
-
-	// If exists, close old client
 	if old, ok := r.clients[cfg.Name]; ok {
 		old.Close()
 	}
 	r.clients[cfg.Name] = client
-
-	// Update in-memory config
 	found := false
 	for i := range r.configData.Clusters {
 		if r.configData.Clusters[i].Name == cfg.Name {
@@ -75,12 +70,10 @@ func (r *ClusterRepository) Save(cfg config.ClusterConfig) error {
 	if !found {
 		r.configData.Clusters = append(r.configData.Clusters, cfg)
 	}
-
-	// Persist to file
 	return r.writeToFile()
 }
 
-// Delete removes a cluster configuration by name
+// Delete removes a cluster configuration by name.
 func (r *ClusterRepository) Delete(name string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -92,8 +85,6 @@ func (r *ClusterRepository) Delete(name string) error {
 
 	client.Close()
 	delete(r.clients, name)
-
-	// Remove from in-memory config
 	idx := -1
 	for i := range r.configData.Clusters {
 		if r.configData.Clusters[i].Name == name {
@@ -104,8 +95,6 @@ func (r *ClusterRepository) Delete(name string) error {
 	if idx >= 0 {
 		r.configData.Clusters = append(r.configData.Clusters[:idx], r.configData.Clusters[idx+1:]...)
 	}
-
-	// Persist to file
 	return r.writeToFile()
 }
 

@@ -10,7 +10,6 @@ import (
 
 templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 	@layout.BaseWithSidebar("Detalhes do Tópico", clusterName) {
-		<!-- Breadcrumb -->
 		<nav class="mb-6 text-sm">
 			<ol class="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
 				<li><a href={ templ.URL(fmt.Sprintf("/cluster/%s", clusterName)) } class="hover:text-blue-600 dark:hover:text-blue-400">{ clusterName }</a></li>
@@ -21,7 +20,6 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 			</ol>
 		</nav>
 
-		<!-- Page Header -->
 		<div class="mb-6">
 			<div class="flex items-center justify-between">
 				<div>
@@ -51,7 +49,6 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 			</div>
 		</div>
 
-		<!-- Summary Stats -->
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
 			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
 				<div class="flex items-center justify-between">
@@ -90,7 +87,6 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 			</div>
 		</div>
 
-		<!-- Partitions Table -->
 		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
 			<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
 				<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Detalhes das Partições</h3>
@@ -147,7 +143,6 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 			</div>
 		</div>
 
-		<!-- Configurations -->
 		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
 			<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
 				<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Configurações do Tópico</h3>
@@ -176,7 +171,6 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 			</div>
 		</div>
 
-		<!-- Modals -->
 		@updateConfigModal(clusterName, topic.Name)
 		@increasePartitionsModal(clusterName, topic.Name, topic.Partitions)
 		@deleteTopicModal(clusterName, topic.Name)

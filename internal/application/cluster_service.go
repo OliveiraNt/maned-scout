@@ -6,18 +6,18 @@ import (
 	"github.com/OliveiraNt/kdash/internal/registry"
 )
 
-// ClusterService handles cluster-related business operations
+// ClusterService handles cluster-related business operations.
 type ClusterService struct {
 	repo    domain.ClusterRepository
 	factory ClientFactory
 }
 
-// ClientFactory creates Kafka clients from configuration
+// ClientFactory creates Kafka clients from configuration.
 type ClientFactory interface {
 	CreateClient(cfg config.ClusterConfig) (domain.KafkaClient, error)
 }
 
-// NewClusterService creates a new cluster service
+// NewClusterService creates a new cluster service.
 func NewClusterService(repo domain.ClusterRepository, factory ClientFactory) *ClusterService {
 	return &ClusterService{
 		repo:    repo,
@@ -25,17 +25,17 @@ func NewClusterService(repo domain.ClusterRepository, factory ClientFactory) *Cl
 	}
 }
 
-// ListClusters returns all cluster configurations
+// ListClusters returns all cluster configurations.
 func (s *ClusterService) ListClusters() []config.ClusterConfig {
 	return s.repo.FindAll()
 }
 
-// GetCluster retrieves a specific cluster configuration
+// GetCluster retrieves a specific cluster configuration.
 func (s *ClusterService) GetCluster(name string) (config.ClusterConfig, bool) {
 	return s.repo.FindByName(name)
 }
 
-// AddCluster adds a new cluster or updates an existing one
+// AddCluster adds a new cluster or updates an existing one.
 func (s *ClusterService) AddCluster(cfg config.ClusterConfig) error {
 	if cfg.Name == "" || len(cfg.Brokers) == 0 {
 		return ErrInvalidClusterConfig
@@ -43,7 +43,7 @@ func (s *ClusterService) AddCluster(cfg config.ClusterConfig) error {
 	return s.repo.Save(cfg)
 }
 
-// UpdateCluster updates an existing cluster
+// UpdateCluster updates an existing cluster.
 func (s *ClusterService) UpdateCluster(name string, cfg config.ClusterConfig) error {
 	if cfg.Name == "" {
 		cfg.Name = name
@@ -51,12 +51,12 @@ func (s *ClusterService) UpdateCluster(name string, cfg config.ClusterConfig) er
 	return s.repo.Save(cfg)
 }
 
-// DeleteCluster removes a cluster
+// DeleteCluster removes a cluster.
 func (s *ClusterService) DeleteCluster(name string) error {
 	return s.repo.Delete(name)
 }
 
-// GetClusterWithStats retrieves cluster information with statistics
+// GetClusterWithStats retrieves cluster information with statistics.
 func (s *ClusterService) GetClusterWithStats(name string, client domain.KafkaClient) (*domain.Cluster, *domain.ClusterStats, error) {
 	cfg, ok := s.repo.FindByName(name)
 	if !ok {
@@ -70,7 +70,6 @@ func (s *ClusterService) GetClusterWithStats(name string, client domain.KafkaCli
 		AuthType: cfg.GetAuthType(),
 	}
 
-	// Get certificate info if applicable
 	if cfg.HasCertificate() {
 		certInfo, err := cfg.GetCertificateInfo()
 		if err != nil {
@@ -80,7 +79,6 @@ func (s *ClusterService) GetClusterWithStats(name string, client domain.KafkaCli
 		}
 	}
 
-	// Check if cluster is online and get stats
 	var stats *domain.ClusterStats
 	if client != nil {
 		cluster.IsOnline = client.IsHealthy()

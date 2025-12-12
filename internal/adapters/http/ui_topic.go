@@ -10,22 +10,15 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// uiTopicsList renders the topics list page for a cluster
 func (s *Server) uiTopicsList(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
 	registry.Logger.Debug("render topics list", "cluster", name)
-
-	// Get cluster config
 	_, ok := s.clusterService.GetCluster(name)
 	if !ok {
 		http.Error(w, "cluster not found", http.StatusNotFound)
 		return
 	}
-
-	// Check if showInternal parameter is set (default: false)
 	showInternal := r.URL.Query().Get("showInternal") == "true"
-
-	// Não carregue os tópicos no backend; a lista será carregada via HTMX no cliente
 	topics := make(map[string]int)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -36,20 +29,15 @@ func (s *Server) uiTopicsList(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// uiTopicDetail renders the topic detail page
 func (s *Server) uiTopicDetail(w http.ResponseWriter, r *http.Request) {
 	clusterName := chi.URLParam(r, "name")
 	topicName := chi.URLParam(r, "topic")
 	registry.Logger.Debug("render topic detail", "cluster", clusterName, "topic", topicName)
-
-	// Get cluster config
 	_, ok := s.clusterService.GetCluster(clusterName)
 	if !ok {
 		http.Error(w, "cluster not found", http.StatusNotFound)
 		return
 	}
-
-	// Get topic detail
 	var topicDetail *domain.TopicDetail
 	client, ok := s.repo.GetClient(clusterName)
 	if ok {

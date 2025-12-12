@@ -11,21 +11,16 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// uiHome renders the homepage listing clusters using templ + htmx + tailwind layout.
 func (s *Server) uiHome(w http.ResponseWriter, r *http.Request) {
 	registry.Logger.Debug("render home")
 	cfgs := s.clusterService.ListClusters()
-	// Map config clusters to domain.Cluster for UI components with stats
 	clustersList := make([]pages.ClusterWithStats, 0, len(cfgs))
 	for _, c := range cfgs {
 		isOnline := false
 		var stats *domain.ClusterStats
-
-		// Check if cluster is online
 		if client, ok := s.repo.GetClient(c.Name); ok {
 			isOnline = client.IsHealthy()
 			if isOnline {
-				// Get quick stats for the card
 				clusterStats, err := client.GetClusterStats()
 				if err != nil {
 					registry.Logger.Error("get cluster stats failed", "cluster", c.Name, "err", err)
@@ -34,8 +29,6 @@ func (s *Server) uiHome(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-
-		// Get certificate info if applicable
 		var certInfo *config.CertificateInfo
 		if c.HasCertificate() {
 			info, err := c.GetCertificateInfo()
@@ -45,7 +38,6 @@ func (s *Server) uiHome(w http.ResponseWriter, r *http.Request) {
 				certInfo = info
 			}
 		}
-
 		clustersList = append(clustersList, pages.ClusterWithStats{
 			Cluster: domain.Cluster{
 				ID:       c.Name,
@@ -66,12 +58,9 @@ func (s *Server) uiHome(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// uiClusterDetail renders the cluster detail page with topics list
 func (s *Server) uiClusterDetail(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
 	registry.Logger.Debug("render cluster detail", "cluster", name)
-
-	// Get cluster config
 	cfg, ok := s.clusterService.GetCluster(name)
 	if !ok {
 		http.Error(w, "cluster not found", http.StatusNotFound)
@@ -85,8 +74,6 @@ func (s *Server) uiClusterDetail(w http.ResponseWriter, r *http.Request) {
 		Brokers:  cfg.Brokers,
 		AuthType: cfg.GetAuthType(),
 	}
-
-	// Get certificate info if applicable
 	if cfg.HasCertificate() {
 		certInfo, err := cfg.GetCertificateInfo()
 		if err != nil {
@@ -95,8 +82,6 @@ func (s *Server) uiClusterDetail(w http.ResponseWriter, r *http.Request) {
 			cluster.CertInfo = certInfo
 		}
 	}
-
-	// Get topics for this cluster
 	topics := make(map[string]int)
 	var stats *domain.ClusterStats
 	var brokerDetails []domain.BrokerDetail
@@ -108,31 +93,24 @@ func (s *Server) uiClusterDetail(w http.ResponseWriter, r *http.Request) {
 		cluster.IsOnline = isOnline
 
 		if isOnline {
-			// Get topics
 			topicList, err := client.ListTopics(false)
 			if err != nil {
 				registry.Logger.Error("list topics failed", "cluster", name, "err", err)
 			} else {
 				topics = topicList
 			}
-
-			// Get cluster statistics
 			clusterStats, err := client.GetClusterStats()
 			if err != nil {
 				registry.Logger.Error("get cluster stats failed", "cluster", name, "err", err)
 			} else {
 				stats = clusterStats
 			}
-
-			// Get broker details
 			brokers, err := client.GetBrokerDetails()
 			if err != nil {
 				registry.Logger.Error("get broker details failed", "cluster", name, "err", err)
 			} else {
 				brokerDetails = brokers
 			}
-
-			// Get consumer groups
 			groups, err := client.ListConsumerGroups()
 			if err != nil {
 				registry.Logger.Error("list consumer groups failed", "cluster", name, "err", err)

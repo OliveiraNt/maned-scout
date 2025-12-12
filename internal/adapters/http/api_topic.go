@@ -25,7 +25,6 @@ func (s *Server) apiListTopics(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "cluster not found", http.StatusNotFound)
 		return
 	}
-	// Preserve current filter
 	showInternal := r.URL.Query().Get("showInternal") == "true"
 	topics, err := client.ListTopics(showInternal)
 	if err != nil {
@@ -37,13 +36,11 @@ func (s *Server) apiListTopics(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	// Return the HTML fragment of the topics list (with HTMX attrs) and OOB metrics to update the cards
 	if err := pages.TopicsListFragment(name, topics, showInternal, false).Render(r.Context(), w); err != nil {
 		registry.Logger.Error("render topics list fragment failed", "cluster", name, "err", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	// Render metrics OOB so the totals get updated alongside the list
 	{
 		totalTopics := len(topics)
 		totalPartitions := 0
@@ -54,11 +51,8 @@ func (s *Server) apiListTopics(w http.ResponseWriter, r *http.Request) {
 		if totalTopics > 0 {
 			avg = float64(totalPartitions) / float64(totalTopics)
 		}
-		// Write minimal OOB fragments
-		// Using Write instead of templ to avoid needing a generated component
 		_, _ = w.Write([]byte("<p class=\"text-3xl font-bold text-gray-900 dark:text-white mt-2\" id=\"topics-total\" hx-swap-oob=\"true\">" + strconv.Itoa(totalTopics) + "</p>"))
 		_, _ = w.Write([]byte("<p class=\"text-3xl font-bold text-gray-900 dark:text-white mt-2\" id=\"partitions-total\" hx-swap-oob=\"true\">" + strconv.Itoa(totalPartitions) + "</p>"))
-		// Format avg with 2 decimals
 		_, _ = w.Write([]byte("<p class=\"text-3xl font-bold text-gray-900 dark:text-white mt-2\" id=\"partitions-avg\" hx-swap-oob=\"true\">" + strconv.FormatFloat(avg, 'f', 2, 64) + "</p>"))
 	}
 }
@@ -89,7 +83,6 @@ func (s *Server) apiGetTopicDetail(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) apiCreateTopic(w http.ResponseWriter, r *http.Request) {
 	clusterName := chi.URLParam(r, "name")
-	// Determine if request is JSON or form (htmx form submission)
 	var req domain.CreateTopicRequest
 	ct := r.Header.Get("Content-Type")
 	if strings.HasPrefix(ct, "application/json") {
@@ -105,7 +98,6 @@ func (s *Server) apiCreateTopic(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		// Parse form values
 		_ = r.ParseForm()
 		req.Name = strings.TrimSpace(r.FormValue("name"))
 		if np, err := strconv.Atoi(r.FormValue("numPartitions")); err == nil {
@@ -114,7 +106,6 @@ func (s *Server) apiCreateTopic(w http.ResponseWriter, r *http.Request) {
 		if rf, err := strconv.Atoi(r.FormValue("replicationFactor")); err == nil {
 			req.ReplicationFactor = int16(rf)
 		}
-		// Optional configs (pass-through as strings)
 		cfgs := map[string]*string{}
 		if v := strings.TrimSpace(r.FormValue("retention.ms")); v != "" {
 			cfgs["retention.ms"] = &v
@@ -130,7 +121,6 @@ func (s *Server) apiCreateTopic(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Validate request
 	if req.Name == "" {
 		w.Header().Set("X-Notification-Type", "error")
 		{
@@ -187,10 +177,8 @@ func (s *Server) apiCreateTopic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// On success, only trigger an event; the page will reload the topics list via HTMX
 	registry.Logger.Info("topic created", "cluster", clusterName, "topic", req.Name)
 
-	// Success notification headers
 	w.Header().Set("X-Notification-Type", "success")
 	{
 		msg := "Tópico criado com sucesso"
@@ -198,8 +186,6 @@ func (s *Server) apiCreateTopic(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Notification-Base64", base64.StdEncoding.EncodeToString([]byte(msg)))
 	}
 
-	// Trigger a custom event for HTMX clients to react (e.g., close modal and reload list)
-	// Use HX-Trigger since there is no swap occurring on this response
 	w.Header().Set("HX-Trigger", "topic-created")
 	w.WriteHeader(http.StatusNoContent)
 	return

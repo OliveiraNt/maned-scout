@@ -6,11 +6,9 @@ templ Base(title string) {
 	<html lang="pt-BR">
 		@Head(title)
 		<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-			<!-- Global Loading Indicator -->
 			<div id="page-loading" class="htmx-indicator fixed top-0 left-0 w-full h-1 bg-blue-600 z-50">
 				<div class="h-full bg-blue-400 animate-pulse"></div>
 			</div>
-			<!-- Notification Container -->
 			<div id="notification-container" class="fixed top-4 left-0 right-0 z-50 px-4"></div>
 			@Header()
 			<main class="p-6">
@@ -26,11 +24,9 @@ templ BaseWithSidebar(title string, clusterName string) {
 	<html lang="pt-BR">
 		@Head(title)
 		<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-			<!-- Global Loading Indicator -->
 			<div id="page-loading" class="htmx-indicator fixed top-0 left-0 w-full h-1 bg-blue-600 z-50">
 				<div class="h-full bg-blue-400 animate-pulse"></div>
 			</div>
-			<!-- Notification Container -->
 			<div id="notification-container" class="fixed top-4 left-0 right-0 z-50 px-4"></div>
 			@Header()
 			<div class="flex">

@@ -31,12 +31,12 @@ type TLSConfig struct {
 
 // SASLConfig holds SASL configuration. Credentials may be provided inline or via env var names.
 type SASLConfig struct {
-	Mechanism      string `yaml:"mechanism,omitempty" json:"mechanism,omitempty"` // e.g. PLAIN, SCRAM-SHA-256, SCRAM-SHA-512
+	Mechanism      string `yaml:"mechanism,omitempty" json:"mechanism,omitempty"`
 	Username       string `yaml:"username,omitempty" json:"username,omitempty"`
 	Password       string `yaml:"password,omitempty" json:"password,omitempty"`
 	UsernameEnv    string `yaml:"username_env,omitempty" json:"username_env,omitempty"`
 	PasswordEnv    string `yaml:"password_env,omitempty" json:"password_env,omitempty"`
-	ScramAlgorithm string `yaml:"scram_algorithm,omitempty" json:"scram_algorithm,omitempty"` // optional explicit algorithm
+	ScramAlgorithm string `yaml:"scram_algorithm,omitempty" json:"scram_algorithm,omitempty"`
 }
 
 // AWSConfig holds AWS IAM SASL config. Prefer the standard AWS credential provider (env, shared creds, role).
@@ -48,10 +48,12 @@ type AWSConfig struct {
 	SessionTokenEnv string `yaml:"session_token_env,omitempty" json:"session_token_env,omitempty"`
 }
 
+// FileConfig represents the root configuration file structure for kdash.
 type FileConfig struct {
 	Clusters []ClusterConfig `yaml:"clusters" json:"clusters"`
 }
 
+// ReadConfig loads a FileConfig from the provided path.
 func ReadConfig(path string) (FileConfig, error) {
 	var cfg FileConfig
 	b, err := os.ReadFile(path)
@@ -62,6 +64,7 @@ func ReadConfig(path string) (FileConfig, error) {
 	return cfg, err
 }
 
+// WriteConfig persists the FileConfig to the provided path.
 func WriteConfig(path string, cfg FileConfig) error {
 	b, err := yaml.Marshal(&cfg)
 	if err != nil {
@@ -70,63 +73,48 @@ func WriteConfig(path string, cfg FileConfig) error {
 	return os.WriteFile(path, b, 0644)
 }
 
-// GetAuthType returns a human-readable authentication type based on the cluster config
+// GetAuthType returns a human-readable authentication type based on the cluster config.
 func (c *ClusterConfig) GetAuthType() string {
-	// Check for AWS IAM
 	if c.AWS != nil && c.AWS.IAM {
 		return "AWS IAM"
 	}
-
-	// Check for SASL authentication
 	if c.SASL != nil && c.SASL.Mechanism != "" {
 		mechanism := c.SASL.Mechanism
-		// Check if TLS is also enabled
 		if c.TLS != nil && c.TLS.Enabled {
 			return "SASL/" + mechanism + " + TLS"
 		}
 		return "SASL/" + mechanism
 	}
-
-	// Check for mTLS (mutual TLS with client certificates)
 	if c.TLS != nil && c.TLS.Enabled {
 		if c.TLS.CertFile != "" && c.TLS.KeyFile != "" {
 			return "mTLS"
 		}
 		return "TLS"
 	}
-
-	// Default is plaintext
 	return "PLAINTEXT"
 }
 
-// CertificateInfo holds certificate validity information
+// CertificateInfo holds certificate validity information.
 type CertificateInfo struct {
 	NotBefore    time.Time `json:"not_before"`
 	NotAfter     time.Time `json:"not_after"`
 	DaysToExpiry int       `json:"days_to_expiry"`
-	Status       string    `json:"status"` // "valid", "warning", "critical", "expired"
+	Status       string    `json:"status"`
 }
 
-// GetCertificateInfo reads and parses the certificate file to extract validity information
+// GetCertificateInfo reads and parses the certificate file to extract validity information.
 func (c *ClusterConfig) GetCertificateInfo() (*CertificateInfo, error) {
-	// Only applicable if TLS is enabled and cert file exists
 	if c.TLS == nil || !c.TLS.Enabled || c.TLS.CertFile == "" {
 		return nil, nil
 	}
-
-	// Read certificate file
 	certPEM, err := os.ReadFile(c.TLS.CertFile)
 	if err != nil {
 		return nil, err
 	}
-
-	// Parse PEM block
 	block, _ := pem.Decode(certPEM)
 	if block == nil {
-		return nil, nil // Not a valid PEM format
+		return nil, nil
 	}
-
-	// Parse certificate
 	cert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
 		return nil, err
@@ -134,8 +122,6 @@ func (c *ClusterConfig) GetCertificateInfo() (*CertificateInfo, error) {
 
 	now := time.Now()
 	daysToExpiry := int(time.Until(cert.NotAfter).Hours() / 24)
-
-	// Determine status based on days remaining
 	status := "valid"
 	if now.After(cert.NotAfter) {
 		status = "expired"
@@ -153,7 +139,7 @@ func (c *ClusterConfig) GetCertificateInfo() (*CertificateInfo, error) {
 	}, nil
 }
 
-// HasCertificate returns true if the cluster uses certificate-based authentication
+// HasCertificate returns true if the cluster uses certificate-based authentication.
 func (c *ClusterConfig) HasCertificate() bool {
 	return c.TLS != nil && c.TLS.Enabled && c.TLS.CertFile != ""
 }

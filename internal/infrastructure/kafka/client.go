@@ -17,14 +17,14 @@ import (
 	"github.com/twmb/franz-go/pkg/sasl/scram"
 )
 
-// Client implements domain.KafkaClient using franz-go
+// Client implements domain.KafkaClient using franz-go.
 type Client struct {
 	client *kgo.Client
 	admin  *Admin
 	config config.ClusterConfig
 }
 
-// NewClient creates a new Kafka client from configuration
+// NewClient creates a new Kafka client from configuration.
 func NewClient(cfg config.ClusterConfig) (*Client, error) {
 	var opts []kgo.Opt
 
@@ -35,8 +35,6 @@ func NewClient(cfg config.ClusterConfig) (*Client, error) {
 	if len(cfg.Brokers) > 0 {
 		opts = append(opts, kgo.SeedBrokers(cfg.Brokers...))
 	}
-
-	// TLS configuration
 	if cfg.TLS != nil && cfg.TLS.Enabled {
 		tlsCfg, err := buildTLSConfig(cfg.TLS)
 		if err != nil {
@@ -44,8 +42,6 @@ func NewClient(cfg config.ClusterConfig) (*Client, error) {
 		}
 		opts = append(opts, kgo.DialTLSConfig(tlsCfg))
 	}
-
-	// SASL configuration
 	if cfg.SASL != nil && cfg.SASL.Mechanism != "" {
 		mech, err := buildSASLMechanism(cfg.SASL)
 		if err != nil {
@@ -55,8 +51,6 @@ func NewClient(cfg config.ClusterConfig) (*Client, error) {
 			opts = append(opts, kgo.SASL(mech))
 		}
 	}
-
-	// AWS IAM configuration
 	if cfg.AWS != nil && cfg.AWS.IAM {
 		awsMech, err := buildAWSMechanism(cfg.AWS)
 		if err != nil {
@@ -82,7 +76,7 @@ func NewClient(cfg config.ClusterConfig) (*Client, error) {
 	}, nil
 }
 
-// IsHealthy checks if the cluster is reachable
+// IsHealthy checks if the cluster is reachable.
 func (c *Client) IsHealthy() bool {
 	if c == nil || c.admin == nil {
 		return false
@@ -94,7 +88,7 @@ func (c *Client) IsHealthy() bool {
 	return err == nil
 }
 
-// ListTopics returns topics with partition counts
+// ListTopics returns topics with partition counts.
 func (c *Client) ListTopics(showInternal bool) (map[string]int, error) {
 	if c == nil || c.admin == nil {
 		return nil, nil
@@ -102,7 +96,7 @@ func (c *Client) ListTopics(showInternal bool) (map[string]int, error) {
 	return c.admin.ListTopics(context.Background(), showInternal)
 }
 
-// GetClusterInfo returns cluster information
+// GetClusterInfo returns cluster information.
 func (c *Client) GetClusterInfo() (*domain.Cluster, error) {
 	if c == nil || c.admin == nil {
 		return nil, nil
