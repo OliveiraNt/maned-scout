@@ -7,7 +7,7 @@ import (
 )
 
 templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain.ClusterStats, brokerDetails []domain.BrokerDetail, consumerGroups []domain.ConsumerGroupSummary) {
-	@layout.BaseWithSidebar(cluster.Name, cluster.Name) {
+	@layout.BaseWithSidebar(cluster.Name, cluster.Name, nil) {
 		<div class="mb-6">
 			<nav class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
 				<a href="/" hx-boost="true" hx-indicator="#page-loading" class="hover:text-blue-600 dark:hover:text-blue-400">Clusters</a>

@@ -6,7 +6,7 @@ import (
 )
 
 templ TopicsList(clusterName string, topics map[string]int) {
-	@layout.BaseWithSidebar("Tópicos", clusterName) {
+	@layout.BaseWithSidebar("Tópicos", clusterName, nil) {
 		<div class="mb-6">
 			<div class="flex items-center justify-between">
 				<div>
@@ -94,17 +94,6 @@ templ TopicsList(clusterName string, topics map[string]int) {
 				</div>
 			</div>
 		</div>
-		<style>
-			input:checked ~ .block {
-				background-color: #3B82F6;
-			}
-			input:checked ~ .dot {
-				transform: translateX(100%);
-			}
-			.dark input:checked ~ .block {
-				background-color: #60A5FA;
-			}
-		</style>
 		<div
 			id="topics-list"
 			hx-get={ templ.URL(fmt.Sprintf("/api/cluster/%s/topics", clusterName)) }

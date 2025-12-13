@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -34,7 +35,8 @@ func (d *dummyClient) UpdateTopicConfig(_ string, _ domain.UpdateTopicConfigRequ
 func (d *dummyClient) IncreasePartitions(_ string, _ domain.IncreasePartitionsRequest) error {
 	return nil
 }
-func (d *dummyClient) Close() {}
+func (d *dummyClient) StreamMessages(_ context.Context, _ string, _ chan<- []byte) {}
+func (d *dummyClient) Close()                                                      {}
 
 func TestSaveFindDelete(t *testing.T) {
 	tdir := t.TempDir()

@@ -12,7 +12,7 @@ type ClusterWithStats struct {
 }
 
 templ ClusterList(clusters []ClusterWithStats) {
-	@layout.Base("Clusters") {
+	@layout.Base("Clusters", nil) {
 		<div class="mb-6">
 			<h2 class="text-3xl font-bold text-gray-900 dark:text-white">Clusters Kafka</h2>
 			<p class="text-gray-600 dark:text-gray-400 mt-2">Gerencie e monitore seus clusters Apache Kafka</p>

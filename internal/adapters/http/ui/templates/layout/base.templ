@@ -1,10 +1,10 @@
 package layout
 
 // Base template without sidebar (for home page)
-templ Base(title string) {
+templ Base(title string, imports templ.Component) {
 	<!DOCTYPE html>
 	<html lang="pt-BR">
-		@Head(title)
+		@Head(title, imports)
 		<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
 			<div id="page-loading" class="htmx-indicator fixed top-0 left-0 w-full h-1 bg-blue-600 z-50">
 				<div class="h-full bg-blue-400 animate-pulse"></div>
@@ -19,10 +19,10 @@ templ Base(title string) {
 }
 
 // BaseWithSidebar template with sidebar (for cluster pages)
-templ BaseWithSidebar(title string, clusterName string) {
+templ BaseWithSidebar(title string, clusterName string, imports templ.Component) {
 	<!DOCTYPE html>
 	<html lang="pt-BR">
-		@Head(title)
+		@Head(title, imports)
 		<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
 			<div id="page-loading" class="htmx-indicator fixed top-0 left-0 w-full h-1 bg-blue-600 z-50">
 				<div class="h-full bg-blue-400 animate-pulse"></div>
@@ -39,7 +39,7 @@ templ BaseWithSidebar(title string, clusterName string) {
 	</html>
 }
 
-templ Head(title string) {
+templ Head(title string, imports templ.Component) {
 	<head>
 		<meta charset="UTF-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -48,63 +48,11 @@ templ Head(title string) {
         <script src="/static/app.js"></script>
         <script src="/static/notifications.js"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+        <link rel="stylesheet" href="/static/app.css"/>
+        if imports != nil {
+            @imports
+        }
         <title>{ title } - KDash</title>
-        <style>
-                /* htmx loading indicator */
-                .htmx-indicator {
-                    display: none;
-                }
-                .htmx-request .htmx-indicator {
-                    display: block;
-                }
-                .htmx-request.htmx-indicator {
-                    display: block;
-                }
-
-                /* Loading bar animation */
-                #page-loading {
-                    transition: opacity 0.3s ease;
-                }
-                #page-loading > div {
-                    animation: loading-pulse 1.5s ease-in-out infinite;
-                }
-                @keyframes loading-pulse {
-                    0%, 100% {
-                        opacity: 1;
-                    }
-                    50% {
-                        opacity: 0.5;
-                    }
-                }
-
-                /* Notification animations */
-                @keyframes slideInDown {
-                    from {
-                        transform: translateY(-100%);
-                        opacity: 0;
-                    }
-                    to {
-                        transform: translateY(0);
-                        opacity: 1;
-                    }
-                }
-                @keyframes slideOutUp {
-                    from {
-                        transform: translateY(0);
-                        opacity: 1;
-                    }
-                    to {
-                        transform: translateY(-100%);
-                        opacity: 0;
-                    }
-                }
-                .notification-enter {
-                    animation: slideInDown 0.3s ease-out;
-                }
-                .notification-exit {
-                    animation: slideOutUp 0.3s ease-in;
-                }
-            </style>
 	</head>
 }
 
