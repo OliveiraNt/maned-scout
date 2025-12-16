@@ -283,3 +283,23 @@ func (s *Server) apiIncreasePartitions(w http.ResponseWriter, r *http.Request) {
 		registry.Logger.Error("encode response failed", "err", err)
 	}
 }
+
+func (s *Server) apiReadMessages(w http.ResponseWriter, r *http.Request) {
+	clusterName := chi.URLParam(r, "name")
+	topicName := chi.URLParam(r, "topic")
+	if err := pages.MessageView(clusterName, topicName).Render(r.Context(), w); err != nil {
+		registry.Logger.Error("render message view failed", "err", err)
+		http.Error(w, "failed to render message view", 500)
+		return
+	}
+}
+
+func (s *Server) apiStopMessages(w http.ResponseWriter, r *http.Request) {
+	clusterName := chi.URLParam(r, "name")
+	topicName := chi.URLParam(r, "topic")
+	if err := pages.StopView(clusterName, topicName).Render(r.Context(), w); err != nil {
+		registry.Logger.Error("render stop view failed", "err", err)
+		http.Error(w, "failed to render stop view", 500)
+		return
+	}
+}

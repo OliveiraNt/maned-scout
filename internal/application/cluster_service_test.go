@@ -76,8 +76,8 @@ func (c *mockClient) UpdateTopicConfig(_ string, _ domain.UpdateTopicConfigReque
 func (c *mockClient) IncreasePartitions(_ string, _ domain.IncreasePartitionsRequest) error {
 	return nil
 }
-func (c *mockClient) StreamMessages(_ context.Context, _ string, _ chan<- []byte) {}
-func (c *mockClient) Close()                                                      {}
+func (c *mockClient) StreamMessages(_ context.Context, _ string, _ chan<- domain.Message) {}
+func (c *mockClient) Close()                                                              {}
 
 func TestListAndGetClusters(t *testing.T) {
 	repo := newMockRepo()

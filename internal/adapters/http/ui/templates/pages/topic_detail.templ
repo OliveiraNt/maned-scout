@@ -1,19 +1,20 @@
 package pages
 
 import (
-    layout "github.com/OliveiraNt/kdash/internal/adapters/http/ui/templates/layout"
-    "github.com/OliveiraNt/kdash/internal/domain"
-    "fmt"
-    "sort"
-    "strings"
+	"fmt"
+	layout "github.com/OliveiraNt/kdash/internal/adapters/http/ui/templates/layout"
+	"github.com/OliveiraNt/kdash/internal/domain"
+	"sort"
+	"strings"
 )
 
 templ Imports(clusterName string, topicName string) {
-     <script>
+	<script>
         const clusterName = "{{ clusterName }}";
         const topicName = "{{ topicName }}";
      </script>
-     <script src="/static/topic.js"></script>
+	<script src="/static/topic.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/htmx-ext-ws@2.0.4" integrity="sha384-1RwI/nvUSrMRuNj7hX1+27J8XDdCoSLf0EjEyF69nacuWyiJYoQ/j39RT1mSnd2G" crossorigin="anonymous"></script>
 }
 
 templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
@@ -27,36 +28,46 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 				<li class="text-gray-900 dark:text-white font-medium">{ topic.Name }</li>
 			</ol>
 		</nav>
-
 		<div class="mb-6">
 			<div class="flex items-center justify-between">
 				<div>
 					<h2 class="text-3xl font-bold text-gray-900 dark:text-white">{ topic.Name }</h2>
 					<p class="text-gray-600 dark:text-gray-400 mt-2">Detalhes e configurações do tópico</p>
 				</div>
-				<div class="flex space-x-3">
+				<div class="flex items-center space-x-3">
+					<button
+						class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition flex items-center space-x-2"
+					>
+						<i class="fas fa-paper-plane"></i>
+						<span>Escrever no Tópico</span>
+					</button>
+					<div id="topic-actions">
+						@readButton(clusterName, topic.Name)
+					</div>
 					<button
 						onclick="showUpdateConfigModal()"
-						class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition flex items-center space-x-2">
+						class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition flex items-center space-x-2"
+					>
 						<i class="fas fa-edit"></i>
 						<span>Editar Configs</span>
 					</button>
 					<button
 						onclick="showIncreasePartitionsModal()"
-						class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition flex items-center space-x-2">
+						class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition flex items-center space-x-2"
+					>
 						<i class="fas fa-plus"></i>
 						<span>Aumentar Partições</span>
 					</button>
 					<button
 						onclick="confirmDeleteTopic()"
-						class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition flex items-center space-x-2">
+						class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition flex items-center space-x-2"
+					>
 						<i class="fas fa-trash"></i>
 						<span>Deletar Tópico</span>
 					</button>
 				</div>
 			</div>
 		</div>
-
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
 			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
 				<div class="flex items-center justify-between">
@@ -69,7 +80,6 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 					</div>
 				</div>
 			</div>
-
 			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
 				<div class="flex items-center justify-between">
 					<div>
@@ -81,7 +91,6 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 					</div>
 				</div>
 			</div>
-
 			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
 				<div class="flex items-center justify-between">
 					<div>
@@ -94,7 +103,6 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 				</div>
 			</div>
 		</div>
-
 		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
 			<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
 				<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Detalhes das Partições</h3>
@@ -150,7 +158,7 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 				</table>
 			</div>
 		</div>
-
+		<div id="message-stream-view"></div>
 		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
 			<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
 				<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Configurações do Tópico</h3>
@@ -178,7 +186,6 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 				</table>
 			</div>
 		</div>
-
 		@updateConfigModal(clusterName, topic.Name)
 		@increasePartitionsModal(clusterName, topic.Name, topic.Partitions)
 		@deleteTopicModal(clusterName, topic.Name)
@@ -201,16 +208,21 @@ templ updateConfigModal(clusterName, topicName string) {
 							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
 								Retention MS
 							</label>
-							<input type="number" name="retention.ms"
+							<input
+								type="number"
+								name="retention.ms"
 								class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-								placeholder="604800000 (7 days)">
+								placeholder="604800000 (7 days)"
+							/>
 						</div>
 						<div>
 							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
 								Cleanup Policy
 							</label>
-							<select name="cleanup.policy"
-								class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+							<select
+								name="cleanup.policy"
+								class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+							>
 								<option value="">-- Manter Atual --</option>
 								<option value="delete">delete</option>
 								<option value="compact">compact</option>
@@ -221,8 +233,10 @@ templ updateConfigModal(clusterName, topicName string) {
 							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
 								Compression Type
 							</label>
-							<select name="compression.type"
-								class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+							<select
+								name="compression.type"
+								class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+							>
 								<option value="">-- Manter Atual --</option>
 								<option value="uncompressed">uncompressed</option>
 								<option value="gzip">gzip</option>
@@ -235,18 +249,26 @@ templ updateConfigModal(clusterName, topicName string) {
 							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
 								Max Message Bytes
 							</label>
-							<input type="number" name="max.message.bytes"
+							<input
+								type="number"
+								name="max.message.bytes"
 								class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-								placeholder="1048576 (1 MB)">
+								placeholder="1048576 (1 MB)"
+							/>
 						</div>
 					</div>
 					<div class="flex justify-end space-x-3 mt-6">
-						<button type="button" onclick="closeUpdateConfigModal()"
-							class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+						<button
+							type="button"
+							onclick="closeUpdateConfigModal()"
+							class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+						>
 							Cancelar
 						</button>
-						<button type="submit"
-							class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+						<button
+							type="submit"
+							class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+						>
 							Atualizar
 						</button>
 					</div>
@@ -272,17 +294,26 @@ templ increasePartitionsModal(clusterName, topicName string, currentPartitions i
 						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
 							Total de Partições
 						</label>
-						<input type="number" name="totalPartitions" required
-							min={ fmt.Sprintf("%d", currentPartitions + 1) }
-							class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white">
+						<input
+							type="number"
+							name="totalPartitions"
+							required
+							min={ fmt.Sprintf("%d", currentPartitions+1) }
+							class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+						/>
 					</div>
 					<div class="flex justify-end space-x-3">
-						<button type="button" onclick="closeIncreasePartitionsModal()"
-							class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+						<button
+							type="button"
+							onclick="closeIncreasePartitionsModal()"
+							class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+						>
 							Cancelar
 						</button>
-						<button type="submit"
-							class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg">
+						<button
+							type="submit"
+							class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg"
+						>
 							Aumentar
 						</button>
 					</div>
@@ -304,12 +335,18 @@ templ deleteTopicModal(clusterName, topicName string) {
 					Esta ação não pode ser desfeita e todos os dados serão perdidos.
 				</p>
 				<div class="flex justify-end space-x-3">
-					<button type="button" onclick="closeDeleteTopicModal()"
-						class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+					<button
+						type="button"
+						onclick="closeDeleteTopicModal()"
+						class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+					>
 						Cancelar
 					</button>
-					<button type="button" onclick="deleteTopic()"
-						class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
+					<button
+						type="button"
+						onclick="deleteTopic()"
+						class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+					>
 						Deletar
 					</button>
 				</div>
@@ -338,3 +375,95 @@ func getSortedConfigKeys(configs map[string]string) []string {
 	return keys
 }
 
+templ readButton(clusterName string, topicName string) {
+	<button
+		id="toggle-read-btn"
+		hx-get={ templ.SafeURL(fmt.Sprintf("/api/cluster/%s/topics/%s/ws-on", clusterName, topicName)) }
+		hx-target="#message-stream-view"
+		hx-swap="innerHTML"
+		class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-medium"
+	>
+		Ler mensagens
+	</button>
+}
+
+templ stopButton(clusterName string, topicName string) {
+	<button
+		hx-get={ templ.SafeURL(fmt.Sprintf("/api/cluster/%s/topics/%s/ws-off", clusterName, topicName)) }
+		hx-target="#message-stream"
+		hx-swap="innerHTML"
+		class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium"
+	>
+		Parar leitura
+	</button>
+}
+
+templ MessageView(clusterName string, topicName string) {
+	<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border mt-6">
+		<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Mensagens (tempo real)</h3>
+        </div>
+		<div class="px-6 py-4">
+			<div
+				hx-ext="ws"
+				ws-connect={ templ.SafeURL(fmt.Sprintf("/api/cluster/%s/topics/%s/ws", clusterName, topicName)) }
+				ws-receive
+				hx-target="#messages"
+				hx-swap="beforeend"
+				id="message-stream"
+			>
+				<form ws-send hx-trigger="load">
+					<input type="hidden" name="message" value="start"/>
+				</form>
+			</div>
+			<div id="messages"></div>
+		</div>
+	</div>
+	<div hx-swap-oob="innerHTML:#topic-actions">
+		@stopButton(clusterName, topicName)
+	</div>
+}
+
+templ StopView(clusterName string, topicName string) {
+	<!-- remove o WS -->
+	<div hx-swap-oob="outerHTML:#message-stream"></div>
+	<!-- OOB: volta o botão Ler -->
+	<div hx-swap-oob="innerHTML:#topic-actions">
+		@readButton(clusterName, topicName)
+	</div>
+}
+
+templ Message(m domain.Message) {
+	<div id="messages" hx-swap-oob="beforeend" class="px-3 py-2 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+		<div class="flex flex-wrap items-center justify-between text-xs text-gray-500 dark:text-gray-400 gap-2">
+			<div class="flex items-center gap-3">
+				<span class="inline-flex items-center gap-1">
+					<i class="fas fa-stream"></i>
+					<span class="font-semibold">Partição:</span>
+					<span class="font-mono">{ fmt.Sprintf("%d", m.Partition) }</span>
+				</span>
+				<span class="inline-flex items-center gap-1">
+					<i class="fas fa-hashtag"></i>
+					<span class="font-semibold">Offset:</span>
+					<span class="font-mono">{ fmt.Sprintf("%d", m.Offset) }</span>
+				</span>
+			</div>
+			<div class="inline-flex items-center gap-1">
+				<i class="fas fa-clock"></i>
+				<span class="font-semibold">Timestamp:</span>
+				<span class="font-mono">{ m.Timestamp.Format("2006-01-02 15:04:05.000") }</span>
+			</div>
+		</div>
+		<div class="mt-2">
+			<div class="text-[11px] uppercase tracking-wide text-gray-400">Key</div>
+			<pre class="whitespace-pre-wrap break-words font-mono text-sm text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-900/40 rounded px-2 py-1">{ string(m.Key) }</pre>
+		</div>
+		<div class="mt-2">
+			<div class="text-[11px] uppercase tracking-wide text-gray-400">Value</div>
+			<pre class="whitespace-pre-wrap break-words font-mono text-sm text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-900/40 rounded px-2 py-1">{ string(m.Value) }</pre>
+		</div>
+	</div>
+	<div id="messages" hx-swap-oob="beforeend">
+		<hr class="my-2 border-gray-200 dark:border-gray-700"/>
+	</div>
+}

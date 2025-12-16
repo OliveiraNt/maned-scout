@@ -1,5 +1,7 @@
 package domain
 
+import "time"
+
 // Topic represents a Kafka topic with its metadata
 type Topic struct {
 	Name          string
@@ -45,4 +47,13 @@ type UpdateTopicConfigRequest struct {
 // IncreasePartitionsRequest represents a request to increase topic partitions
 type IncreasePartitionsRequest struct {
 	TotalPartitions int32
+}
+
+// Message represents a single message in a Kafka topic, containing key, value, partition, offset, and timestamp information.
+type Message struct {
+	Key       []byte
+	Value     []byte
+	Partition int32
+	Offset    int64
+	Timestamp time.Time
 }

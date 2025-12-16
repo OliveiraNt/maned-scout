@@ -9,6 +9,7 @@ import (
 
 	"github.com/OliveiraNt/kdash/internal/config"
 	"github.com/OliveiraNt/kdash/internal/domain"
+	"github.com/OliveiraNt/kdash/internal/registry"
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"github.com/twmb/franz-go/pkg/sasl"
@@ -178,6 +179,39 @@ func (c *Client) Close() {
 // GetConfig returns the cluster configuration
 func (c *Client) GetConfig() config.ClusterConfig {
 	return c.config
+}
+
+func (c *Client) StreamMessages(ctx context.Context, topic string, out chan<- domain.Message) {
+	if c == nil || c.client == nil {
+		return
+	}
+	c.client.AddConsumeTopics(topic)
+
+	for {
+		if ctx.Err() != nil {
+			return
+		}
+		fetches := c.client.PollFetches(ctx)
+		if fetches.IsClientClosed() || ctx.Err() != nil {
+			return
+		}
+		fetches.EachError(func(t string, p int32, err error) {
+			registry.Logger.Errorf("Error fetching messages from topic %s partition %d: %v", t, p, err)
+		})
+		fetches.EachRecord(func(r *kgo.Record) {
+			select {
+			case out <- domain.Message{
+				Key:       r.Key,
+				Value:     r.Value,
+				Timestamp: r.Timestamp,
+				Partition: r.Partition,
+				Offset:    r.Offset,
+			}:
+			case <-ctx.Done():
+				return
+			}
+		})
+	}
 }
 
 // buildTLSConfig reads cert files and builds a tls.Config

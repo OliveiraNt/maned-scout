@@ -44,7 +44,8 @@ func (c *testClient) UpdateTopicConfig(_ string, _ domain.UpdateTopicConfigReque
 func (c *testClient) IncreasePartitions(_ string, _ domain.IncreasePartitionsRequest) error {
 	return nil
 }
-func (c *testClient) Close() {}
+func (c *testClient) StreamMessages(_ context.Context, _ string, _ chan<- domain.Message) {}
+func (c *testClient) Close()                                                              {}
 
 type testFactory struct{}
 

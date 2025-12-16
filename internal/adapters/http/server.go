@@ -69,6 +69,10 @@ func (s *Server) Run(addr string) error {
 	r.Delete("/api/cluster/{name}/topics/{topic}", s.apiDeleteTopic)
 	r.Put("/api/cluster/{name}/topics/{topic}/config", s.apiUpdateTopicConfig)
 	r.Post("/api/cluster/{name}/topics/{topic}/partitions", s.apiIncreasePartitions)
+	r.Get("/api/cluster/{name}/topics/{topic}/ws-on", s.apiReadMessages)
+	r.Get("/api/cluster/{name}/topics/{topic}/ws-off", s.apiStopMessages)
+
+	r.Get("/api/cluster/{name}/topics/{topic}/ws", s.wsStreamTopic)
 
 	registry.Logger.Info("HTTP server listening", "addr", addr)
 	return http.ListenAndServe(addr, r)

@@ -28,6 +28,7 @@ type KafkaClient interface {
 	DeleteTopic(topicName string) error
 	UpdateTopicConfig(topicName string, req UpdateTopicConfigRequest) error
 	IncreasePartitions(topicName string, req IncreasePartitionsRequest) error
+	StreamMessages(ctx context.Context, topic string, out chan<- Message)
 	Close()
 }
 
