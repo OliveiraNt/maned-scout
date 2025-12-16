@@ -2,10 +2,17 @@ package pages
 
 import (
 	"fmt"
-	layout "github.com/OliveiraNt/kdash/internal/adapters/http/ui/templates/layout"
-	"github.com/OliveiraNt/kdash/internal/domain"
 	"sort"
 	"strings"
+	"strconv"
+
+	"encoding/binary"
+    "encoding/hex"
+    "encoding/json"
+    "unicode/utf8"
+
+	layout "github.com/OliveiraNt/kdash/internal/adapters/http/ui/templates/layout"
+	"github.com/OliveiraNt/kdash/internal/domain"
 )
 
 templ Imports(clusterName string, topicName string) {
@@ -433,6 +440,52 @@ templ StopView(clusterName string, topicName string) {
 	</div>
 }
 
+func renderKafkaBytes(b []byte) string {
+    if len(b) == 0 {
+        return "<empty>"
+    }
+
+    if json.Valid(b) {
+        return string(b)
+    }
+
+    if isPrintableText(b) {
+        return string(b)
+    }
+
+    if n, ok := tryBinaryNumber(b); ok {
+        return n
+    }
+
+    return "0x" + hex.EncodeToString(b)
+}
+
+func tryBinaryNumber(b []byte) (string, bool) {
+    switch len(b) {
+    case 4:
+        return strconv.FormatInt(int64(binary.BigEndian.Uint32(b)), 10), true
+    case 8:
+        return strconv.FormatInt(int64(binary.BigEndian.Uint64(b)), 10), true
+    default:
+        return "", false
+    }
+}
+
+func isPrintableText(b []byte) bool {
+    if !utf8.Valid(b) {
+        return false
+    }
+    for _, r := range string(b) {
+        if r == '\u0000' {
+            return false
+        }
+        if r < 32 && r != '\n' && r != '\r' && r != '\t' {
+            return false
+        }
+    }
+    return true
+}
+
 templ Message(m domain.Message) {
 	<div id="messages" hx-swap-oob="beforeend" class="px-3 py-2 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
 		<div class="flex flex-wrap items-center justify-between text-xs text-gray-500 dark:text-gray-400 gap-2">
@@ -456,11 +509,11 @@ templ Message(m domain.Message) {
 		</div>
 		<div class="mt-2">
 			<div class="text-[11px] uppercase tracking-wide text-gray-400">Key</div>
-			<pre class="whitespace-pre-wrap break-words font-mono text-sm text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-900/40 rounded px-2 py-1">{ string(m.Key) }</pre>
+			<pre class="whitespace-pre-wrap break-words font-mono text-sm text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-900/40 rounded px-2 py-1">{ renderKafkaBytes(m.Key) }</pre>
 		</div>
 		<div class="mt-2">
 			<div class="text-[11px] uppercase tracking-wide text-gray-400">Value</div>
-			<pre class="whitespace-pre-wrap break-words font-mono text-sm text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-900/40 rounded px-2 py-1">{ string(m.Value) }</pre>
+			<pre class="whitespace-pre-wrap break-words font-mono text-sm text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-900/40 rounded px-2 py-1">{ renderKafkaBytes(m.Value) }</pre>
 		</div>
 	</div>
 	<div id="messages" hx-swap-oob="beforeend">
