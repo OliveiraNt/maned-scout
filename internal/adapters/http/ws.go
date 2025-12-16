@@ -41,7 +41,7 @@ func (s *Server) wsStreamTopic(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	conn.SetCloseHandler(func(code int, text string) error {
-		registry.Logger.Info("websocket closed, stopping stream", "cluster", clusterName, "topic", topicName)
+		registry.Logger.Info("websocket close handler triggered", "cluster", clusterName, "topic", topicName, "code", code)
 		cancel()
 		return nil
 	})
@@ -50,11 +50,26 @@ func (s *Server) wsStreamTopic(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer func() {
-			registry.Logger.Info("stopping stream", "cluster", clusterName, "topic", topicName)
+			registry.Logger.Info("consumer goroutine stopping", "cluster", clusterName, "topic", topicName)
 			cancel()
 		}()
 		client.StreamMessages(ctx, topicName, msgs)
+		registry.Logger.Info("stream stopped", "cluster", clusterName, "topic", topicName)
 		close(msgs)
+	}()
+
+	go func() {
+		defer cancel()
+		for {
+			if _, _, err := conn.ReadMessage(); err != nil {
+				registry.Logger.Info("websocket client disconnected",
+					"cluster", clusterName,
+					"topic", topicName,
+					"err", err,
+				)
+				return
+			}
+		}
 	}()
 
 	for {
@@ -63,6 +78,7 @@ func (s *Server) wsStreamTopic(w http.ResponseWriter, r *http.Request) {
 			return
 		case m, ok := <-msgs:
 			if !ok {
+				registry.Logger.Info("message channel closed", "cluster", clusterName, "topic", topicName)
 				return
 			}
 

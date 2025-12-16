@@ -211,6 +211,7 @@ func (c *Client) StreamMessages(ctx context.Context, topic string, out chan<- do
 				return
 			}
 		})
+		c.client.PurgeTopicsFromConsuming(topic)
 	}
 }
 

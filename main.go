@@ -78,17 +78,17 @@ func findConfigPath() string {
 
 func main() {
 	godotenv.Load()
-
 	registry.InitLogger()
 
 	configPath := os.Getenv("KDASH_CONFIG")
 	if configPath == "" {
 		configPath = findConfigPath()
 	}
-	registry.Logger = registry.Logger.With("configPath", configPath)
 
 	factory := kafka.NewFactory()
 	repo := repository.NewClusterRepository(configPath, factory)
+	defer repo.Close()
+
 	registry.Logger.Info("initializing repository and kafka factory")
 
 	if err := repo.LoadFromFile(); err != nil {

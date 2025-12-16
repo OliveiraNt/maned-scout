@@ -183,7 +183,6 @@ func (r *ClusterRepository) reconcile(cfg config.FileConfig) error {
 
 		cur, ok := r.clients[c.Name]
 		if !ok {
-			// Create new client
 			client, err := r.factory.CreateClient(c)
 			if err != nil {
 				registry.Logger.Error("failed to create client", "cluster", c.Name, "err", err)
@@ -194,7 +193,6 @@ func (r *ClusterRepository) reconcile(cfg config.FileConfig) error {
 			continue
 		}
 
-		// Check if config changed
 		if kafkaClient, ok := cur.(*kafka.Client); ok {
 			if !clusterConfigEqual(kafkaClient.GetConfig(), c) {
 				cur.Close()
@@ -209,7 +207,6 @@ func (r *ClusterRepository) reconcile(cfg config.FileConfig) error {
 		}
 	}
 
-	// Remove clients not present in file
 	for name, client := range r.clients {
 		if _, ok := existing[name]; !ok {
 			client.Close()
@@ -225,6 +222,16 @@ func (r *ClusterRepository) writeToFile() error {
 	dir := filepath.Dir(r.configPath)
 	_ = os.MkdirAll(dir, 0755)
 	return config.WriteConfig(r.configPath, r.configData)
+}
+
+// Close releases all resources held by the ClusterRepository, including watcher and Kafka clients.
+func (r *ClusterRepository) Close() {
+	registry.Logger.Info("Closing repository")
+	r.watcher.Close()
+	for k, client := range r.clients {
+		registry.Logger.Info("Closing client", "cluster", k)
+		client.Close()
+	}
 }
 
 // clusterConfigEqual compares cluster configurations
