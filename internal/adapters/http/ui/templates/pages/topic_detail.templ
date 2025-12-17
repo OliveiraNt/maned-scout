@@ -387,10 +387,11 @@ templ readButton(clusterName string, topicName string) {
 		id="toggle-read-btn"
 		hx-get={ templ.SafeURL(fmt.Sprintf("/api/cluster/%s/topics/%s/ws-on", clusterName, topicName)) }
 		hx-target="#message-stream-view"
-		hx-swap="innerHTML"
+		hx-swap="outerHTML"
 		class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-medium"
 	>
-		Ler mensagens
+		<i class="fas fa-play"></i>
+		<span>Ler mensagens</span>
 	</button>
 }
 
@@ -401,14 +402,18 @@ templ stopButton(clusterName string, topicName string) {
 		hx-swap="innerHTML"
 		class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium"
 	>
-		Parar leitura
+		<i class="fas fa-stop"></i>
+		<span>Parar leitura</span>
 	</button>
 }
 
 templ MessageView(clusterName string, topicName string) {
-	<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border mt-6">
+	<div id="message-stream-view" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mt-6 mb-6">
 		<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Mensagens (tempo real)</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Mensagens</h3>
+            <div id="message-spinner" class="p-6 text-center text-gray-500 dark:text-gray-400">
+                <i class="fas fa-rotate fa-spin mr-2"></i>
+            </div>
         </div>
 		<div class="px-6 py-4">
 			<div
@@ -432,12 +437,11 @@ templ MessageView(clusterName string, topicName string) {
 }
 
 templ StopView(clusterName string, topicName string) {
-	<!-- remove o WS -->
 	<div hx-swap-oob="outerHTML:#message-stream"></div>
-	<!-- OOB: volta o botão Ler -->
 	<div hx-swap-oob="innerHTML:#topic-actions">
 		@readButton(clusterName, topicName)
 	</div>
+	<div hx-swap-oob="innerHTML:#message-spinner"></div>
 }
 
 func renderKafkaBytes(b []byte) string {
