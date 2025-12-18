@@ -77,6 +77,7 @@ func (c *mockClient) IncreasePartitions(_ string, _ domain.IncreasePartitionsReq
 	return nil
 }
 func (c *mockClient) StreamMessages(_ context.Context, _ string, _ chan<- domain.Message) {}
+func (c *mockClient) WriteMessage(_ context.Context, _ string, _ domain.Message)          {}
 func (c *mockClient) Close()                                                              {}
 
 func TestListAndGetClusters(t *testing.T) {

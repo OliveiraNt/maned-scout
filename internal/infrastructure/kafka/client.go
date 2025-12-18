@@ -215,6 +215,20 @@ func (c *Client) StreamMessages(ctx context.Context, topic string, out chan<- do
 	}
 }
 
+func (c *Client) WriteMessage(ctx context.Context, topic string, msg domain.Message) {
+	r := kgo.Record{
+		Key:       msg.Key,
+		Value:     msg.Value,
+		Timestamp: time.Now(),
+		Topic:     topic,
+	}
+	c.client.Produce(ctx, &r, func(r *kgo.Record, err error) {
+		if err != nil {
+			registry.Logger.Errorf("Error producing message to topic %s: %v", topic, err)
+		}
+	})
+}
+
 // buildTLSConfig reads cert files and builds a tls.Config
 func buildTLSConfig(t *config.TLSConfig) (*tls.Config, error) {
 	rootCAs := x509.NewCertPool()

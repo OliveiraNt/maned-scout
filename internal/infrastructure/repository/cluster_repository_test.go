@@ -36,6 +36,7 @@ func (d *dummyClient) IncreasePartitions(_ string, _ domain.IncreasePartitionsRe
 	return nil
 }
 func (d *dummyClient) StreamMessages(_ context.Context, _ string, _ chan<- domain.Message) {}
+func (d *dummyClient) WriteMessage(_ context.Context, _ string, _ domain.Message)          {}
 func (d *dummyClient) Close()                                                              {}
 
 func TestSaveFindDelete(t *testing.T) {
