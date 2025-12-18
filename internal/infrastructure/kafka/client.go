@@ -186,6 +186,7 @@ func (c *Client) StreamMessages(ctx context.Context, topic string, out chan<- do
 		return
 	}
 	c.client.AddConsumeTopics(topic)
+	defer c.client.PurgeTopicsFromConsuming(topic)
 
 	for {
 		if ctx.Err() != nil {
@@ -211,7 +212,6 @@ func (c *Client) StreamMessages(ctx context.Context, topic string, out chan<- do
 				return
 			}
 		})
-		c.client.PurgeTopicsFromConsuming(topic)
 	}
 }
 

@@ -10,7 +10,6 @@ import (
 )
 
 func (s *Server) uiHome(w http.ResponseWriter, r *http.Request) {
-	registry.Logger.Debug("render home")
 	cfgs := s.clusterService.ListClusters()
 	clustersList := make([]pages.ClusterWithStats, 0, len(cfgs))
 	for _, c := range cfgs {
