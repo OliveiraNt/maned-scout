@@ -101,9 +101,8 @@ func main() {
 		panic(err)
 	}
 
-	clusterService := application.NewClusterService(repo, factory)
-	topicService := application.NewTopicService(clusterService, factory)
+	clusterService := application.NewClusterService(repo)
 	registry.Logger.Info("application layer initialized")
 
-	cmd.StartWeb(clusterService, topicService, repo)
+	cmd.StartWeb(clusterService, repo)
 }

@@ -6,36 +6,27 @@ import (
 	"github.com/OliveiraNt/kdash/internal/registry"
 )
 
-// ClusterService handles cluster-related business operations.
+// ClusterService provides operations related to cluster management.
 type ClusterService struct {
-	repo    domain.ClusterRepository
-	factory ClientFactory
-}
-
-// ClientFactory creates Kafka clients from configuration.
-type ClientFactory interface {
-	CreateClient(cfg config.ClusterConfig) (domain.KafkaClient, error)
+	repo domain.ClusterRepository
 }
 
 // NewClusterService creates a new cluster service.
-func NewClusterService(repo domain.ClusterRepository, factory ClientFactory) *ClusterService {
-	return &ClusterService{
-		repo:    repo,
-		factory: factory,
-	}
+func NewClusterService(repo domain.ClusterRepository) *ClusterService {
+	return &ClusterService{repo: repo}
 }
 
-// ListClusters returns all cluster configurations.
+// ListClusters lists all clusters.
 func (s *ClusterService) ListClusters() []config.ClusterConfig {
 	return s.repo.FindAll()
 }
 
-// GetCluster retrieves a specific cluster configuration.
+// GetCluster retrieves a cluster configuration by name.
 func (s *ClusterService) GetCluster(name string) (config.ClusterConfig, bool) {
 	return s.repo.FindByName(name)
 }
 
-// AddCluster adds a new cluster or updates an existing one.
+// AddCluster adds a new cluster configuration.
 func (s *ClusterService) AddCluster(cfg config.ClusterConfig) error {
 	if cfg.Name == "" || len(cfg.Brokers) == 0 {
 		return ErrInvalidClusterConfig
@@ -43,58 +34,18 @@ func (s *ClusterService) AddCluster(cfg config.ClusterConfig) error {
 	return s.repo.Save(cfg)
 }
 
-// UpdateCluster updates an existing cluster.
+// UpdateCluster updates an existing cluster configuration.
 func (s *ClusterService) UpdateCluster(name string, cfg config.ClusterConfig) error {
-	if cfg.Name == "" {
-		cfg.Name = name
-	}
+	cfg.Name = name
 	return s.repo.Save(cfg)
 }
 
-// DeleteCluster removes a cluster.
+// DeleteCluster removes a cluster configuration.
 func (s *ClusterService) DeleteCluster(name string) error {
 	return s.repo.Delete(name)
 }
 
-// GetClusterWithStats retrieves cluster information with statistics.
-func (s *ClusterService) GetClusterWithStats(name string, client domain.KafkaClient) (*domain.Cluster, *domain.ClusterStats, error) {
-	cfg, ok := s.repo.FindByName(name)
-	if !ok {
-		return nil, nil, ErrClusterNotFound
-	}
-
-	cluster := &domain.Cluster{
-		ID:       cfg.Name,
-		Name:     cfg.Name,
-		Brokers:  cfg.Brokers,
-		AuthType: cfg.GetAuthType(),
-	}
-
-	if cfg.HasCertificate() {
-		certInfo, err := cfg.GetCertificateInfo()
-		if err != nil {
-			registry.Logger.Warn("get certificate info failed", "cluster", cfg.Name, "err", err)
-		} else {
-			cluster.CertInfo = certInfo
-		}
-	}
-
-	var stats *domain.ClusterStats
-	if client != nil {
-		cluster.IsOnline = client.IsHealthy()
-		if cluster.IsOnline {
-			var err error
-			stats, err = client.GetClusterStats()
-			if err != nil {
-				registry.Logger.Error("get stats failed", "cluster", name, "err", err)
-			}
-		}
-	}
-
-	return cluster, stats, nil
-}
-
-// GetClusterInfo retrieves basic cluster information with online status and statistics.
+// GetClusterInfo retrieves basic cluster info with status and stats using existing client.
 func (s *ClusterService) GetClusterInfo(name string) (*domain.Cluster, *domain.ClusterStats, error) {
 	cfg, ok := s.repo.FindByName(name)
 	if !ok {
@@ -107,36 +58,34 @@ func (s *ClusterService) GetClusterInfo(name string) (*domain.Cluster, *domain.C
 		Brokers:  cfg.Brokers,
 		AuthType: cfg.GetAuthType(),
 	}
-
 	if cfg.HasCertificate() {
-		certInfo, err := cfg.GetCertificateInfo()
-		if err != nil {
-			registry.Logger.Warn("get certificate info failed", "cluster", cfg.Name, "err", err)
-		} else {
+		if certInfo, err := cfg.GetCertificateInfo(); err == nil {
 			cluster.CertInfo = certInfo
+		} else {
+			registry.Logger.Warn("get certificate info failed", "cluster", cfg.Name, "err", err)
 		}
 	}
 
-	client, err := s.factory.CreateClient(cfg)
-	if err != nil {
-		registry.Logger.Error("create client failed", "cluster", name, "err", err)
+	client, ok := s.repo.GetClient(name)
+	if !ok {
+		registry.Logger.Warn("get cluster info client not found", "cluster", name)
 		return cluster, nil, nil
 	}
-	defer client.Close()
 
 	cluster.IsOnline = client.IsHealthy()
 	var stats *domain.ClusterStats
 	if cluster.IsOnline {
-		stats, err = client.GetClusterStats()
+		st, err := client.GetClusterStats()
 		if err != nil {
 			registry.Logger.Error("get cluster stats failed", "cluster", name, "err", err)
+		} else {
+			stats = st
 		}
 	}
-
 	return cluster, stats, nil
 }
 
-// GetClusterDetail retrieves detailed cluster information including topics, brokers, and consumer groups.
+// GetClusterDetail retrieves detailed cluster information using existing client.
 func (s *ClusterService) GetClusterDetail(name string) (*domain.Cluster, map[string]int, *domain.ClusterStats, []domain.BrokerDetail, []domain.ConsumerGroupSummary, error) {
 	cfg, ok := s.repo.FindByName(name)
 	if !ok {
@@ -149,13 +98,11 @@ func (s *ClusterService) GetClusterDetail(name string) (*domain.Cluster, map[str
 		Brokers:  cfg.Brokers,
 		AuthType: cfg.GetAuthType(),
 	}
-
 	if cfg.HasCertificate() {
-		certInfo, err := cfg.GetCertificateInfo()
-		if err != nil {
-			registry.Logger.Warn("get certificate info failed", "cluster", cfg.Name, "err", err)
-		} else {
+		if certInfo, err := cfg.GetCertificateInfo(); err == nil {
 			cluster.CertInfo = certInfo
+		} else {
+			registry.Logger.Warn("get certificate info failed", "cluster", cfg.Name, "err", err)
 		}
 	}
 
@@ -164,34 +111,32 @@ func (s *ClusterService) GetClusterDetail(name string) (*domain.Cluster, map[str
 	var brokerDetails []domain.BrokerDetail
 	var consumerGroups []domain.ConsumerGroupSummary
 
-	client, err := s.factory.CreateClient(cfg)
-	if err != nil {
-		registry.Logger.Error("create client failed", "cluster", name, "err", err)
+	client, ok := s.repo.GetClient(name)
+	if !ok {
+		registry.Logger.Warn("get cluster detail client not found", "cluster", name)
 		return cluster, topics, stats, brokerDetails, consumerGroups, nil
 	}
-	defer client.Close()
 
 	cluster.IsOnline = client.IsHealthy()
 	if cluster.IsOnline {
-		topicList, err := client.ListTopics(false)
-		if err != nil {
-			registry.Logger.Error("list topics failed", "cluster", name, "err", err)
+		if tl, err := client.ListTopics(false); err == nil {
+			topics = tl
 		} else {
-			topics = topicList
+			registry.Logger.Error("list topics failed", "cluster", name, "err", err)
 		}
-
-		stats, err = client.GetClusterStats()
-		if err != nil {
+		if st, err := client.GetClusterStats(); err == nil {
+			stats = st
+		} else {
 			registry.Logger.Error("get cluster stats failed", "cluster", name, "err", err)
 		}
-
-		brokerDetails, err = client.GetBrokerDetails()
-		if err != nil {
+		if br, err := client.GetBrokerDetails(); err == nil {
+			brokerDetails = br
+		} else {
 			registry.Logger.Error("get broker details failed", "cluster", name, "err", err)
 		}
-
-		consumerGroups, err = client.ListConsumerGroups()
-		if err != nil {
+		if cg, err := client.ListConsumerGroups(); err == nil {
+			consumerGroups = cg
+		} else {
 			registry.Logger.Error("list consumer groups failed", "cluster", name, "err", err)
 		}
 	}

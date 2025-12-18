@@ -13,6 +13,12 @@ type ClusterRepository interface {
 	FindByName(name string) (config.ClusterConfig, bool)
 	FindAll() []config.ClusterConfig
 	Watch() error
+	GetClient(name string) (KafkaClient, bool)
+}
+
+// ClientFactory creates Kafka clients from configuration.
+type ClientFactory interface {
+	CreateClient(cfg config.ClusterConfig) (KafkaClient, error)
 }
 
 // KafkaClient defines operations for interacting with a Kafka cluster.

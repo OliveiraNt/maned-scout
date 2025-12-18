@@ -1,11 +1,11 @@
 package repository
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"sync"
 
-	"github.com/OliveiraNt/kdash/internal/application"
 	"github.com/OliveiraNt/kdash/internal/config"
 	"github.com/OliveiraNt/kdash/internal/domain"
 	"github.com/OliveiraNt/kdash/internal/infrastructure/kafka"
@@ -20,11 +20,11 @@ type ClusterRepository struct {
 	configData config.FileConfig
 	configPath string
 	watcher    *fsnotify.Watcher
-	factory    application.ClientFactory
+	factory    domain.ClientFactory
 }
 
 // NewClusterRepository creates a new cluster repository.
-func NewClusterRepository(configPath string, factory application.ClientFactory) *ClusterRepository {
+func NewClusterRepository(configPath string, factory domain.ClientFactory) *ClusterRepository {
 	return &ClusterRepository{
 		clients:    make(map[string]domain.KafkaClient),
 		configPath: configPath,
@@ -80,7 +80,7 @@ func (r *ClusterRepository) Delete(name string) error {
 
 	client, ok := r.clients[name]
 	if !ok {
-		return application.ErrClusterNotFound
+		return errors.New("cluster not found")
 	}
 
 	client.Close()

@@ -10,7 +10,8 @@ import (
 )
 
 // StartWeb starts the HTTP server using already-initialized application and repository layers.
-func StartWeb(clusterService *application.ClusterService, topicService *application.TopicService, repo *repository.ClusterRepository) {
+func StartWeb(clusterService *application.ClusterService, repo *repository.ClusterRepository) {
+	topicService := application.NewTopicService(clusterService, repo)
 	server := httpserver.New(clusterService, topicService, repo)
 	port := os.Getenv("KDASH_HTTP_PORT")
 	if port == "" {
