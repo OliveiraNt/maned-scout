@@ -13,31 +13,31 @@ import (
 type repoTestFactory struct{}
 
 func (f repoTestFactory) CreateClient(_ config.ClusterConfig) (domain.KafkaClient, error) {
-	return &dummyClient{}, nil
+	return &mockClient{}, nil
 }
 
-type dummyClient struct{}
+type mockClient struct{}
 
-func (d *dummyClient) IsHealthy() bool                           { return true }
-func (d *dummyClient) ListTopics(_ bool) (map[string]int, error) { return map[string]int{}, nil }
-func (d *dummyClient) GetClusterInfo() (*domain.Cluster, error)  { return nil, nil }
-func (d *dummyClient) GetClusterStats() (*domain.ClusterStats, error) {
+func (c *mockClient) IsHealthy() bool                           { return true }
+func (c *mockClient) ListTopics(_ bool) (map[string]int, error) { return map[string]int{}, nil }
+func (c *mockClient) GetClusterInfo() (*domain.Cluster, error)  { return nil, nil }
+func (c *mockClient) GetClusterStats() (*domain.ClusterStats, error) {
 	return &domain.ClusterStats{}, nil
 }
-func (d *dummyClient) GetBrokerDetails() ([]domain.BrokerDetail, error)           { return nil, nil }
-func (d *dummyClient) ListConsumerGroups() ([]domain.ConsumerGroupSummary, error) { return nil, nil }
-func (d *dummyClient) GetTopicDetail(_ string) (*domain.TopicDetail, error)       { return nil, nil }
-func (d *dummyClient) CreateTopic(_ domain.CreateTopicRequest) error              { return nil }
-func (d *dummyClient) DeleteTopic(_ string) error                                 { return nil }
-func (d *dummyClient) UpdateTopicConfig(_ string, _ domain.UpdateTopicConfigRequest) error {
+func (c *mockClient) GetBrokerDetails() ([]domain.BrokerDetail, error)           { return nil, nil }
+func (c *mockClient) ListConsumerGroups() ([]domain.ConsumerGroupSummary, error) { return nil, nil }
+func (c *mockClient) GetTopicDetail(_ string) (*domain.TopicDetail, error)       { return nil, nil }
+func (c *mockClient) CreateTopic(_ domain.CreateTopicRequest) error              { return nil }
+func (c *mockClient) DeleteTopic(_ string) error                                 { return nil }
+func (c *mockClient) UpdateTopicConfig(_ string, _ domain.UpdateTopicConfigRequest) error {
 	return nil
 }
-func (d *dummyClient) IncreasePartitions(_ string, _ domain.IncreasePartitionsRequest) error {
+func (c *mockClient) IncreasePartitions(_ string, _ domain.IncreasePartitionsRequest) error {
 	return nil
 }
-func (d *dummyClient) StreamMessages(_ context.Context, _ string, _ chan<- domain.Message) {}
-func (d *dummyClient) WriteMessage(_ context.Context, _ string, _ domain.Message)          {}
-func (d *dummyClient) Close()                                                              {}
+func (c *mockClient) StreamMessages(_ context.Context, _ string, _ chan<- domain.Message) {}
+func (c *mockClient) WriteMessage(_ context.Context, _ string, _ domain.Message)          {}
+func (c *mockClient) Close()                                                              {}
 
 func TestSaveFindDelete(t *testing.T) {
 	tdir := t.TempDir()
@@ -986,7 +986,7 @@ func (f *errorTestFactory) CreateClient(_ config.ClusterConfig) (domain.KafkaCli
 	if f.shouldError {
 		return nil, &testError{msg: "factory error"}
 	}
-	return &dummyClient{}, nil
+	return &mockClient{}, nil
 }
 
 type testError struct {

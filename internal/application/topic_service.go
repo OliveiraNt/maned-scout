@@ -14,10 +14,10 @@ type TopicService struct {
 }
 
 // NewTopicService creates a new topic service.
-func NewTopicService(clusterService *ClusterService, repo domain.ClusterRepository) *TopicService {
+func NewTopicService(clusterService *ClusterService) *TopicService {
 	return &TopicService{
 		clusterService: clusterService,
-		repo:           repo,
+		repo:           clusterService.getRepo(),
 	}
 }
 
@@ -185,5 +185,19 @@ func (s *TopicService) StreamMessages(ctx context.Context, clusterName, topicNam
 	}
 
 	client.StreamMessages(ctx, topicName, out)
+	return nil
+}
+
+func (s *TopicService) WriteMessage(ctx context.Context, clusterName, topicName string, msg domain.Message) (err error) {
+	_, ok := s.clusterService.GetCluster(clusterName)
+	if !ok {
+		return ErrClusterNotFound
+	}
+	client, ok := s.repo.GetClient(clusterName)
+	if !ok {
+		registry.Logger.Warn("write message client not found", "cluster", clusterName)
+		return ErrClusterNotFound
+	}
+	client.WriteMessage(ctx, topicName, msg)
 	return nil
 }

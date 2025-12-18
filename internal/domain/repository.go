@@ -35,6 +35,7 @@ type KafkaClient interface {
 	UpdateTopicConfig(topicName string, req UpdateTopicConfigRequest) error
 	IncreasePartitions(topicName string, req IncreasePartitionsRequest) error
 	StreamMessages(ctx context.Context, topic string, out chan<- Message)
+	WriteMessage(ctx context.Context, topic string, msg Message)
 	Close()
 }
 

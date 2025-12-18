@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/OliveiraNt/kdash/internal/application"
-	"github.com/OliveiraNt/kdash/internal/infrastructure/repository"
 	"github.com/OliveiraNt/kdash/internal/registry"
 
 	"github.com/go-chi/chi/v5"
@@ -19,15 +18,13 @@ import (
 type Server struct {
 	clusterService *application.ClusterService
 	topicService   *application.TopicService
-	repo           *repository.ClusterRepository
 }
 
 // New creates a new HTTP server instance.
-func New(clusterService *application.ClusterService, topicService *application.TopicService, repo *repository.ClusterRepository) *Server {
+func New(clusterService *application.ClusterService, topicService *application.TopicService) *Server {
 	return &Server{
 		clusterService: clusterService,
 		topicService:   topicService,
-		repo:           repo,
 	}
 }
 

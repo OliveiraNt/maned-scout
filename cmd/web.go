@@ -5,14 +5,13 @@ import (
 
 	httpserver "github.com/OliveiraNt/kdash/internal/adapters/http"
 	"github.com/OliveiraNt/kdash/internal/application"
-	"github.com/OliveiraNt/kdash/internal/infrastructure/repository"
 	"github.com/OliveiraNt/kdash/internal/registry"
 )
 
 // StartWeb starts the HTTP server using already-initialized application and repository layers.
-func StartWeb(clusterService *application.ClusterService, repo *repository.ClusterRepository) {
-	topicService := application.NewTopicService(clusterService, repo)
-	server := httpserver.New(clusterService, topicService, repo)
+func StartWeb(clusterService *application.ClusterService) {
+	topicService := application.NewTopicService(clusterService)
+	server := httpserver.New(clusterService, topicService)
 	port := os.Getenv("KDASH_HTTP_PORT")
 	if port == "" {
 		port = "8080"

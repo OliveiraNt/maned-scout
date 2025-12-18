@@ -16,6 +16,10 @@ func NewClusterService(repo domain.ClusterRepository) *ClusterService {
 	return &ClusterService{repo: repo}
 }
 
+func (s *ClusterService) getRepo() domain.ClusterRepository {
+	return s.repo
+}
+
 // ListClusters lists all clusters.
 func (s *ClusterService) ListClusters() []config.ClusterConfig {
 	return s.repo.FindAll()

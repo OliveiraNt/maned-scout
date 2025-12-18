@@ -104,5 +104,5 @@ func main() {
 	clusterService := application.NewClusterService(repo)
 	registry.Logger.Info("application layer initialized")
 
-	cmd.StartWeb(clusterService, repo)
+	cmd.StartWeb(clusterService)
 }
