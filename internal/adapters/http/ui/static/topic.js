@@ -126,6 +126,7 @@ async function sendMessage(event) {
         if (response.ok) {
             showNotification('Mensagem enviada com sucesso!', 'success');
             closeWriteMessageModal();
+            form.reset();
         } else {
             const error = await response.text();
             showNotification(`Erro: ${error}`, 'error');
