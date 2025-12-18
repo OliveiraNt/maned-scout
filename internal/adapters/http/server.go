@@ -18,13 +18,15 @@ import (
 // Server provides the HTTP API and Web UI endpoints for kdash.
 type Server struct {
 	clusterService *application.ClusterService
+	topicService   *application.TopicService
 	repo           *repository.ClusterRepository
 }
 
 // New creates a new HTTP server instance.
-func New(clusterService *application.ClusterService, repo *repository.ClusterRepository) *Server {
+func New(clusterService *application.ClusterService, topicService *application.TopicService, repo *repository.ClusterRepository) *Server {
 	return &Server{
 		clusterService: clusterService,
+		topicService:   topicService,
 		repo:           repo,
 	}
 }

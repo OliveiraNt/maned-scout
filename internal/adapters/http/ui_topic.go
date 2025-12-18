@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/OliveiraNt/kdash/internal/adapters/http/ui/templates/pages"
-	"github.com/OliveiraNt/kdash/internal/domain"
 	"github.com/OliveiraNt/kdash/internal/registry"
 
 	"github.com/go-chi/chi/v5"
@@ -32,23 +31,17 @@ func (s *Server) uiTopicDetail(w http.ResponseWriter, r *http.Request) {
 	clusterName := chi.URLParam(r, "name")
 	topicName := chi.URLParam(r, "topic")
 	registry.Logger.Debug("render topic detail", "cluster", clusterName, "topic", topicName)
+
 	_, ok := s.clusterService.GetCluster(clusterName)
 	if !ok {
 		http.Error(w, "cluster not found", http.StatusNotFound)
 		return
 	}
-	var topicDetail *domain.TopicDetail
-	client, ok := s.repo.GetClient(clusterName)
-	if ok {
-		detail, err := client.GetTopicDetail(topicName)
-		if err != nil {
-			registry.Logger.Error("get topic detail failed", "cluster", clusterName, "topic", topicName, "err", err)
-			http.Error(w, "topic not found", http.StatusNotFound)
-			return
-		}
-		topicDetail = detail
-	} else {
-		http.Error(w, "cluster not available", http.StatusServiceUnavailable)
+
+	topicDetail, err := s.topicService.GetTopicDetail(clusterName, topicName)
+	if err != nil {
+		registry.Logger.Error("get topic detail failed", "cluster", clusterName, "topic", topicName, "err", err)
+		http.Error(w, "topic not found", http.StatusNotFound)
 		return
 	}
 

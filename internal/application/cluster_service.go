@@ -93,3 +93,108 @@ func (s *ClusterService) GetClusterWithStats(name string, client domain.KafkaCli
 
 	return cluster, stats, nil
 }
+
+// GetClusterInfo retrieves basic cluster information with online status and statistics.
+func (s *ClusterService) GetClusterInfo(name string) (*domain.Cluster, *domain.ClusterStats, error) {
+	cfg, ok := s.repo.FindByName(name)
+	if !ok {
+		return nil, nil, ErrClusterNotFound
+	}
+
+	cluster := &domain.Cluster{
+		ID:       cfg.Name,
+		Name:     cfg.Name,
+		Brokers:  cfg.Brokers,
+		AuthType: cfg.GetAuthType(),
+	}
+
+	if cfg.HasCertificate() {
+		certInfo, err := cfg.GetCertificateInfo()
+		if err != nil {
+			registry.Logger.Warn("get certificate info failed", "cluster", cfg.Name, "err", err)
+		} else {
+			cluster.CertInfo = certInfo
+		}
+	}
+
+	client, err := s.factory.CreateClient(cfg)
+	if err != nil {
+		registry.Logger.Error("create client failed", "cluster", name, "err", err)
+		return cluster, nil, nil
+	}
+	defer client.Close()
+
+	cluster.IsOnline = client.IsHealthy()
+	var stats *domain.ClusterStats
+	if cluster.IsOnline {
+		stats, err = client.GetClusterStats()
+		if err != nil {
+			registry.Logger.Error("get cluster stats failed", "cluster", name, "err", err)
+		}
+	}
+
+	return cluster, stats, nil
+}
+
+// GetClusterDetail retrieves detailed cluster information including topics, brokers, and consumer groups.
+func (s *ClusterService) GetClusterDetail(name string) (*domain.Cluster, map[string]int, *domain.ClusterStats, []domain.BrokerDetail, []domain.ConsumerGroupSummary, error) {
+	cfg, ok := s.repo.FindByName(name)
+	if !ok {
+		return nil, nil, nil, nil, nil, ErrClusterNotFound
+	}
+
+	cluster := &domain.Cluster{
+		ID:       cfg.Name,
+		Name:     cfg.Name,
+		Brokers:  cfg.Brokers,
+		AuthType: cfg.GetAuthType(),
+	}
+
+	if cfg.HasCertificate() {
+		certInfo, err := cfg.GetCertificateInfo()
+		if err != nil {
+			registry.Logger.Warn("get certificate info failed", "cluster", cfg.Name, "err", err)
+		} else {
+			cluster.CertInfo = certInfo
+		}
+	}
+
+	topics := make(map[string]int)
+	var stats *domain.ClusterStats
+	var brokerDetails []domain.BrokerDetail
+	var consumerGroups []domain.ConsumerGroupSummary
+
+	client, err := s.factory.CreateClient(cfg)
+	if err != nil {
+		registry.Logger.Error("create client failed", "cluster", name, "err", err)
+		return cluster, topics, stats, brokerDetails, consumerGroups, nil
+	}
+	defer client.Close()
+
+	cluster.IsOnline = client.IsHealthy()
+	if cluster.IsOnline {
+		topicList, err := client.ListTopics(false)
+		if err != nil {
+			registry.Logger.Error("list topics failed", "cluster", name, "err", err)
+		} else {
+			topics = topicList
+		}
+
+		stats, err = client.GetClusterStats()
+		if err != nil {
+			registry.Logger.Error("get cluster stats failed", "cluster", name, "err", err)
+		}
+
+		brokerDetails, err = client.GetBrokerDetails()
+		if err != nil {
+			registry.Logger.Error("get broker details failed", "cluster", name, "err", err)
+		}
+
+		consumerGroups, err = client.ListConsumerGroups()
+		if err != nil {
+			registry.Logger.Error("list consumer groups failed", "cluster", name, "err", err)
+		}
+	}
+
+	return cluster, topics, stats, brokerDetails, consumerGroups, nil
+}

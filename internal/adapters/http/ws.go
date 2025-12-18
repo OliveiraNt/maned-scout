@@ -23,12 +23,6 @@ func (s *Server) wsStreamTopic(w http.ResponseWriter, r *http.Request) {
 	clusterName := chi.URLParam(r, "name")
 	topicName := chi.URLParam(r, "topic")
 
-	client, ok := s.repo.GetClient(clusterName)
-	if !ok {
-		http.Error(w, "cluster not found", http.StatusNotFound)
-		return
-	}
-
 	conn, err := wsUpgrader.Upgrade(w, r, nil)
 	if err != nil {
 		registry.Logger.Error("websocket upgrade failed", "cluster", clusterName, "topic", topicName, "err", err)
@@ -53,7 +47,9 @@ func (s *Server) wsStreamTopic(w http.ResponseWriter, r *http.Request) {
 			registry.Logger.Info("consumer goroutine stopping", "cluster", clusterName, "topic", topicName)
 			cancel()
 		}()
-		client.StreamMessages(ctx, topicName, msgs)
+		if err := s.topicService.StreamMessages(ctx, clusterName, topicName, msgs); err != nil {
+			registry.Logger.Error("stream messages failed", "cluster", clusterName, "topic", topicName, "err", err)
+		}
 		registry.Logger.Info("stream stopped", "cluster", clusterName, "topic", topicName)
 		close(msgs)
 	}()

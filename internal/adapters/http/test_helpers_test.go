@@ -48,22 +48,36 @@ func (c *testClient) StreamMessages(_ context.Context, _ string, _ chan<- domain
 func (c *testClient) WriteMessage(_ context.Context, _ string, _ domain.Message)          {}
 func (c *testClient) Close()                                                              {}
 
-type testFactory struct{}
+type testFactory struct {
+	topicsPerCluster map[string]map[string]int
+}
 
-func (f testFactory) CreateClient(_ config.ClusterConfig) (domain.KafkaClient, error) {
-	// Each cluster gets a client marked healthy with no topics by default
-	return &testClient{healthy: true, topics: map[string]int{}}, nil
+func (f testFactory) CreateClient(cfg config.ClusterConfig) (domain.KafkaClient, error) {
+	topics := map[string]int{}
+	if f.topicsPerCluster != nil {
+		if t, ok := f.topicsPerCluster[cfg.Name]; ok {
+			topics = t
+		}
+	}
+	return &testClient{healthy: true, topics: topics}, nil
 }
 
 // buildServer builds a Server instance for tests with a temporary config file
 func buildServer(t *testing.T) *Server {
 	t.Helper()
+	return buildServerWithFactory(t, testFactory{})
+}
+
+// buildServerWithFactory builds a Server with a custom factory for test data injection
+func buildServerWithFactory(t *testing.T, factory testFactory) *Server {
+	t.Helper()
 	tdir := t.TempDir()
 	cfgPath := tdir + "/config.yml"
-	repo := repository.NewClusterRepository(cfgPath, testFactory{})
-	svc := application.NewClusterService(repo, testFactory{})
+	repo := repository.NewClusterRepository(cfgPath, factory)
+	clusterSvc := application.NewClusterService(repo, factory)
+	topicSvc := application.NewTopicService(clusterSvc, factory)
 	registry.InitLogger()
-	return New(svc, repo)
+	return New(clusterSvc, topicSvc, repo)
 }
 
 // chiCtxWithParam adds a single URL param to request context for handler funcs using chi.URLParam

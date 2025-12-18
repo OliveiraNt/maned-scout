@@ -13,17 +13,17 @@ import (
 )
 
 func TestAPIListTopics(t *testing.T) {
-	s := buildServer(t)
-	// Add a cluster via API to ensure client exists in repo
+	// Build server with pre-configured topics for the "dev" cluster
+	factory := testFactory{
+		topicsPerCluster: map[string]map[string]int{
+			"dev": {"a": 1, "b": 3},
+		},
+	}
+	s := buildServerWithFactory(t, factory)
+
+	// Add a cluster via API
 	body, _ := json.Marshal(config.ClusterConfig{Name: "dev", Brokers: []string{"localhost:9092"}})
 	s.apiAddCluster(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, "/api/clusters", bytes.NewReader(body)))
-
-	// Inject topics into existing client
-	if cl, ok := s.repo.GetClient("dev"); ok {
-		if tc, ok2 := cl.(*testClient); ok2 {
-			tc.topics = map[string]int{"a": 1, "b": 3}
-		}
-	}
 
 	req := httptest.NewRequest(http.MethodGet, "/api/cluster/dev/topics", nil)
 	rec := httptest.NewRecorder()

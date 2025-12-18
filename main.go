@@ -102,7 +102,8 @@ func main() {
 	}
 
 	clusterService := application.NewClusterService(repo, factory)
+	topicService := application.NewTopicService(clusterService, factory)
 	registry.Logger.Info("application layer initialized")
 
-	cmd.StartWeb(clusterService, repo)
+	cmd.StartWeb(clusterService, topicService, repo)
 }
