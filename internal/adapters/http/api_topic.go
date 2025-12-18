@@ -32,7 +32,7 @@ func mapErrorToHTTPStatus(err error) int {
 }
 
 func (s *Server) apiListTopics(w http.ResponseWriter, r *http.Request) {
-	name := chi.URLParam(r, "name")
+	name := chi.URLParam(r, "clusterName")
 	showInternal := r.URL.Query().Get("showInternal") == "true"
 	topics, err := s.topicService.ListTopics(name, showInternal)
 	if err != nil {
@@ -66,8 +66,8 @@ func (s *Server) apiListTopics(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) apiGetTopicDetail(w http.ResponseWriter, r *http.Request) {
-	clusterName := chi.URLParam(r, "name")
-	topicName := chi.URLParam(r, "topic")
+	clusterName := chi.URLParam(r, "clusterName")
+	topicName := chi.URLParam(r, "topicName")
 
 	topicDetail, err := s.topicService.GetTopicDetail(clusterName, topicName)
 	if err != nil {
@@ -83,7 +83,7 @@ func (s *Server) apiGetTopicDetail(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) apiCreateTopic(w http.ResponseWriter, r *http.Request) {
-	clusterName := chi.URLParam(r, "name")
+	clusterName := chi.URLParam(r, "clusterName")
 	var req domain.CreateTopicRequest
 	ct := r.Header.Get("Content-Type")
 	if strings.HasPrefix(ct, "application/json") {
@@ -146,8 +146,8 @@ func (s *Server) apiCreateTopic(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) apiDeleteTopic(w http.ResponseWriter, r *http.Request) {
-	clusterName := chi.URLParam(r, "name")
-	topicName := chi.URLParam(r, "topic")
+	clusterName := chi.URLParam(r, "clusterName")
+	topicName := chi.URLParam(r, "topicName")
 
 	if err := s.topicService.DeleteTopic(clusterName, topicName); err != nil {
 		registry.Logger.Error("api delete topic failed", "cluster", clusterName, "topic", topicName, "err", err)
@@ -159,8 +159,8 @@ func (s *Server) apiDeleteTopic(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) apiUpdateTopicConfig(w http.ResponseWriter, r *http.Request) {
-	clusterName := chi.URLParam(r, "name")
-	topicName := chi.URLParam(r, "topic")
+	clusterName := chi.URLParam(r, "clusterName")
+	topicName := chi.URLParam(r, "topicName")
 
 	var req domain.UpdateTopicConfigRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -182,8 +182,8 @@ func (s *Server) apiUpdateTopicConfig(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) apiIncreasePartitions(w http.ResponseWriter, r *http.Request) {
-	clusterName := chi.URLParam(r, "name")
-	topicName := chi.URLParam(r, "topic")
+	clusterName := chi.URLParam(r, "clusterName")
+	topicName := chi.URLParam(r, "topicName")
 
 	var req domain.IncreasePartitionsRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -205,8 +205,8 @@ func (s *Server) apiIncreasePartitions(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) apiReadMessages(w http.ResponseWriter, r *http.Request) {
-	clusterName := chi.URLParam(r, "name")
-	topicName := chi.URLParam(r, "topic")
+	clusterName := chi.URLParam(r, "clusterName")
+	topicName := chi.URLParam(r, "topicName")
 	if err := pages.MessageView(clusterName, topicName).Render(r.Context(), w); err != nil {
 		registry.Logger.Error("render message view failed", "err", err)
 		http.Error(w, "failed to render message view", 500)
@@ -215,11 +215,33 @@ func (s *Server) apiReadMessages(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) apiStopMessages(w http.ResponseWriter, r *http.Request) {
-	clusterName := chi.URLParam(r, "name")
-	topicName := chi.URLParam(r, "topic")
+	clusterName := chi.URLParam(r, "clusterName")
+	topicName := chi.URLParam(r, "topicName")
 	if err := pages.StopView(clusterName, topicName).Render(r.Context(), w); err != nil {
 		registry.Logger.Error("render stop view failed", "err", err)
 		http.Error(w, "failed to render stop view", 500)
+		return
+	}
+}
+
+func (s *Server) apiWriteMessage(w http.ResponseWriter, r *http.Request) {
+	clusterName := chi.URLParam(r, "clusterName")
+	topicName := chi.URLParam(r, "topicName")
+
+	var req domain.MessageRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		registry.Logger.Warn("api write message bad request", "cluster", clusterName, "topic", topicName, "err", err)
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	m := domain.Message{
+		Key:   []byte(req.Key),
+		Value: []byte(req.Value),
+	}
+	if err := s.topicService.WriteMessage(clusterName, topicName, m); err != nil {
+		registry.Logger.Error("api write message failed", "cluster", clusterName, "topic", topicName, "err", err)
+		http.Error(w, err.Error(), mapErrorToHTTPStatus(err))
 		return
 	}
 }

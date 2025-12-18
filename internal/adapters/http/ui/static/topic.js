@@ -22,6 +22,13 @@ function closeDeleteTopicModal() {
     document.getElementById('deleteTopicModal').classList.add('hidden');
 }
 
+function showWriteMessageModal() {
+    document.getElementById('writeMessageModal').classList.remove('hidden');
+}
+function closeWriteMessageModal() {
+    document.getElementById('writeMessageModal').classList.add('hidden');
+}
+
 async function updateTopicConfig(event) {
     event.preventDefault();
     const form = event.target;
@@ -40,7 +47,7 @@ async function updateTopicConfig(event) {
     }
 
     try {
-        const response = await fetch(`/api/cluster/${clusterName}/topics/${topicName}/config`, {
+        const response = await fetch(`/api/clusters/${clusterName}/topics/${topicName}/config`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ configs })
@@ -65,7 +72,7 @@ async function increasePartitions(event) {
     const totalPartitions = parseInt(formData.get('totalPartitions'));
 
     try {
-        const response = await fetch(`/api/cluster/${clusterName}/topics/${topicName}/partitions`, {
+        const response = await fetch(`/api/clusters/${clusterName}/topics/${topicName}/partitions`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ totalPartitions })
@@ -86,13 +93,39 @@ async function increasePartitions(event) {
 
 async function deleteTopic() {
     try {
-        const response = await fetch(`/api/cluster/${clusterName}/topics/${topicName}`, {
+        const response = await fetch(`/api/clusters/${clusterName}/topics/${topicName}`, {
             method: 'DELETE'
         });
 
         if (response.ok) {
             queueNotification('Tópico deletado com sucesso!', 'success');
-            window.location.href = `/cluster/${clusterName}/topics`;
+            window.location.href = `/clusters/${clusterName}/topics`;
+        } else {
+            const error = await response.text();
+            showNotification(`Erro: ${error}`, 'error');
+        }
+    } catch (error) {
+        showNotification(`Erro: ${error.message}`, 'error');
+    }
+}
+
+async function sendMessage(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const key = formData.get('key');
+    const value = formData.get('value');
+    
+    try {
+        const response = await fetch(`/api/clusters/${clusterName}/topics/${topicName}/messages`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key, value })
+        });
+        
+        if (response.ok) {
+            showNotification('Mensagem enviada com sucesso!', 'success');
+            closeWriteMessageModal();
         } else {
             const error = await response.text();
             showNotification(`Erro: ${error}`, 'error');

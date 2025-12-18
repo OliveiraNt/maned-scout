@@ -30,7 +30,7 @@ templ ClusterList(clusters []ClusterWithStats) {
 
 templ ClusterCard(cluster domain.Cluster, stats *domain.ClusterStats) {
 	<a
-		href={ templ.URL(fmt.Sprintf("/cluster/%s", cluster.Name)) }
+		href={ templ.URL(fmt.Sprintf("/clusters/%s", cluster.Name)) }
 		hx-boost="true"
 		hx-indicator="#page-loading"
 		class="block bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition cursor-pointer"

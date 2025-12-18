@@ -20,8 +20,8 @@ var wsUpgrader = websocket.Upgrader{
 // wsStreamTopic upgrades to WebSocket and streams Kafka messages from the given topic to the client.
 // On client disconnect, the Kafka consumption is canceled via context.
 func (s *Server) wsStreamTopic(w http.ResponseWriter, r *http.Request) {
-	clusterName := chi.URLParam(r, "name")
-	topicName := chi.URLParam(r, "topic")
+	clusterName := chi.URLParam(r, "clusterName")
+	topicName := chi.URLParam(r, "topicName")
 
 	conn, err := wsUpgrader.Upgrade(w, r, nil)
 	if err != nil {

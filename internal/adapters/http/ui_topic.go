@@ -10,7 +10,7 @@ import (
 )
 
 func (s *Server) uiTopicsList(w http.ResponseWriter, r *http.Request) {
-	name := chi.URLParam(r, "name")
+	name := chi.URLParam(r, "clusterName")
 	registry.Logger.Debug("render topics list", "cluster", name)
 	_, ok := s.clusterService.GetCluster(name)
 	if !ok {
@@ -28,8 +28,8 @@ func (s *Server) uiTopicsList(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) uiTopicDetail(w http.ResponseWriter, r *http.Request) {
-	clusterName := chi.URLParam(r, "name")
-	topicName := chi.URLParam(r, "topic")
+	clusterName := chi.URLParam(r, "clusterName")
+	topicName := chi.URLParam(r, "topicName")
 	registry.Logger.Debug("render topic detail", "cluster", clusterName, "topic", topicName)
 
 	_, ok := s.clusterService.GetCluster(clusterName)

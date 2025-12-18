@@ -36,7 +36,7 @@ func (s *Server) apiAddCluster(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) apiUpdateCluster(w http.ResponseWriter, r *http.Request) {
-	name := chi.URLParam(r, "name")
+	name := chi.URLParam(r, "clusterName")
 	var c config.ClusterConfig
 	if err := json.NewDecoder(r.Body).Decode(&c); err != nil {
 		registry.Logger.Warn("api update cluster bad request", "cluster", name, "err", err)
@@ -53,7 +53,7 @@ func (s *Server) apiUpdateCluster(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) apiDeleteCluster(w http.ResponseWriter, r *http.Request) {
-	name := chi.URLParam(r, "name")
+	name := chi.URLParam(r, "clusterName")
 	if err := s.clusterService.DeleteCluster(name); err != nil {
 		registry.Logger.Error("api delete cluster failed", "cluster", name, "err", err)
 		http.Error(w, err.Error(), 404)

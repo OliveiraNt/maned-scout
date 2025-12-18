@@ -112,7 +112,7 @@ templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain
 				</div>
 			</div>
 			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-				<a href={ templ.URL("/cluster/" + cluster.Name + "/topics") }>
+				<a href={ templ.URL("/clusters/" + cluster.Name + "/topics") }>
 					<div class="flex items-center justify-between">
 						<div>
 							<p class="text-sm text-gray-600 dark:text-gray-400">Tópicos</p>

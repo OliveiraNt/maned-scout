@@ -101,31 +101,31 @@ templ Sidebar(clusterName string) {
 			<!-- Navigation Links -->
 			<ul class="space-y-2">
 				<li>
-					<a href={ templ.URL("/cluster/" + clusterName) } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
+					<a href={ templ.URL("/clusters/" + clusterName) } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
 						<i class="fas fa-tachometer-alt"></i>
 						<span>Dashboard</span>
 					</a>
 				</li>
 				<li>
-					<a href={ templ.URL("/cluster/" + clusterName + "/topics") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
+					<a href={ templ.URL("/clusters/" + clusterName + "/topics") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
 						<i class="fas fa-list"></i>
 						<span>Tópicos</span>
 					</a>
 				</li>
 				<li>
-					<a href={ templ.URL("/cluster/" + clusterName + "/consumers") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
+					<a href={ templ.URL("/clusters/" + clusterName + "/consumers") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
 						<i class="fas fa-users"></i>
 						<span>Consumer Groups</span>
 					</a>
 				</li>
 				<li>
-					<a href={ templ.URL("/cluster/" + clusterName + "/brokers") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
+					<a href={ templ.URL("/clusters/" + clusterName + "/brokers") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
 						<i class="fas fa-network-wired"></i>
 						<span>Brokers</span>
 					</a>
 				</li>
 				<li>
-					<a href={ templ.URL("/cluster/" + clusterName + "/metrics") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
+					<a href={ templ.URL("/clusters/" + clusterName + "/metrics") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
 						<i class="fas fa-chart-line"></i>
 						<span>Métricas</span>
 					</a>

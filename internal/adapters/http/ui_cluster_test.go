@@ -39,7 +39,7 @@ func TestUIClusterDetail(t *testing.T) {
 	s := buildServer(t)
 
 	// Test with non-existent cluster
-	req := httptest.NewRequest(http.MethodGet, "/cluster/nonexistent", nil)
+	req := httptest.NewRequest(http.MethodGet, "/clusters/nonexistent", nil)
 	rec := httptest.NewRecorder()
 	ctx := chiCtxWithParam("name", "nonexistent", req)
 	s.uiClusterDetail(rec, req.WithContext(ctx))
@@ -51,7 +51,7 @@ func TestUIClusterDetail(t *testing.T) {
 	body, _ := json.Marshal(config.ClusterConfig{Name: "dev", Brokers: []string{"localhost:9092"}})
 	s.apiAddCluster(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, "/api/clusters", bytes.NewReader(body)))
 
-	req = httptest.NewRequest(http.MethodGet, "/cluster/dev", nil)
+	req = httptest.NewRequest(http.MethodGet, "/clusters/dev", nil)
 	rec = httptest.NewRecorder()
 	ctx = chiCtxWithParam("name", "dev", req)
 	s.uiClusterDetail(rec, req.WithContext(ctx))

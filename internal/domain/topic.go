@@ -57,3 +57,8 @@ type Message struct {
 	Offset    int64
 	Timestamp time.Time
 }
+
+type MessageRequest struct {
+	Key   string
+	Value string
+}

@@ -33,7 +33,7 @@ func (s *Server) uiHome(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) uiClusterDetail(w http.ResponseWriter, r *http.Request) {
-	name := chi.URLParam(r, "name")
+	name := chi.URLParam(r, "clusterName")
 	registry.Logger.Debug("render cluster detail", "cluster", name)
 
 	cluster, topics, stats, brokerDetails, consumerGroups, err := s.clusterService.GetClusterDetail(name)

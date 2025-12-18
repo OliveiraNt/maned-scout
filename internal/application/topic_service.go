@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"time"
 
 	"github.com/OliveiraNt/kdash/internal/domain"
 	"github.com/OliveiraNt/kdash/internal/registry"
@@ -188,7 +189,7 @@ func (s *TopicService) StreamMessages(ctx context.Context, clusterName, topicNam
 	return nil
 }
 
-func (s *TopicService) WriteMessage(ctx context.Context, clusterName, topicName string, msg domain.Message) (err error) {
+func (s *TopicService) WriteMessage(clusterName, topicName string, msg domain.Message) (err error) {
 	_, ok := s.clusterService.GetCluster(clusterName)
 	if !ok {
 		return ErrClusterNotFound
@@ -198,6 +199,7 @@ func (s *TopicService) WriteMessage(ctx context.Context, clusterName, topicName 
 		registry.Logger.Warn("write message client not found", "cluster", clusterName)
 		return ErrClusterNotFound
 	}
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	client.WriteMessage(ctx, topicName, msg)
 	return nil
 }

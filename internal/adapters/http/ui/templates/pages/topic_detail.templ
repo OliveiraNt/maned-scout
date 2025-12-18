@@ -28,9 +28,9 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 	@layout.BaseWithSidebar("Detalhes do Tópico", clusterName, Imports(clusterName, topic.Name)) {
 		<nav class="mb-6 text-sm">
 			<ol class="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
-				<li><a href={ templ.URL(fmt.Sprintf("/cluster/%s", clusterName)) } class="hover:text-blue-600 dark:hover:text-blue-400">{ clusterName }</a></li>
+				<li><a href={ templ.URL(fmt.Sprintf("/clusters/%s", clusterName)) } class="hover:text-blue-600 dark:hover:text-blue-400">{ clusterName }</a></li>
 				<li><i class="fas fa-chevron-right text-xs"></i></li>
-				<li><a href={ templ.URL(fmt.Sprintf("/cluster/%s/topics", clusterName)) } class="hover:text-blue-600 dark:hover:text-blue-400">Tópicos</a></li>
+				<li><a href={ templ.URL(fmt.Sprintf("/clusters/%s/topics", clusterName)) } class="hover:text-blue-600 dark:hover:text-blue-400">Tópicos</a></li>
 				<li><i class="fas fa-chevron-right text-xs"></i></li>
 				<li class="text-gray-900 dark:text-white font-medium">{ topic.Name }</li>
 			</ol>
@@ -44,6 +44,7 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 				<div class="flex items-center space-x-3">
 					<button
 						class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition flex items-center space-x-2"
+						onclick="showWriteMessageModal()"
 					>
 						<i class="fas fa-paper-plane"></i>
 						<span>Escrever no Tópico</span>
@@ -193,13 +194,14 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 				</table>
 			</div>
 		</div>
-		@updateConfigModal(clusterName, topic.Name)
-		@increasePartitionsModal(clusterName, topic.Name, topic.Partitions)
-		@deleteTopicModal(clusterName, topic.Name)
+		@updateConfigModal()
+		@increasePartitionsModal(topic.Partitions)
+		@deleteTopicModal(topic.Name)
+		@writeMessageModal()
 	}
 }
 
-templ updateConfigModal(clusterName, topicName string) {
+templ updateConfigModal() {
 	<div id="updateConfigModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
 		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4">
 			<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -285,7 +287,7 @@ templ updateConfigModal(clusterName, topicName string) {
 	</div>
 }
 
-templ increasePartitionsModal(clusterName, topicName string, currentPartitions int) {
+templ increasePartitionsModal(currentPartitions int) {
 	<div id="increasePartitionsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
 		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
 			<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -330,7 +332,7 @@ templ increasePartitionsModal(clusterName, topicName string, currentPartitions i
 	</div>
 }
 
-templ deleteTopicModal(clusterName, topicName string) {
+templ deleteTopicModal(topicName string) {
 	<div id="deleteTopicModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
 		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
 			<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -362,6 +364,56 @@ templ deleteTopicModal(clusterName, topicName string) {
 	</div>
 }
 
+templ writeMessageModal() {
+    <div id="writeMessageModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Nova Mensagem</h3>
+            </div>
+            <div class="px-6 py-4">
+                <form id="writeMessageForm" onsubmit="sendMessage(event)">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Chave</label>
+                            <input
+                                type="text"
+                                name="key"
+                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white font-mono"
+                                placeholder="Chave da mensagem (opcional)"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Value</label>
+                            <textarea
+                                name="value"
+                                required
+                                rows="6"
+                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white font-mono"
+                                placeholder="Conteúdo da mensagem (valor) — texto ou JSON"
+                            ></textarea>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button
+                            type="button"
+                            onclick="closeWriteMessageModal()"
+                            class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
+                        >
+                            Enviar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
 func formatInt32Slice(slice []int32) string {
 	if len(slice) == 0 {
 		return "[]"
@@ -385,7 +437,7 @@ func getSortedConfigKeys(configs map[string]string) []string {
 templ readButton(clusterName string, topicName string) {
 	<button
 		id="toggle-read-btn"
-		hx-get={ templ.SafeURL(fmt.Sprintf("/api/cluster/%s/topics/%s/ws-on", clusterName, topicName)) }
+		hx-get={ templ.SafeURL(fmt.Sprintf("/api/clusters/%s/topics/%s/ws-on", clusterName, topicName)) }
 		hx-target="#message-stream-view"
 		hx-swap="outerHTML"
 		class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-medium"
@@ -397,7 +449,7 @@ templ readButton(clusterName string, topicName string) {
 
 templ stopButton(clusterName string, topicName string) {
 	<button
-		hx-get={ templ.SafeURL(fmt.Sprintf("/api/cluster/%s/topics/%s/ws-off", clusterName, topicName)) }
+		hx-get={ templ.SafeURL(fmt.Sprintf("/api/clusters/%s/topics/%s/ws-off", clusterName, topicName)) }
 		hx-target="#message-stream"
 		hx-swap="innerHTML"
 		class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium"
@@ -418,7 +470,7 @@ templ MessageView(clusterName string, topicName string) {
 		<div class="px-6 py-4">
 			<div
 				hx-ext="ws"
-				ws-connect={ templ.SafeURL(fmt.Sprintf("/api/cluster/%s/topics/%s/ws", clusterName, topicName)) }
+				ws-connect={ templ.SafeURL(fmt.Sprintf("/api/clusters/%s/topics/%s/ws", clusterName, topicName)) }
 				ws-receive
 				hx-target="#messages"
 				hx-swap="beforeend"

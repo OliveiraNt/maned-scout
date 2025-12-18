@@ -82,7 +82,7 @@ templ TopicsList(clusterName string, topics map[string]int) {
 									name="showInternal"
 									value="true"
 									class="sr-only"
-									hx-get={ templ.URL(fmt.Sprintf("/api/cluster/%s/topics", clusterName)) }
+									hx-get={ templ.URL(fmt.Sprintf("/api/clusters/%s/topics", clusterName)) }
 									hx-include="[name=showInternal]"
 									hx-target="#topics-list"
 								/>
@@ -96,7 +96,7 @@ templ TopicsList(clusterName string, topics map[string]int) {
 		</div>
 		<div
 			id="topics-list"
-			hx-get={ templ.URL(fmt.Sprintf("/api/cluster/%s/topics", clusterName)) }
+			hx-get={ templ.URL(fmt.Sprintf("/api/clusters/%s/topics", clusterName)) }
 			hx-include="[name=showInternal]"
 			hx-trigger="load, topic-created from:body"
 			hx-target="#topics-list"
@@ -115,7 +115,7 @@ templ TopicsListFragment(clusterName string, topics map[string]int, oob bool) {
 	<div
 		id="topics-list"
 		class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
-		hx-get={ templ.URL(fmt.Sprintf("/api/cluster/%s/topics", clusterName)) }
+		hx-get={ templ.URL(fmt.Sprintf("/api/clusters/%s/topics", clusterName)) }
 		hx-include="[name=showInternal]"
 		hx-trigger="topic-created from:body"
 		hx-target="#topics-list"
@@ -176,7 +176,7 @@ templ TopicTableRow(topicName string, partitions int, clusterName string) {
 				</div>
 				<div>
 					<a
-						href={ templ.URL(fmt.Sprintf("/cluster/%s/topics/%s", clusterName, topicName)) }
+						href={ templ.URL(fmt.Sprintf("/clusters/%s/topics/%s", clusterName, topicName)) }
 						class="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
 					>
 						{ topicName }
@@ -196,7 +196,7 @@ templ TopicTableRow(topicName string, partitions int, clusterName string) {
 		<td class="px-6 py-4 text-right">
 			<div class="flex items-center justify-end space-x-2">
 				<a
-					href={ templ.URL(fmt.Sprintf("/cluster/%s/topics/%s", clusterName, topicName)) }
+					href={ templ.URL(fmt.Sprintf("/clusters/%s/topics/%s", clusterName, topicName)) }
 					class="px-3 py-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg text-sm font-medium transition"
 					title="Ver detalhes"
 				>
@@ -216,7 +216,7 @@ templ createTopicModal(clusterName string) {
 			</div>
 			<div class="px-6 py-4">
 				<div id="create-topic-error"></div>
-				<form id="createTopicForm" hx-post={ templ.URL(fmt.Sprintf("/api/cluster/%s/topics", clusterName)) } hx-swap="none">
+				<form id="createTopicForm" hx-post={ templ.URL(fmt.Sprintf("/api/clusters/%s/topics", clusterName)) } hx-swap="none">
 					<div class="space-y-4">
 						<div>
 							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
