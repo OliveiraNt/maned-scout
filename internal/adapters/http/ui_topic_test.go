@@ -16,7 +16,7 @@ func TestUITopicsList(t *testing.T) {
 	// Test with non-existent cluster
 	req := httptest.NewRequest(http.MethodGet, "/clusters/nonexistent/topics", nil)
 	rec := httptest.NewRecorder()
-	ctx := chiCtxWithParam("name", "nonexistent", req)
+	ctx := chiCtxWithParam("clusterName", "nonexistent", req)
 	s.uiTopicsList(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("expected 404, got %d", rec.Code)
@@ -28,7 +28,7 @@ func TestUITopicsList(t *testing.T) {
 
 	req = httptest.NewRequest(http.MethodGet, "/clusters/dev/topics", nil)
 	rec = httptest.NewRecorder()
-	ctx = chiCtxWithParam("name", "dev", req)
+	ctx = chiCtxWithParam("clusterName", "dev", req)
 	s.uiTopicsList(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusOK {
 		t.Fatalf("expected 200, got %d", rec.Code)
@@ -42,7 +42,7 @@ func TestUITopicDetail(t *testing.T) {
 	// Test with non-existent cluster
 	req := httptest.NewRequest(http.MethodGet, "/clusters/nonexistent/topics/test-topic", nil)
 	rec := httptest.NewRecorder()
-	ctx := chiCtxWithParams(map[string]string{"name": "nonexistent", "topic": "test-topic"}, req)
+	ctx := chiCtxWithParams(map[string]string{"clusterName": "nonexistent", "topicName": "test-topic"}, req)
 	s.uiTopicDetail(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("expected 404, got %d", rec.Code)
@@ -55,7 +55,7 @@ func TestUITopicDetail(t *testing.T) {
 	// Test successful topic detail
 	req = httptest.NewRequest(http.MethodGet, "/clusters/dev/topics/test-topic", nil)
 	rec = httptest.NewRecorder()
-	ctx = chiCtxWithParams(map[string]string{"name": "dev", "topic": "test-topic"}, req)
+	ctx = chiCtxWithParams(map[string]string{"clusterName": "dev", "topicName": "test-topic"}, req)
 	s.uiTopicDetail(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusOK {
 		t.Fatalf("expected 200, got %d", rec.Code)

@@ -27,7 +27,7 @@ func TestAPIListTopics(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/api/clusters/dev/topics", nil)
 	rec := httptest.NewRecorder()
-	ctx := chiCtxWithParam("name", "dev", req)
+	ctx := chiCtxWithParam("clusterName", "dev", req)
 	s.apiListTopics(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusOK {
 		t.Fatalf("expected 200, got %d", rec.Code)
@@ -51,7 +51,7 @@ func TestAPIGetTopicDetail(t *testing.T) {
 	// Test successful topic detail retrieval
 	req := httptest.NewRequest(http.MethodGet, "/api/clusters/dev/topics/test-topic", nil)
 	rec := httptest.NewRecorder()
-	ctx := chiCtxWithParams(map[string]string{"name": "dev", "topic": "test-topic"}, req)
+	ctx := chiCtxWithParams(map[string]string{"clusterName": "dev", "topicName": "test-topic"}, req)
 	s.apiGetTopicDetail(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusOK {
 		t.Fatalf("expected 200, got %d", rec.Code)
@@ -60,7 +60,7 @@ func TestAPIGetTopicDetail(t *testing.T) {
 	// Test with non-existent cluster
 	req = httptest.NewRequest(http.MethodGet, "/api/clusters/nonexistent/topics/test-topic", nil)
 	rec = httptest.NewRecorder()
-	ctx = chiCtxWithParams(map[string]string{"name": "nonexistent", "topic": "test-topic"}, req)
+	ctx = chiCtxWithParams(map[string]string{"clusterName": "nonexistent", "topicName": "test-topic"}, req)
 	s.apiGetTopicDetail(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("expected 404, got %d", rec.Code)
@@ -83,7 +83,7 @@ func TestAPICreateTopic(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/api/clusters/dev/topics", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
-	ctx := chiCtxWithParam("name", "dev", req)
+	ctx := chiCtxWithParam("clusterName", "dev", req)
 	s.apiCreateTopic(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusNoContent {
 		t.Fatalf("expected 204, got %d", rec.Code)
@@ -103,7 +103,7 @@ func TestAPICreateTopic(t *testing.T) {
 	req = httptest.NewRequest(http.MethodPost, "/api/clusters/dev/topics", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	rec = httptest.NewRecorder()
-	ctx = chiCtxWithParam("name", "dev", req)
+	ctx = chiCtxWithParam("clusterName", "dev", req)
 	s.apiCreateTopic(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusBadRequest {
 		t.Fatalf("expected 400 for empty name, got %d", rec.Code)
@@ -135,7 +135,7 @@ func TestAPICreateTopic(t *testing.T) {
 	req = httptest.NewRequest(http.MethodPost, "/api/clusters/dev/topics", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	rec = httptest.NewRecorder()
-	ctx = chiCtxWithParam("name", "dev", req)
+	ctx = chiCtxWithParam("clusterName", "dev", req)
 	s.apiCreateTopic(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusBadRequest {
 		t.Fatalf("expected 400 for zero replication factor, got %d", rec.Code)
@@ -146,7 +146,7 @@ func TestAPICreateTopic(t *testing.T) {
 	req = httptest.NewRequest(http.MethodPost, "/api/clusters/nonexistent/topics", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	rec = httptest.NewRecorder()
-	ctx = chiCtxWithParam("name", "nonexistent", req)
+	ctx = chiCtxWithParam("clusterName", "nonexistent", req)
 	s.apiCreateTopic(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("expected 404, got %d", rec.Code)
@@ -162,7 +162,7 @@ func TestAPIDeleteTopic(t *testing.T) {
 	// Test successful topic deletion
 	req := httptest.NewRequest(http.MethodDelete, "/api/clusters/dev/topics/test-topic", nil)
 	rec := httptest.NewRecorder()
-	ctx := chiCtxWithParams(map[string]string{"name": "dev", "topic": "test-topic"}, req)
+	ctx := chiCtxWithParams(map[string]string{"clusterName": "dev", "topicName": "test-topic"}, req)
 	s.apiDeleteTopic(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusNoContent {
 		t.Fatalf("expected 204, got %d", rec.Code)
@@ -171,7 +171,7 @@ func TestAPIDeleteTopic(t *testing.T) {
 	// Test with non-existent cluster
 	req = httptest.NewRequest(http.MethodDelete, "/api/clusters/nonexistent/topics/test-topic", nil)
 	rec = httptest.NewRecorder()
-	ctx = chiCtxWithParams(map[string]string{"name": "nonexistent", "topic": "test-topic"}, req)
+	ctx = chiCtxWithParams(map[string]string{"clusterName": "nonexistent", "topicName": "test-topic"}, req)
 	s.apiDeleteTopic(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("expected 404, got %d", rec.Code)
@@ -194,7 +194,7 @@ func TestAPIUpdateTopicConfig(t *testing.T) {
 	body, _ = json.Marshal(updateReq)
 	req := httptest.NewRequest(http.MethodPut, "/api/clusters/dev/topics/test-topic/config", bytes.NewReader(body))
 	rec := httptest.NewRecorder()
-	ctx := chiCtxWithParams(map[string]string{"name": "dev", "topic": "test-topic"}, req)
+	ctx := chiCtxWithParams(map[string]string{"clusterName": "dev", "topicName": "test-topic"}, req)
 	s.apiUpdateTopicConfig(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusOK {
 		t.Fatalf("expected 200, got %d", rec.Code)
@@ -207,7 +207,7 @@ func TestAPIUpdateTopicConfig(t *testing.T) {
 	body, _ = json.Marshal(emptyReq)
 	req = httptest.NewRequest(http.MethodPut, "/api/clusters/dev/topics/test-topic/config", bytes.NewReader(body))
 	rec = httptest.NewRecorder()
-	ctx = chiCtxWithParams(map[string]string{"name": "dev", "topic": "test-topic"}, req)
+	ctx = chiCtxWithParams(map[string]string{"clusterName": "dev", "topicName": "test-topic"}, req)
 	s.apiUpdateTopicConfig(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusBadRequest {
 		t.Fatalf("expected 400 for empty configs, got %d", rec.Code)
@@ -217,7 +217,7 @@ func TestAPIUpdateTopicConfig(t *testing.T) {
 	body, _ = json.Marshal(updateReq)
 	req = httptest.NewRequest(http.MethodPut, "/api/clusters/nonexistent/topics/test-topic/config", bytes.NewReader(body))
 	rec = httptest.NewRecorder()
-	ctx = chiCtxWithParams(map[string]string{"name": "nonexistent", "topic": "test-topic"}, req)
+	ctx = chiCtxWithParams(map[string]string{"clusterName": "nonexistent", "topicName": "test-topic"}, req)
 	s.apiUpdateTopicConfig(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("expected 404, got %d", rec.Code)
@@ -237,7 +237,7 @@ func TestAPIIncreasePartitions(t *testing.T) {
 	body, _ = json.Marshal(increaseReq)
 	req := httptest.NewRequest(http.MethodPost, "/api/clusters/dev/topics/test-topic/partitions", bytes.NewReader(body))
 	rec := httptest.NewRecorder()
-	ctx := chiCtxWithParams(map[string]string{"name": "dev", "topic": "test-topic"}, req)
+	ctx := chiCtxWithParams(map[string]string{"clusterName": "dev", "topicName": "test-topic"}, req)
 	s.apiIncreasePartitions(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusOK {
 		t.Fatalf("expected 200, got %d", rec.Code)
@@ -250,7 +250,7 @@ func TestAPIIncreasePartitions(t *testing.T) {
 	body, _ = json.Marshal(badReq)
 	req = httptest.NewRequest(http.MethodPost, "/api/clusters/dev/topics/test-topic/partitions", bytes.NewReader(body))
 	rec = httptest.NewRecorder()
-	ctx = chiCtxWithParams(map[string]string{"name": "dev", "topic": "test-topic"}, req)
+	ctx = chiCtxWithParams(map[string]string{"clusterName": "dev", "topicName": "test-topic"}, req)
 	s.apiIncreasePartitions(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusBadRequest {
 		t.Fatalf("expected 400 for zero partitions, got %d", rec.Code)
@@ -260,7 +260,7 @@ func TestAPIIncreasePartitions(t *testing.T) {
 	body, _ = json.Marshal(increaseReq)
 	req = httptest.NewRequest(http.MethodPost, "/api/clusters/nonexistent/topics/test-topic/partitions", bytes.NewReader(body))
 	rec = httptest.NewRecorder()
-	ctx = chiCtxWithParams(map[string]string{"name": "nonexistent", "topic": "test-topic"}, req)
+	ctx = chiCtxWithParams(map[string]string{"clusterName": "nonexistent", "topicName": "test-topic"}, req)
 	s.apiIncreasePartitions(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("expected 404, got %d", rec.Code)

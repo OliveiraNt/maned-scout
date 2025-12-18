@@ -41,7 +41,7 @@ func TestUIClusterDetail(t *testing.T) {
 	// Test with non-existent cluster
 	req := httptest.NewRequest(http.MethodGet, "/clusters/nonexistent", nil)
 	rec := httptest.NewRecorder()
-	ctx := chiCtxWithParam("name", "nonexistent", req)
+	ctx := chiCtxWithParam("clusterName", "nonexistent", req)
 	s.uiClusterDetail(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("expected 404, got %d", rec.Code)
@@ -53,7 +53,7 @@ func TestUIClusterDetail(t *testing.T) {
 
 	req = httptest.NewRequest(http.MethodGet, "/clusters/dev", nil)
 	rec = httptest.NewRecorder()
-	ctx = chiCtxWithParam("name", "dev", req)
+	ctx = chiCtxWithParam("clusterName", "dev", req)
 	s.uiClusterDetail(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusOK {
 		t.Fatalf("expected 200, got %d", rec.Code)

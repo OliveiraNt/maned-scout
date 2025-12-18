@@ -40,7 +40,7 @@ func TestAPIClusters_CRUD(t *testing.T) {
 	upd, _ := json.Marshal(config.ClusterConfig{Brokers: []string{"localhost:9093"}})
 	req = httptest.NewRequest(http.MethodPut, "/api/clusters/dev", bytes.NewReader(upd))
 	rec = httptest.NewRecorder()
-	ctx := chiCtxWithParam("name", "dev", req)
+	ctx := chiCtxWithParam("clusterName", "dev", req)
 	s.apiUpdateCluster(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusNoContent {
 		t.Fatalf("expected 204, got %d", rec.Code)
@@ -53,7 +53,7 @@ func TestAPIClusters_CRUD(t *testing.T) {
 	// Delete cluster
 	req = httptest.NewRequest(http.MethodDelete, "/api/clusters/dev", nil)
 	rec = httptest.NewRecorder()
-	ctx = chiCtxWithParam("name", "dev", req)
+	ctx = chiCtxWithParam("clusterName", "dev", req)
 	s.apiDeleteCluster(rec, req.WithContext(ctx))
 	if rec.Code != http.StatusNoContent {
 		t.Fatalf("expected 204, got %d", rec.Code)
