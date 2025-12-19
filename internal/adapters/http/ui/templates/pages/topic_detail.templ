@@ -43,16 +43,6 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 				</div>
 				<div class="flex items-center space-x-3">
 					<button
-						class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition flex items-center space-x-2"
-						onclick="showWriteMessageModal()"
-					>
-						<i class="fas fa-paper-plane"></i>
-						<span>Escrever no Tópico</span>
-					</button>
-					<div id="topic-actions">
-						@readButton(clusterName, topic.Name)
-					</div>
-					<button
 						onclick="showUpdateConfigModal()"
 						class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition flex items-center space-x-2"
 					>
@@ -61,14 +51,14 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 					</button>
 					<button
 						onclick="showIncreasePartitionsModal()"
-						class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition flex items-center space-x-2"
+						class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition flex items-center space-x-2"
 					>
 						<i class="fas fa-plus"></i>
 						<span>Aumentar Partições</span>
 					</button>
 					<button
 						onclick="confirmDeleteTopic()"
-						class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition flex items-center space-x-2"
+						class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition flex items-center space-x-2 shadow-lg shadow-red-600/30"
 					>
 						<i class="fas fa-trash"></i>
 						<span>Deletar Tópico</span>
@@ -111,87 +101,152 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 				</div>
 			</div>
 		</div>
-		<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 mb-6">
-			<div class="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
-				<h3 class="text-lg font-semibold text-neutral-900 dark:text-white">Detalhes das Partições</h3>
+		<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+			<!-- Tab Navigation -->
+			<div class="bg-neutral-50 dark:bg-neutral-900/50 border-b border-neutral-200 dark:border-neutral-700">
+				<div class="flex overflow-x-auto">
+					<button
+						onclick="switchTab('partitions-tab')"
+						class="tab-button tab-button-active px-6 py-4 font-semibold text-guara-600 dark:text-guara-400 border-b-2 border-guara-500 transition-all duration-200 whitespace-nowrap flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+						data-tab="partitions-tab"
+					>
+						<i class="fas fa-layer-group"></i>Partições
+					</button>
+					<button
+						onclick="switchTab('messages-tab')"
+						class="tab-button px-6 py-4 font-semibold text-neutral-600 dark:text-neutral-400 border-b-2 border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"
+						data-tab="messages-tab"
+					>
+						<i class="fas fa-envelope"></i>Mensagens
+					</button>
+					<button
+						onclick="switchTab('consumer-groups-tab')"
+						class="tab-button px-6 py-4 font-semibold text-neutral-600 dark:text-neutral-400 border-b-2 border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"
+						data-tab="consumer-groups-tab"
+					>
+						<i class="fas fa-users"></i>Grupos de Consumidores
+					</button>
+					<button
+						onclick="switchTab('config-tab')"
+						class="tab-button px-6 py-4 font-semibold text-neutral-600 dark:text-neutral-400 border-b-2 border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"
+						data-tab="config-tab"
+					>
+						<i class="fas fa-sliders-h"></i>Configurações
+					</button>
+				</div>
 			</div>
-			<div class="overflow-x-auto">
-				<table class="w-full">
-					<thead class="bg-neutral-50 dark:bg-neutral-900">
-						<tr>
-							<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Partição</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Leader</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Réplicas</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">ISR</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Status</th>
-						</tr>
-					</thead>
-					<tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">
-						for _, partition := range topic.PartitionDetails {
-							<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-700">
-								<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900 dark:text-white">
-									{ fmt.Sprintf("%d", partition.Partition) }
-								</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-600 dark:text-neutral-300">
-									if partition.Leader >= 0 {
-										{ fmt.Sprintf("%d", partition.Leader) }
-									} else {
-										<span class="text-red-600 dark:text-red-400">-1 (offline)</span>
-									}
-								</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-600 dark:text-neutral-300">
-									{ formatInt32Slice(partition.Replicas) }
-								</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-600 dark:text-neutral-300">
-									{ formatInt32Slice(partition.ISR) }
-								</td>
-								<td class="px-6 py-4 whitespace-nowrap">
-									if partition.Offline {
-										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
-											<i class="fas fa-times-circle mr-1"></i> Offline
-										</span>
-									} else if len(partition.Replicas) != len(partition.ISR) {
-										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
-											<i class="fas fa-exclamation-triangle mr-1"></i> Under-replicated
-										</span>
-									} else {
-										<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-											<i class="fas fa-check-circle mr-1"></i> Healthy
-										</span>
-									}
-								</td>
-							</tr>
-						}
-					</tbody>
-				</table>
-			</div>
-		</div>
-		<div id="message-stream-view"></div>
-		<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700">
-			<div class="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
-				<h3 class="text-lg font-semibold text-neutral-900 dark:text-white">Configurações do Tópico</h3>
-			</div>
-			<div class="overflow-x-auto">
-				<table class="w-full">
-					<thead class="bg-neutral-50 dark:bg-neutral-900">
-						<tr>
-							<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Configuração</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Valor</th>
-						</tr>
-					</thead>
-					<tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">
-						for _, key := range getSortedConfigKeys(topic.Configs) {
-							<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-700">
-								<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900 dark:text-white">
-									{ key }
-								</td>
-								<td class="px-6 py-4 text-sm text-neutral-600 dark:text-neutral-300 font-mono">
-									{ topic.Configs[key] }
-								</td>
-							</tr>
-						}
-					</tbody>
-				</table>
+			<!-- Tab Content -->
+			<div class="p-6">
+				<!-- Partitions Tab -->
+				<div id="partitions-tab" class="tab-content">
+					<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-700">
+						<table class="w-full">
+							<thead class="bg-neutral-50 dark:bg-neutral-900">
+								<tr>
+									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Partição</th>
+									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Leader</th>
+									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Réplicas</th>
+									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">ISR</th>
+									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Status</th>
+								</tr>
+							</thead>
+							<tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">
+								for _, partition := range topic.PartitionDetails {
+									<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+										<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900 dark:text-white">
+											{ fmt.Sprintf("%d", partition.Partition) }
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-600 dark:text-neutral-300">
+											if partition.Leader >= 0 {
+												{ fmt.Sprintf("%d", partition.Leader) }
+											} else {
+												<span class="text-red-600 dark:text-red-400">-1 (offline)</span>
+											}
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-600 dark:text-neutral-300">
+											{ formatInt32Slice(partition.Replicas) }
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-600 dark:text-neutral-300">
+											{ formatInt32Slice(partition.ISR) }
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap">
+											if partition.Offline {
+												<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+													<i class="fas fa-times-circle mr-1"></i> Offline
+												</span>
+											} else if len(partition.Replicas) != len(partition.ISR) {
+												<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+													<i class="fas fa-exclamation-triangle mr-1"></i> Under-replicated
+												</span>
+											} else {
+												<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+													<i class="fas fa-check-circle mr-1"></i> Healthy
+												</span>
+											}
+										</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<!-- Messages Tab -->
+				<div id="messages-tab" class="tab-content hidden">
+					<div class="flex items-center justify-between mb-6">
+						<div>
+							<h3 class="text-lg font-semibold text-neutral-900 dark:text-white">Stream de Mensagens</h3>
+							<p class="text-sm text-neutral-600 dark:text-neutral-400 mt-1">Leia e escreva mensagens no tópico em tempo real</p>
+						</div>
+						<div class="flex items-center space-x-3">
+							<button
+								class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white text-white rounded-lg font-medium transition flex items-center space-x-2"
+								onclick="showWriteMessageModal()"
+							>
+								<i class="fas fa-paper-plane"></i>
+								<span>Escrever Mensagem</span>
+							</button>
+							<div id="topic-actions">
+								@readButton(clusterName, topic.Name)
+							</div>
+						</div>
+					</div>
+					<div id="message-stream-view"></div>
+				</div>
+				<!-- Consumer Groups Tab -->
+				<div id="consumer-groups-tab" class="tab-content hidden">
+					<div class="text-center py-16">
+						<div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-700 mb-4">
+							<i class="fas fa-users text-3xl text-neutral-400 dark:text-neutral-500"></i>
+						</div>
+						<p class="text-neutral-600 dark:text-neutral-400 font-medium">Nenhum grupo de consumidores</p>
+						<p class="text-sm text-neutral-500 dark:text-neutral-500 mt-1">Este tópico não tem grupos de consumidores associados</p>
+					</div>
+				</div>
+				<!-- Configuration Tab -->
+				<div id="config-tab" class="tab-content hidden">
+					<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-700">
+						<table class="w-full">
+							<thead class="bg-neutral-50 dark:bg-neutral-900">
+								<tr>
+									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Configuração</th>
+									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Valor</th>
+								</tr>
+							</thead>
+							<tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">
+								for _, key := range getSortedConfigKeys(topic.Configs) {
+									<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+										<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900 dark:text-white">
+											{ key }
+										</td>
+										<td class="px-6 py-4 text-sm text-neutral-600 dark:text-neutral-300 font-mono break-all">
+											{ topic.Configs[key] }
+										</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
 			</div>
 		</div>
 		@updateConfigModal()
@@ -270,13 +325,13 @@ templ updateConfigModal() {
 						<button
 							type="button"
 							onclick="closeUpdateConfigModal()"
-							class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700"
+							class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 rounded-lg font-medium transition hover:bg-neutral-50 dark:hover:bg-neutral-700"
 						>
 							Cancelar
 						</button>
 						<button
 							type="submit"
-							class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg"
+							class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition"
 						>
 							Atualizar
 						</button>
@@ -315,13 +370,13 @@ templ increasePartitionsModal(currentPartitions int) {
 						<button
 							type="button"
 							onclick="closeIncreasePartitionsModal()"
-							class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700"
+							class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 rounded-lg font-medium transition hover:bg-neutral-50 dark:hover:bg-neutral-700"
 						>
 							Cancelar
 						</button>
 						<button
 							type="submit"
-							class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg"
+							class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition"
 						>
 							Aumentar
 						</button>
@@ -347,14 +402,14 @@ templ deleteTopicModal(topicName string) {
 					<button
 						type="button"
 						onclick="closeDeleteTopicModal()"
-						class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700"
+						class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 rounded-lg font-medium transition hover:bg-neutral-50 dark:hover:bg-neutral-700"
 					>
 						Cancelar
 					</button>
 					<button
 						type="button"
 						onclick="deleteTopic()"
-						class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
+						class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition shadow-lg shadow-red-600/30"
 					>
 						Deletar
 					</button>
@@ -397,13 +452,13 @@ templ writeMessageModal() {
                         <button
                             type="button"
                             onclick="closeWriteMessageModal()"
-                            class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700"
+                            class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 rounded-lg font-medium transition hover:bg-neutral-50 dark:hover:bg-neutral-700"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
-                            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
+                            class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition"
                         >
                             Enviar
                         </button>
@@ -440,7 +495,7 @@ templ readButton(clusterName string, topicName string) {
 		hx-get={ templ.SafeURL(fmt.Sprintf("/api/clusters/%s/topics/%s/ws-on", clusterName, topicName)) }
 		hx-target="#message-stream-view"
 		hx-swap="outerHTML"
-		class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-medium"
+		class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition flex items-center space-x-2"
 	>
 		<i class="fas fa-play"></i>
 		<span>Ler mensagens</span>
@@ -452,7 +507,7 @@ templ stopButton(clusterName string, topicName string) {
 		hx-get={ templ.SafeURL(fmt.Sprintf("/api/clusters/%s/topics/%s/ws-off", clusterName, topicName)) }
 		hx-target="#message-stream"
 		hx-swap="innerHTML"
-		class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium"
+		class="px-4 py-2 bg-guara-700 hover:bg-guara-900 text-white text-white rounded-lg font-medium transition flex items-center space-x-2"
 	>
 		<i class="fas fa-stop"></i>
 		<span>Parar leitura</span>

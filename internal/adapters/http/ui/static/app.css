@@ -53,6 +53,19 @@
     animation: slideOutUp 0.3s ease-in;
 }
 
+/* Tab fade-in animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+.fade-in {
+    animation: fadeIn 0.2s ease-in;
+}
+
 /* topics switch */
 input:checked ~ .block {
     background-color: #E85D04;

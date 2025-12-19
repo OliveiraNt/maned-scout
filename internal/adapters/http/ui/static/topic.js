@@ -29,6 +29,39 @@ function closeWriteMessageModal() {
     document.getElementById('writeMessageModal').classList.add('hidden');
 }
 
+function switchTab(tabId) {
+    // Hide all tab contents with transition
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabContents.forEach(content => {
+        content.classList.add('hidden');
+        content.classList.remove('fade-in');
+    });
+
+    // Reset all tab buttons
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(button => {
+        button.classList.remove('tab-button-active');
+        button.classList.add('text-neutral-600', 'dark:text-neutral-400');
+        button.classList.remove('text-guara-600', 'dark:text-guara-400', 'border-guara-500');
+        button.classList.add('border-transparent');
+    });
+
+    // Show selected tab with animation
+    const selectedTab = document.getElementById(tabId);
+    if (selectedTab) {
+        selectedTab.classList.remove('hidden');
+        selectedTab.classList.add('fade-in');
+    }
+
+    // Activate selected button
+    const selectedButton = document.querySelector(`[data-tab="${tabId}"]`);
+    if (selectedButton) {
+        selectedButton.classList.add('tab-button-active');
+        selectedButton.classList.remove('text-neutral-600', 'dark:text-neutral-400', 'border-transparent');
+        selectedButton.classList.add('text-guara-600', 'dark:text-guara-400', 'border-guara-500');
+    }
+}
+
 async function updateTopicConfig(event) {
     event.preventDefault();
     const form = event.target;
