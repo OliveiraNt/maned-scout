@@ -14,8 +14,8 @@ type ClusterWithStats struct {
 templ ClusterList(clusters []ClusterWithStats) {
 	@layout.Base("Clusters", nil) {
 		<div class="mb-6">
-			<h2 class="text-3xl font-bold text-gray-900 dark:text-white">Clusters Kafka</h2>
-			<p class="text-gray-600 dark:text-gray-400 mt-2">Gerencie e monitore seus clusters Apache Kafka</p>
+			<h2 class="text-3xl font-bold text-neutral-900 dark:text-white">Clusters Kafka</h2>
+			<p class="text-neutral-600 dark:text-neutral-400 mt-2">Gerencie e monitore seus clusters Apache Kafka</p>
 		</div>
 		
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -33,16 +33,16 @@ templ ClusterCard(cluster domain.Cluster, stats *domain.ClusterStats) {
 		href={ templ.URL(fmt.Sprintf("/clusters/%s", cluster.Name)) }
 		hx-boost="true"
 		hx-indicator="#page-loading"
-		class="block bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition cursor-pointer"
+		class="block bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 hover:shadow-md transition cursor-pointer"
 	>
 		<div class="flex items-start justify-between mb-4">
 			<div class="flex items-center space-x-3">
-				<div class="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-lg">
-					<i class="fas fa-server text-blue-600 dark:text-blue-400 text-xl"></i>
+				<div class="bg-guara-100 dark:bg-guara-900/30 p-3 rounded-lg">
+					<i class="fas fa-server text-guara-500 dark:text-guara-400 text-xl"></i>
 				</div>
 				<div>
-					<h3 class="text-lg font-semibold text-gray-900 dark:text-white">{ cluster.Name }</h3>
-					<p class="text-sm text-gray-500 dark:text-gray-400">{ fmt.Sprintf("%d brokers", len(cluster.Brokers)) }</p>
+					<h3 class="text-lg font-semibold text-neutral-900 dark:text-white">{ cluster.Name }</h3>
+					<p class="text-sm text-neutral-500 dark:text-neutral-400">{ fmt.Sprintf("%d brokers", len(cluster.Brokers)) }</p>
 				</div>
 			</div>
 			if cluster.IsOnline {
@@ -60,20 +60,20 @@ templ ClusterCard(cluster domain.Cluster, stats *domain.ClusterStats) {
 		
 		if cluster.IsOnline && stats != nil {
 			<div class="grid grid-cols-2 gap-3 mb-4">
-				<div class="text-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded">
-					<div class="text-xs text-gray-600 dark:text-gray-400">Tópicos</div>
-					<div class="text-lg font-bold text-gray-900 dark:text-white">{ fmt.Sprintf("%d", stats.TotalTopics) }</div>
+				<div class="text-center p-2 bg-neutral-50 dark:bg-neutral-700/50 rounded">
+					<div class="text-xs text-neutral-600 dark:text-neutral-400">Tópicos</div>
+					<div class="text-lg font-bold text-neutral-900 dark:text-white">{ fmt.Sprintf("%d", stats.TotalTopics) }</div>
 				</div>
-				<div class="text-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded">
-					<div class="text-xs text-gray-600 dark:text-gray-400">Partições</div>
-					<div class="text-lg font-bold text-gray-900 dark:text-white">{ fmt.Sprintf("%d", stats.TotalPartitions) }</div>
+				<div class="text-center p-2 bg-neutral-50 dark:bg-neutral-700/50 rounded">
+					<div class="text-xs text-neutral-600 dark:text-neutral-400">Partições</div>
+					<div class="text-lg font-bold text-neutral-900 dark:text-white">{ fmt.Sprintf("%d", stats.TotalPartitions) }</div>
 				</div>
-				<div class="text-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded">
-					<div class="text-xs text-gray-600 dark:text-gray-400">Grupos</div>
-					<div class="text-lg font-bold text-gray-900 dark:text-white">{ fmt.Sprintf("%d", stats.TotalConsumerGroups) }</div>
+				<div class="text-center p-2 bg-neutral-50 dark:bg-neutral-700/50 rounded">
+					<div class="text-xs text-neutral-600 dark:text-neutral-400">Grupos</div>
+					<div class="text-lg font-bold text-neutral-900 dark:text-white">{ fmt.Sprintf("%d", stats.TotalConsumerGroups) }</div>
 				</div>
-				<div class="text-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded">
-					<div class="text-xs text-gray-600 dark:text-gray-400">Under-Rep</div>
+				<div class="text-center p-2 bg-neutral-50 dark:bg-neutral-700/50 rounded">
+					<div class="text-xs text-neutral-600 dark:text-neutral-400">Under-Rep</div>
 					if stats.UnderReplicatedPartitions > 0 {
 						<div class="text-lg font-bold text-red-600 dark:text-red-400">{ fmt.Sprintf("%d", stats.UnderReplicatedPartitions) }</div>
 					} else {
@@ -82,13 +82,13 @@ templ ClusterCard(cluster domain.Cluster, stats *domain.ClusterStats) {
 				</div>
 			</div>
 			<div class="mb-4 flex items-center space-x-2 text-sm">
-				<i class="fas fa-shield-alt text-gray-500 dark:text-gray-400"></i>
-				<span class="text-gray-600 dark:text-gray-400">Autenticação:</span>
-				<span class="font-medium text-gray-900 dark:text-white">{ cluster.AuthType }</span>
+				<i class="fas fa-shield-alt text-neutral-500 dark:text-neutral-400"></i>
+				<span class="text-neutral-600 dark:text-neutral-400">Autenticação:</span>
+				<span class="font-medium text-neutral-900 dark:text-white">{ cluster.AuthType }</span>
 			if cluster.CertInfo != nil {
 				<div class="flex items-center space-x-2 text-sm">
-					<i class="fas fa-certificate text-gray-500 dark:text-gray-400"></i>
-					<span class="text-gray-600 dark:text-gray-400">Certificado:</span>
+					<i class="fas fa-certificate text-neutral-500 dark:text-neutral-400"></i>
+					<span class="text-neutral-600 dark:text-neutral-400">Certificado:</span>
 					if cluster.CertInfo.Status == "expired" {
 						<span class="flex items-center space-x-1 text-red-600 dark:text-red-400 font-semibold">
 							<i class="fas fa-exclamation-circle"></i>
@@ -114,14 +114,14 @@ templ ClusterCard(cluster domain.Cluster, stats *domain.ClusterStats) {
 			}
 			</div>
 		} else {
-			<div class="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
+			<div class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 mb-4">
 				<div class="flex items-center justify-between">
 					<span>Brokers:</span>
-					<span class="font-medium text-gray-900 dark:text-white">{ fmt.Sprintf("%d", len(cluster.Brokers)) }</span>
+					<span class="font-medium text-neutral-900 dark:text-white">{ fmt.Sprintf("%d", len(cluster.Brokers)) }</span>
 				</div>
 				<div class="flex items-center justify-between">
 					<span>Autenticação:</span>
-					<span class="font-medium text-gray-900 dark:text-white">{ cluster.AuthType }</span>
+					<span class="font-medium text-neutral-900 dark:text-white">{ cluster.AuthType }</span>
 				</div>
 				if cluster.CertInfo != nil {
 					<div class="flex items-center justify-between">
@@ -149,14 +149,14 @@ templ ClusterCard(cluster domain.Cluster, stats *domain.ClusterStats) {
 						}
 					</div>
 				}
-				<div class="border-t border-gray-200 dark:border-gray-700 pt-2">
-					<p class="text-xs text-gray-500 dark:text-gray-400 truncate">{ cluster.Brokers[0] }</p>
+				<div class="border-t border-neutral-200 dark:border-neutral-700 pt-2">
+					<p class="text-xs text-neutral-500 dark:text-neutral-400 truncate">{ cluster.Brokers[0] }</p>
 				</div>
 			</div>
 		}
 
-		<div class="pt-3 border-t border-gray-200 dark:border-gray-700">
-			<span class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium">
+		<div class="pt-3 border-t border-neutral-200 dark:border-neutral-700">
+			<span class="text-guara-500 dark:text-guara-400 hover:text-guara-600 dark:hover:text-guara-300 text-sm font-medium">
 				Ver Dashboard <i class="fas fa-arrow-right ml-1"></i>
 			</span>
 		</div>
@@ -164,11 +164,11 @@ templ ClusterCard(cluster domain.Cluster, stats *domain.ClusterStats) {
 }
 
 templ AddClusterCard() {
-	<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border-2 border-dashed border-gray-300 dark:border-gray-600 p-6 hover:border-blue-400 dark:hover:border-blue-500 transition cursor-pointer flex items-center justify-center min-h-[240px]">
+	<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border-2 border-dashed border-neutral-300 dark:border-neutral-600 p-6 hover:border-guara-400 dark:hover:border-guara-500 transition cursor-pointer flex items-center justify-center min-h-[240px]">
 		<div class="text-center">
-			<i class="fas fa-plus-circle text-4xl text-gray-400 dark:text-gray-500 mb-3"></i>
-			<h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Adicionar Cluster</h3>
-			<p class="text-sm text-gray-500 dark:text-gray-400">Conecte um novo cluster Kafka</p>
+			<i class="fas fa-plus-circle text-4xl text-neutral-400 dark:text-neutral-500 mb-3"></i>
+			<h3 class="text-lg font-semibold text-neutral-700 dark:text-neutral-300 mb-2">Adicionar Cluster</h3>
+			<p class="text-sm text-neutral-500 dark:text-neutral-400">Conecte um novo cluster Kafka</p>
 		</div>
 	</div>
 }

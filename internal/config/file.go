@@ -48,7 +48,7 @@ type AWSConfig struct {
 	SessionTokenEnv string `yaml:"session_token_env,omitempty" json:"session_token_env,omitempty"`
 }
 
-// FileConfig represents the root configuration file structure for kdash.
+// FileConfig represents the root configuration file structure for Maned Scout.
 type FileConfig struct {
 	Clusters []ClusterConfig `yaml:"clusters" json:"clusters"`
 }

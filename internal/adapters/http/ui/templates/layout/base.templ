@@ -5,9 +5,9 @@ templ Base(title string, imports templ.Component) {
 	<!DOCTYPE html>
 	<html lang="pt-BR">
 		@Head(title, imports)
-		<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-			<div id="page-loading" class="htmx-indicator fixed top-0 left-0 w-full h-1 bg-blue-600 z-50">
-				<div class="h-full bg-blue-400 animate-pulse"></div>
+		<body class="bg-neutral-50 dark:bg-neutral-900 transition-colors duration-200">
+			<div id="page-loading" class="htmx-indicator fixed top-0 left-0 w-full h-1 bg-guara-500 z-50">
+				<div class="h-full bg-guara-400 animate-pulse"></div>
 			</div>
 			<div id="notification-container" class="fixed top-4 left-0 right-0 z-50 px-4"></div>
 			@Header()
@@ -23,9 +23,9 @@ templ BaseWithSidebar(title string, clusterName string, imports templ.Component)
 	<!DOCTYPE html>
 	<html lang="pt-BR">
 		@Head(title, imports)
-		<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-			<div id="page-loading" class="htmx-indicator fixed top-0 left-0 w-full h-1 bg-blue-600 z-50">
-				<div class="h-full bg-blue-400 animate-pulse"></div>
+		<body class="bg-neutral-50 dark:bg-neutral-900 transition-colors duration-200">
+			<div id="page-loading" class="htmx-indicator fixed top-0 left-0 w-full h-1 bg-guara-500 z-50">
+				<div class="h-full bg-guara-400 animate-pulse"></div>
 			</div>
 			<div id="notification-container" class="fixed top-4 left-0 right-0 z-50 px-4"></div>
 			@Header()
@@ -43,6 +43,8 @@ templ Head(title string, imports templ.Component) {
 	<head>
 		<meta charset="UTF-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16x16.png"/>
+		<link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32x32.png"/>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
         <script src="/static/app.js"></script>
@@ -52,31 +54,31 @@ templ Head(title string, imports templ.Component) {
         if imports != nil {
             @imports
         }
-        <title>{ title } - KDash</title>
+        <title>{ title } - Maned Scout</title>
 	</head>
 }
 
 templ Header() {
-	<header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 transition-colors duration-200">
+	<header class="bg-white dark:bg-neutral-800 shadow-sm border-b border-neutral-200 dark:border-neutral-700 transition-colors duration-200">
 		<div class="px-6 py-4">
 			<div class="flex items-center justify-between">
 				<div class="flex items-center space-x-3">
-					<i class="fas fa-stream text-blue-600 dark:text-blue-400 text-2xl"></i>
-					<h1 class="text-2xl font-bold text-gray-900 dark:text-white">KDash</h1>
+					<img src="/static/icons/maned-wolf.png" alt="Maned Scout" class="w-12 h-12"/>
+					<h1 class="text-2xl font-bold text-neutral-900 dark:text-white">Maned Scout</h1>
 				</div>
 				<div class="flex items-center space-x-4">
 					<button
 						onclick="document.documentElement.classList.toggle('dark'); localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'))"
-						class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+						class="text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition-colors"
 						title="Alternar tema"
 					>
 						<i class="fas fa-moon dark:hidden"></i>
 						<i class="fas fa-sun hidden dark:inline"></i>
 					</button>
-					<button class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
+					<button class="text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition-colors">
 						<i class="fas fa-bell"></i>
 					</button>
-					<button class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
+					<button class="text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition-colors">
 						<i class="fas fa-cog"></i>
 					</button>
 				</div>
@@ -86,54 +88,54 @@ templ Header() {
 }
 
 templ Sidebar(clusterName string) {
-	<aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 min-h-screen transition-colors duration-200">
+	<aside class="w-64 bg-white dark:bg-neutral-800 border-r border-neutral-200 dark:border-neutral-700 min-h-screen transition-colors duration-200">
 		<nav class="p-4">
 			<!-- Cluster Info Header -->
-			<div class="mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+			<div class="mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-700">
 				<div class="flex items-center space-x-2 mb-2">
-					<i class="fas fa-server text-blue-600 dark:text-blue-400"></i>
-					<span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Cluster Atual</span>
+					<i class="fas fa-server text-guara-500 dark:text-guara-400"></i>
+					<span class="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase">Cluster Atual</span>
 				</div>
-				<h3 class="text-sm font-bold text-gray-900 dark:text-white truncate" title={ clusterName }>
+				<h3 class="text-sm font-bold text-neutral-900 dark:text-white truncate" title={ clusterName }>
 					{ clusterName }
 				</h3>
 			</div>
 			<!-- Navigation Links -->
 			<ul class="space-y-2">
 				<li>
-					<a href={ templ.URL("/clusters/" + clusterName) } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
+					<a href={ templ.URL("/clusters/" + clusterName) } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-guara-50 dark:hover:bg-guara-900/30 hover:text-guara-600 dark:hover:text-guara-400 rounded-lg transition">
 						<i class="fas fa-tachometer-alt"></i>
 						<span>Dashboard</span>
 					</a>
 				</li>
 				<li>
-					<a href={ templ.URL("/clusters/" + clusterName + "/topics") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
+					<a href={ templ.URL("/clusters/" + clusterName + "/topics") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-guara-50 dark:hover:bg-guara-900/30 hover:text-guara-600 dark:hover:text-guara-400 rounded-lg transition">
 						<i class="fas fa-list"></i>
 						<span>Tópicos</span>
 					</a>
 				</li>
 				<li>
-					<a href={ templ.URL("/clusters/" + clusterName + "/consumers") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
+					<a href={ templ.URL("/clusters/" + clusterName + "/consumers") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-guara-50 dark:hover:bg-guara-900/30 hover:text-guara-600 dark:hover:text-guara-400 rounded-lg transition">
 						<i class="fas fa-users"></i>
 						<span>Consumer Groups</span>
 					</a>
 				</li>
 				<li>
-					<a href={ templ.URL("/clusters/" + clusterName + "/brokers") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
+					<a href={ templ.URL("/clusters/" + clusterName + "/brokers") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-guara-50 dark:hover:bg-guara-900/30 hover:text-guara-600 dark:hover:text-guara-400 rounded-lg transition">
 						<i class="fas fa-network-wired"></i>
 						<span>Brokers</span>
 					</a>
 				</li>
 				<li>
-					<a href={ templ.URL("/clusters/" + clusterName + "/metrics") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition">
+					<a href={ templ.URL("/clusters/" + clusterName + "/metrics") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-guara-50 dark:hover:bg-guara-900/30 hover:text-guara-600 dark:hover:text-guara-400 rounded-lg transition">
 						<i class="fas fa-chart-line"></i>
 						<span>Métricas</span>
 					</a>
 				</li>
 			</ul>
 			<!-- Back to Clusters -->
-			<div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-				<a href="/" hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white rounded-lg transition">
+			<div class="mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+				<a href="/" hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 hover:text-neutral-900 dark:hover:text-white rounded-lg transition">
 					<i class="fas fa-arrow-left"></i>
 					<span>Voltar para Clusters</span>
 				</a>
@@ -143,11 +145,11 @@ templ Sidebar(clusterName string) {
 }
 
 templ Card(title string, icon string) {
-	<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-colors duration-200">
+	<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 transition-colors duration-200">
 		<div class="flex items-center justify-between mb-4">
-			<h3 class="text-lg font-semibold text-gray-900 dark:text-white">{ title }</h3>
+			<h3 class="text-lg font-semibold text-neutral-900 dark:text-white">{ title }</h3>
 			if icon != "" {
-				<i class={ "fas " + icon + " text-gray-400 dark:text-gray-500" }></i>
+				<i class={ "fas " + icon + " text-neutral-400 dark:text-neutral-500" }></i>
 			}
 		</div>
 		<div>
@@ -171,16 +173,16 @@ func getBadgeColor(color string) string {
 	case "yellow":
 		return "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400"
 	case "blue":
-		return "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400"
+		return "bg-guara-100 dark:bg-guara-900/30 text-guara-800 dark:text-guara-400"
 	default:
-		return "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300"
+		return "bg-neutral-100 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-300"
 	}
 }
 
 templ LoadingSpinner() {
 	<div class="htmx-indicator">
 		<div class="flex items-center justify-center">
-			<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
+			<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-guara-500 dark:border-guara-400"></div>
 		</div>
 	</div>
 }

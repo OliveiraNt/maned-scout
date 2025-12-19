@@ -10,45 +10,45 @@ templ TopicsList(clusterName string, topics map[string]int) {
 		<div class="mb-6">
 			<div class="flex items-center justify-between">
 				<div>
-					<h2 class="text-3xl font-bold text-gray-900 dark:text-white">Tópicos</h2>
-					<p class="text-gray-600 dark:text-gray-400 mt-2">
+					<h2 class="text-3xl font-bold text-neutral-900 dark:text-white">Tópicos</h2>
+					<p class="text-neutral-600 dark:text-neutral-400 mt-2">
 						Gerencie os tópicos do cluster <span class="font-semibold">{ clusterName }</span>
 					</p>
 				</div>
-				<button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition flex items-center space-x-2" onclick="document.getElementById('createTopicModal').classList.remove('hidden')">
+				<button class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition flex items-center space-x-2" onclick="document.getElementById('createTopicModal').classList.remove('hidden')">
 					<i class="fas fa-plus"></i>
 					<span>Criar Tópico</span>
 				</button>
 			</div>
 		</div>
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
 				<div class="flex items-center justify-between">
 					<div>
-						<p class="text-sm text-gray-600 dark:text-gray-400">Total de Tópicos</p>
-						<p class="text-3xl font-bold text-gray-900 dark:text-white mt-2" id="topics-total">—</p>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">Total de Tópicos</p>
+						<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2" id="topics-total">—</p>
 					</div>
-					<div class="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-lg">
-						<i class="fas fa-list text-blue-600 dark:text-blue-400 text-2xl"></i>
+					<div class="bg-guara-100 dark:bg-guara-900/30 p-3 rounded-lg">
+						<i class="fas fa-list text-guara-500 dark:text-guara-400 text-2xl"></i>
 					</div>
 				</div>
 			</div>
-			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
 				<div class="flex items-center justify-between">
 					<div>
-						<p class="text-sm text-gray-600 dark:text-gray-400">Total de Partições</p>
-						<p class="text-3xl font-bold text-gray-900 dark:text-white mt-2" id="partitions-total">—</p>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">Total de Partições</p>
+						<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2" id="partitions-total">—</p>
 					</div>
 					<div class="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-lg">
 						<i class="fas fa-layer-group text-purple-600 dark:text-purple-400 text-2xl"></i>
 					</div>
 				</div>
 			</div>
-			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
 				<div class="flex items-center justify-between">
 					<div>
-						<p class="text-sm text-gray-600 dark:text-gray-400">Média de Partições</p>
-						<p class="text-3xl font-bold text-gray-900 dark:text-white mt-2" id="partitions-avg">—</p>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">Média de Partições</p>
+						<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2" id="partitions-avg">—</p>
 					</div>
 					<div class="bg-green-100 dark:bg-green-900/30 p-3 rounded-lg">
 						<i class="fas fa-calculator text-green-600 dark:text-green-400 text-2xl"></i>
@@ -57,21 +57,21 @@ templ TopicsList(clusterName string, topics map[string]int) {
 			</div>
 		</div>
 		<div class="mb-6">
-			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-4">
 				<div class="flex items-center space-x-4">
 					<div class="flex-1">
 						<div class="relative">
-							<i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+							<i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"></i>
 							<input
 								type="text"
 								placeholder="Buscar tópicos"
-								class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+								class="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-guara-500 focus:border-transparent"
 							/>
 						</div>
 					</div>
-					<div class="flex items-center space-x-3 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
+					<div class="flex items-center space-x-3 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800">
 						<label class="flex items-center cursor-pointer">
-							<span class="mr-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+							<span class="mr-3 text-sm font-medium text-neutral-700 dark:text-neutral-300">
 								<i class="fas fa-eye-slash mr-1"></i>
 								Tópicos Internos
 							</span>
@@ -86,7 +86,7 @@ templ TopicsList(clusterName string, topics map[string]int) {
 									hx-include="[name=showInternal]"
 									hx-target="#topics-list"
 								/>
-								<div class="block bg-gray-300 dark:bg-gray-600 w-14 h-8 rounded-full"></div>
+								<div class="block bg-neutral-300 dark:bg-neutral-600 w-14 h-8 rounded-full"></div>
 								<div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
 							</div>
 						</label>
@@ -114,7 +114,7 @@ templ TopicsList(clusterName string, topics map[string]int) {
 templ TopicsListFragment(clusterName string, topics map[string]int, oob bool) {
 	<div
 		id="topics-list"
-		class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
+		class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700"
 		hx-get={ templ.URL(fmt.Sprintf("/api/clusters/%s/topics", clusterName)) }
 		hx-include="[name=showInternal]"
 		hx-trigger="topic-created from:body"
@@ -127,36 +127,36 @@ templ TopicsListFragment(clusterName string, topics map[string]int, oob bool) {
 		<div class="overflow-x-auto">
 			if len(topics) == 0 {
 				<div class="text-center py-16">
-					<i class="fas fa-inbox text-gray-400 dark:text-gray-600 text-6xl mb-4"></i>
-					<p class="text-xl text-gray-600 dark:text-gray-400 mb-2">Nenhum tópico encontrado</p>
-					<p class="text-sm text-gray-500 dark:text-gray-500 mb-6">Crie seu primeiro tópico para começar</p>
-					<button class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition" onclick="document.getElementById('createTopicModal').classList.remove('hidden')">
+					<i class="fas fa-inbox text-neutral-400 dark:text-neutral-600 text-6xl mb-4"></i>
+					<p class="text-xl text-neutral-600 dark:text-neutral-400 mb-2">Nenhum tópico encontrado</p>
+					<p class="text-sm text-neutral-500 dark:text-neutral-500 mb-6">Crie seu primeiro tópico para começar</p>
+					<button class="px-6 py-3 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition" onclick="document.getElementById('createTopicModal').classList.remove('hidden')">
 						<i class="fas fa-plus mr-2"></i>
 						Criar Primeiro Tópico
 					</button>
 				</div>
 			} else {
 				<table class="w-full" id="topicsTable">
-					<thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
+					<thead class="bg-neutral-50 dark:bg-neutral-700/50 border-b border-neutral-200 dark:border-neutral-600">
 						<tr>
-							<th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+							<th class="px-6 py-4 text-left text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
 								<div class="flex items-center space-x-2">
 									<i class="fas fa-stream"></i>
 									<span>Nome do Tópico</span>
 								</div>
 							</th>
-							<th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+							<th class="px-6 py-4 text-left text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
 								<div class="flex items-center space-x-2">
 									<i class="fas fa-layer-group"></i>
 									<span>Partições</span>
 								</div>
 							</th>
-							<th class="px-6 py-4 text-right text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+							<th class="px-6 py-4 text-right text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
 								Ações
 							</th>
 						</tr>
 					</thead>
-					<tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+					<tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">
 						for name, partitions := range topics {
 							@TopicTableRow(name, partitions, clusterName)
 						}
@@ -168,20 +168,20 @@ templ TopicsListFragment(clusterName string, topics map[string]int, oob bool) {
 }
 
 templ TopicTableRow(topicName string, partitions int, clusterName string) {
-	<tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition" data-topic-name={ topicName }>
+	<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-700/30 transition" data-topic-name={ topicName }>
 		<td class="px-6 py-4">
 			<div class="flex items-center space-x-3">
-				<div class="bg-blue-100 dark:bg-blue-900/30 p-2 rounded">
-					<i class="fas fa-stream text-blue-600 dark:text-blue-400 text-sm"></i>
+				<div class="bg-guara-100 dark:bg-guara-900/30 p-2 rounded">
+					<i class="fas fa-stream text-guara-500 dark:text-guara-400 text-sm"></i>
 				</div>
 				<div>
 					<a
 						href={ templ.URL(fmt.Sprintf("/clusters/%s/topics/%s", clusterName, topicName)) }
-						class="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
+						class="font-medium text-neutral-900 dark:text-white hover:text-guara-600 dark:hover:text-guara-400"
 					>
 						{ topicName }
 					</a>
-					<p class="text-xs text-gray-500 dark:text-gray-400">
+					<p class="text-xs text-neutral-500 dark:text-neutral-400">
 						{ fmt.Sprintf("cluster: %s", clusterName) }
 					</p>
 				</div>
@@ -197,7 +197,7 @@ templ TopicTableRow(topicName string, partitions int, clusterName string) {
 			<div class="flex items-center justify-end space-x-2">
 				<a
 					href={ templ.URL(fmt.Sprintf("/clusters/%s/topics/%s", clusterName, topicName)) }
-					class="px-3 py-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg text-sm font-medium transition"
+					class="px-3 py-1.5 text-guara-500 dark:text-guara-400 hover:bg-guara-50 dark:hover:bg-guara-900/30 rounded-lg text-sm font-medium transition"
 					title="Ver detalhes"
 				>
 					<i class="fas fa-eye mr-1"></i>
@@ -210,29 +210,29 @@ templ TopicTableRow(topicName string, partitions int, clusterName string) {
 
 templ createTopicModal(clusterName string) {
 	<div id="createTopicModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4">
-			<div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-				<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Criar Novo Tópico</h3>
+		<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-xl max-w-2xl w-full mx-4">
+			<div class="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
+				<h3 class="text-lg font-semibold text-neutral-900 dark:text-white">Criar Novo Tópico</h3>
 			</div>
 			<div class="px-6 py-4">
 				<div id="create-topic-error"></div>
 				<form id="createTopicForm" hx-post={ templ.URL(fmt.Sprintf("/api/clusters/%s/topics", clusterName)) } hx-swap="none">
 					<div class="space-y-4">
 						<div>
-							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+							<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
 								Nome do Tópico <span class="text-red-500">*</span>
 							</label>
 							<input
 								type="text"
 								name="name"
 								required
-								class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+								class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white"
 								placeholder="my-topic"
 							/>
 						</div>
 						<div class="grid grid-cols-2 gap-4">
 							<div>
-								<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+								<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
 									Número de Partições <span class="text-red-500">*</span>
 								</label>
 								<input
@@ -241,11 +241,11 @@ templ createTopicModal(clusterName string) {
 									required
 									min="1"
 									value="1"
-									class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+									class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white"
 								/>
 							</div>
 							<div>
-								<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+								<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
 									Fator de Replicação <span class="text-red-500">*</span>
 								</label>
 								<input
@@ -254,29 +254,29 @@ templ createTopicModal(clusterName string) {
 									required
 									min="1"
 									value="1"
-									class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+									class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white"
 								/>
 							</div>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+							<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
 								Retention MS (opcional)
 							</label>
 							<input
 								type="number"
 								name="retention.ms"
-								class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+								class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white"
 								placeholder="604800000 (7 dias)"
 							/>
-							<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Tempo de retenção em milissegundos</p>
+							<p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Tempo de retenção em milissegundos</p>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+							<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
 								Cleanup Policy (opcional)
 							</label>
 							<select
 								name="cleanup.policy"
-								class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+								class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white"
 							>
 								<option value="">-- Default --</option>
 								<option value="delete">delete</option>
@@ -285,12 +285,12 @@ templ createTopicModal(clusterName string) {
 							</select>
 						</div>
 						<div>
-							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+							<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
 								Compression Type (opcional)
 							</label>
 							<select
 								name="compression.type"
-								class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+								class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white"
 							>
 								<option value="">-- Default --</option>
 								<option value="uncompressed">uncompressed</option>
@@ -305,13 +305,13 @@ templ createTopicModal(clusterName string) {
 						<button
 							type="button"
 							onclick="document.getElementById('createTopicModal').classList.add('hidden')"
-							class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+							class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700"
 						>
 							Cancelar
 						</button>
 						<button
 							type="submit"
-							class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+							class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg"
 						>
 							Criar Tópico
 						</button>

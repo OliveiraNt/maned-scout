@@ -55,11 +55,11 @@
 
 /* topics switch */
 input:checked ~ .block {
-    background-color: #3B82F6;
+    background-color: #E85D04;
 }
 input:checked ~ .dot {
     transform: translateX(100%);
 }
 .dark input:checked ~ .block {
-    background-color: #60A5FA;
+    background-color: #FF7A29;
 }

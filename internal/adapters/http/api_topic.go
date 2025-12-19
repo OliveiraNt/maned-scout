@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	pages "github.com/OliveiraNt/kdash/internal/adapters/http/ui/templates/pages"
+	"github.com/OliveiraNt/kdash/internal/adapters/http/ui/templates/pages"
 	"github.com/OliveiraNt/kdash/internal/application"
 	"github.com/OliveiraNt/kdash/internal/domain"
 	"github.com/OliveiraNt/kdash/internal/registry"

@@ -14,7 +14,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-// Server provides the HTTP API and Web UI endpoints for kdash.
+// Server provides the HTTP API and Web UI endpoints for Maned Scout.
 type Server struct {
 	clusterService *application.ClusterService
 	topicService   *application.TopicService

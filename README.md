@@ -1,4 +1,4 @@
-# Project kdash
+# Project Maned Scout
 
 One Paragraph of project description goes here
 
