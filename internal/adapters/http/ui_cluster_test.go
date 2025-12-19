@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/OliveiraNt/kdash/internal/config"
+	"github.com/OliveiraNt/maned-scout/internal/config"
 )
 
 func TestUIHome(t *testing.T) {

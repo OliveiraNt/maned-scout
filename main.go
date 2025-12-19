@@ -5,11 +5,11 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/OliveiraNt/kdash/cmd"
-	"github.com/OliveiraNt/kdash/internal/application"
-	"github.com/OliveiraNt/kdash/internal/infrastructure/kafka"
-	"github.com/OliveiraNt/kdash/internal/infrastructure/repository"
-	"github.com/OliveiraNt/kdash/internal/registry"
+	"github.com/OliveiraNt/maned-scout/cmd"
+	"github.com/OliveiraNt/maned-scout/internal/application"
+	"github.com/OliveiraNt/maned-scout/internal/infrastructure/kafka"
+	"github.com/OliveiraNt/maned-scout/internal/infrastructure/repository"
+	"github.com/OliveiraNt/maned-scout/internal/registry"
 	"github.com/joho/godotenv"
 )
 
@@ -25,33 +25,33 @@ func findConfigPath() string {
 	if runtime.GOOS == "windows" {
 		if appdata := os.Getenv("APPDATA"); appdata != "" {
 			for _, n := range names {
-				candidates = append(candidates, filepath.Join(appdata, "kdash", n))
+				candidates = append(candidates, filepath.Join(appdata, "maned-scout", n))
 			}
 		}
 		if pd := os.Getenv("PROGRAMDATA"); pd != "" {
 			for _, n := range names {
-				candidates = append(candidates, filepath.Join(pd, "kdash", n))
+				candidates = append(candidates, filepath.Join(pd, "maned-scout", n))
 			}
 		}
 		if home != "" {
 			for _, n := range names {
-				candidates = append(candidates, filepath.Join(home, "kdash", n))
+				candidates = append(candidates, filepath.Join(home, "maned-scout", n))
 			}
 		}
 	} else {
 		if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
 			for _, n := range names {
-				candidates = append(candidates, filepath.Join(xdg, "kdash", n))
+				candidates = append(candidates, filepath.Join(xdg, "maned-scout", n))
 			}
 		}
 		if home != "" {
 			for _, n := range names {
-				candidates = append(candidates, filepath.Join(home, ".config", "kdash", n))
-				candidates = append(candidates, filepath.Join(home, ".kdash", n))
+				candidates = append(candidates, filepath.Join(home, ".config", "maned-scout", n))
+				candidates = append(candidates, filepath.Join(home, ".maned-scout", n))
 			}
 		}
 		for _, n := range names {
-			candidates = append(candidates, filepath.Join("/etc", "kdash", n))
+			candidates = append(candidates, filepath.Join("/etc", "maned-scout", n))
 		}
 	}
 
@@ -65,7 +65,7 @@ func findConfigPath() string {
 	}
 
 	createPath := "./config.yml"
-	initial := []byte("# kdash configuration\n")
+	initial := []byte("# Maned Scout configuration\n")
 	if err := os.WriteFile(createPath, initial, 0644); err == nil {
 		return createPath
 	}
@@ -80,7 +80,7 @@ func main() {
 	godotenv.Load()
 	registry.InitLogger()
 
-	configPath := os.Getenv("KDASH_CONFIG")
+	configPath := os.Getenv("MANED_SCOUT_CONFIG")
 	if configPath == "" {
 		configPath = findConfigPath()
 	}

@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/OliveiraNt/kdash/internal/config"
-	"github.com/OliveiraNt/kdash/internal/registry"
+	"github.com/OliveiraNt/maned-scout/internal/config"
+	"github.com/OliveiraNt/maned-scout/internal/registry"
 
 	"github.com/go-chi/chi/v5"
 )

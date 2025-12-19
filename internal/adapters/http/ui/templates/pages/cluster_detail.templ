@@ -2,8 +2,8 @@ package pages
 
 import (
 	"fmt"
-	layout "github.com/OliveiraNt/kdash/internal/adapters/http/ui/templates/layout"
-	"github.com/OliveiraNt/kdash/internal/domain"
+	layout "github.com/OliveiraNt/maned-scout/internal/adapters/http/ui/templates/layout"
+	"github.com/OliveiraNt/maned-scout/internal/domain"
 )
 
 templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain.ClusterStats, brokerDetails []domain.BrokerDetail, consumerGroups []domain.ConsumerGroupSummary) {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/OliveiraNt/kdash/internal/domain"
-	"github.com/OliveiraNt/kdash/internal/registry"
+	"github.com/OliveiraNt/maned-scout/internal/domain"
+	"github.com/OliveiraNt/maned-scout/internal/registry"
 )
 
 // TopicService handles topic-related business operations.

@@ -1,6 +1,6 @@
 package domain
 
-import "github.com/OliveiraNt/kdash/internal/config"
+import "github.com/OliveiraNt/maned-scout/internal/config"
 
 // Cluster represents a Kafka cluster with its metadata
 type Cluster struct {

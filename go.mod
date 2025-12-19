@@ -1,4 +1,4 @@
-module github.com/OliveiraNt/kdash
+module github.com/OliveiraNt/maned-scout
 
 go 1.25.4
 

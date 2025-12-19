@@ -1,9 +1,9 @@
 package application
 
 import (
-	"github.com/OliveiraNt/kdash/internal/config"
-	"github.com/OliveiraNt/kdash/internal/domain"
-	"github.com/OliveiraNt/kdash/internal/registry"
+	"github.com/OliveiraNt/maned-scout/internal/config"
+	"github.com/OliveiraNt/maned-scout/internal/domain"
+	"github.com/OliveiraNt/maned-scout/internal/registry"
 )
 
 // ClusterService provides operations related to cluster management.

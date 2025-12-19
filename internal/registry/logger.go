@@ -10,7 +10,7 @@ import (
 // Logger is the application-wide structured logger.
 var Logger *chlog.Logger
 
-// InitLogger initializes the global logger with level from KDASH_LOG_LEVEL.
+// InitLogger initializes the global logger with level from MANED_SCOUT_LOG_LEVEL.
 // Valid levels: debug, info, warn, error.
 func InitLogger() {
 	if Logger != nil {
@@ -19,7 +19,7 @@ func InitLogger() {
 	l := chlog.New(os.Stdout)
 	l.SetTimeFormat("2006-01-02 15:04:05.000")
 	l.SetReportTimestamp(true)
-	levelStr := strings.ToLower(strings.TrimSpace(os.Getenv("KDASH_LOG_LEVEL")))
+	levelStr := strings.ToLower(strings.TrimSpace(os.Getenv("MANED_SCOUT_LOG_LEVEL")))
 	switch levelStr {
 	case "debug":
 		l.SetLevel(chlog.DebugLevel)

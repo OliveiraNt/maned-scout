@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/OliveiraNt/kdash/internal/config"
+	"github.com/OliveiraNt/maned-scout/internal/config"
 )
 
 func TestAPIClusters_CRUD(t *testing.T) {

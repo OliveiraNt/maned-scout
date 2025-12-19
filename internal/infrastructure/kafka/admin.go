@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/OliveiraNt/kdash/internal/domain"
+	"github.com/OliveiraNt/maned-scout/internal/domain"
 	"github.com/twmb/franz-go/pkg/kadm"
 )
 

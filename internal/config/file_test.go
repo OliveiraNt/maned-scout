@@ -24,7 +24,7 @@ func TestReadConfig(t *testing.T) {
     brokers:
       - localhost:9092
       - localhost:9093
-    client_id: kdash-dev
+    client_id: ms-dev
   - name: prod
     brokers:
       - kafka1.prod:9092
@@ -61,8 +61,8 @@ func TestReadConfig(t *testing.T) {
 		if len(cfg.Clusters[0].Brokers) != 2 {
 			t.Errorf("expected 2 brokers, got %d", len(cfg.Clusters[0].Brokers))
 		}
-		if cfg.Clusters[0].ClientID != "kdash-dev" {
-			t.Errorf("expected client_id 'kdash-dev', got '%s'", cfg.Clusters[0].ClientID)
+		if cfg.Clusters[0].ClientID != "ms-dev" {
+			t.Errorf("expected client_id 'ms-dev', got '%s'", cfg.Clusters[0].ClientID)
 		}
 
 		// Verify second cluster with TLS and SASL

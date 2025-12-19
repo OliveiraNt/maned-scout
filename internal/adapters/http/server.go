@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/OliveiraNt/kdash/internal/application"
-	"github.com/OliveiraNt/kdash/internal/registry"
+	"github.com/OliveiraNt/maned-scout/internal/application"
+	"github.com/OliveiraNt/maned-scout/internal/registry"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/OliveiraNt/kdash/internal/config"
-	"github.com/OliveiraNt/kdash/internal/domain"
+	"github.com/OliveiraNt/maned-scout/internal/config"
+	"github.com/OliveiraNt/maned-scout/internal/domain"
 )
 
 func TestAPIListTopics(t *testing.T) {

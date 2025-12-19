@@ -3,7 +3,7 @@ package kafka
 import (
 	"testing"
 
-	"github.com/OliveiraNt/kdash/internal/config"
+	"github.com/OliveiraNt/maned-scout/internal/config"
 )
 
 func TestFactory_CreateClient(t *testing.T) {

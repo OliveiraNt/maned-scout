@@ -3,16 +3,16 @@ package cmd
 import (
 	"os"
 
-	httpserver "github.com/OliveiraNt/kdash/internal/adapters/http"
-	"github.com/OliveiraNt/kdash/internal/application"
-	"github.com/OliveiraNt/kdash/internal/registry"
+	httpserver "github.com/OliveiraNt/maned-scout/internal/adapters/http"
+	"github.com/OliveiraNt/maned-scout/internal/application"
+	"github.com/OliveiraNt/maned-scout/internal/registry"
 )
 
 // StartWeb starts the HTTP server using already-initialized application and repository layers.
 func StartWeb(clusterService *application.ClusterService) {
 	topicService := application.NewTopicService(clusterService)
 	server := httpserver.New(clusterService, topicService)
-	port := os.Getenv("KDASH_HTTP_PORT")
+	port := os.Getenv("MANED_SCOUT_HTTP_PORT")
 	if port == "" {
 		port = "8080"
 	}

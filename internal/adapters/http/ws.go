@@ -5,9 +5,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/OliveiraNt/kdash/internal/adapters/http/ui/templates/pages"
-	"github.com/OliveiraNt/kdash/internal/domain"
-	"github.com/OliveiraNt/kdash/internal/registry"
+	"github.com/OliveiraNt/maned-scout/internal/adapters/http/ui/templates/pages"
+	"github.com/OliveiraNt/maned-scout/internal/domain"
+	"github.com/OliveiraNt/maned-scout/internal/registry"
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/websocket"
 )

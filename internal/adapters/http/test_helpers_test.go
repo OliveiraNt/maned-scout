@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/OliveiraNt/kdash/internal/application"
-	"github.com/OliveiraNt/kdash/internal/config"
-	"github.com/OliveiraNt/kdash/internal/domain"
-	"github.com/OliveiraNt/kdash/internal/infrastructure/repository"
-	"github.com/OliveiraNt/kdash/internal/registry"
+	"github.com/OliveiraNt/maned-scout/internal/application"
+	"github.com/OliveiraNt/maned-scout/internal/config"
+	"github.com/OliveiraNt/maned-scout/internal/domain"
+	"github.com/OliveiraNt/maned-scout/internal/infrastructure/repository"
+	"github.com/OliveiraNt/maned-scout/internal/registry"
 	"github.com/go-chi/chi/v5"
 )
 

@@ -3,7 +3,7 @@ package domain
 import (
 	"context"
 
-	"github.com/OliveiraNt/kdash/internal/config"
+	"github.com/OliveiraNt/maned-scout/internal/config"
 )
 
 // ClusterRepository defines operations for managing cluster configurations.
