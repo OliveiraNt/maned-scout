@@ -38,12 +38,3 @@ type KafkaClient interface {
 	WriteMessage(ctx context.Context, topic string, msg Message)
 	Close()
 }
-
-// KafkaAdmin defines low-level Kafka admin operations.
-type KafkaAdmin interface {
-	ListTopics(ctx context.Context, showInternal bool) (map[string]int, error)
-	GetClusterInfo(ctx context.Context) (*Cluster, error)
-	GetClusterStats(ctx context.Context) (*ClusterStats, error)
-	GetBrokerDetails(ctx context.Context) ([]BrokerDetail, error)
-	ListConsumerGroups(ctx context.Context) ([]ConsumerGroupSummary, error)
-}

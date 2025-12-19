@@ -7,7 +7,7 @@ import (
 
 	"github.com/OliveiraNt/maned-scout/internal/config"
 	"github.com/OliveiraNt/maned-scout/internal/domain"
-	"github.com/OliveiraNt/maned-scout/internal/registry"
+	"github.com/OliveiraNt/maned-scout/internal/utils"
 )
 
 type repoTestFactory struct{}
@@ -306,8 +306,8 @@ func TestLoadFromFile(t *testing.T) {
 
 	t.Run("load valid file", func(t *testing.T) {
 		// Initialize logger for this test
-		if registry.Logger == nil {
-			registry.InitLogger()
+		if utils.Logger == nil {
+			utils.InitLogger()
 		}
 
 		// Create a config file manually
@@ -342,8 +342,8 @@ func TestLoadFromFile(t *testing.T) {
 
 func TestReconcile(t *testing.T) {
 	// Initialize logger for reconcile tests
-	if registry.Logger == nil {
-		registry.InitLogger()
+	if utils.Logger == nil {
+		utils.InitLogger()
 	}
 
 	tdir := t.TempDir()
@@ -714,8 +714,8 @@ func TestSaveWithComplexConfig(t *testing.T) {
 
 func TestWatch(t *testing.T) {
 	// Initialize logger
-	if registry.Logger == nil {
-		registry.InitLogger()
+	if utils.Logger == nil {
+		utils.InitLogger()
 	}
 
 	tdir := t.TempDir()
@@ -758,8 +758,8 @@ func TestWatch(t *testing.T) {
 
 func TestReconcileWithConfigChange(t *testing.T) {
 	// Initialize logger
-	if registry.Logger == nil {
-		registry.InitLogger()
+	if utils.Logger == nil {
+		utils.InitLogger()
 	}
 
 	tdir := t.TempDir()
@@ -933,8 +933,8 @@ func TestEdgeCases(t *testing.T) {
 
 func TestErrorHandling(t *testing.T) {
 	// Initialize logger
-	if registry.Logger == nil {
-		registry.InitLogger()
+	if utils.Logger == nil {
+		utils.InitLogger()
 	}
 
 	t.Run("factory error on save", func(t *testing.T) {

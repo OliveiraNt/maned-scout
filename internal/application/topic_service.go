@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/OliveiraNt/maned-scout/internal/domain"
-	"github.com/OliveiraNt/maned-scout/internal/registry"
+	"github.com/OliveiraNt/maned-scout/internal/utils"
 )
 
 // TopicService handles topic-related business operations.
@@ -31,13 +31,13 @@ func (s *TopicService) ListTopics(clusterName string, showInternal bool) (map[st
 
 	client, ok := s.repo.GetClient(clusterName)
 	if !ok {
-		registry.Logger.Warn("list topics client not found", "cluster", clusterName)
+		utils.Logger.Warn("list topics client not found", "cluster", clusterName)
 		return map[string]int{}, nil
 	}
 
 	topics, err := client.ListTopics(showInternal)
 	if err != nil {
-		registry.Logger.Error("list topics failed", "cluster", clusterName, "err", err)
+		utils.Logger.Error("list topics failed", "cluster", clusterName, "err", err)
 		return nil, err
 	}
 
@@ -53,13 +53,13 @@ func (s *TopicService) GetTopicDetail(clusterName, topicName string) (*domain.To
 
 	client, ok := s.repo.GetClient(clusterName)
 	if !ok {
-		registry.Logger.Warn("get topic detail client not found", "cluster", clusterName)
+		utils.Logger.Warn("get topic detail client not found", "cluster", clusterName)
 		return nil, ErrClusterNotFound
 	}
 
 	detail, err := client.GetTopicDetail(topicName)
 	if err != nil {
-		registry.Logger.Error("get topic detail failed", "cluster", clusterName, "topic", topicName, "err", err)
+		utils.Logger.Error("get topic detail failed", "cluster", clusterName, "topic", topicName, "err", err)
 		return nil, err
 	}
 
@@ -85,16 +85,16 @@ func (s *TopicService) CreateTopic(clusterName string, req domain.CreateTopicReq
 
 	client, ok := s.repo.GetClient(clusterName)
 	if !ok {
-		registry.Logger.Warn("create topic client not found", "cluster", clusterName)
+		utils.Logger.Warn("create topic client not found", "cluster", clusterName)
 		return ErrClusterNotFound
 	}
 
 	if err := client.CreateTopic(req); err != nil {
-		registry.Logger.Error("create topic failed", "cluster", clusterName, "topic", req.Name, "err", err)
+		utils.Logger.Error("create topic failed", "cluster", clusterName, "topic", req.Name, "err", err)
 		return err
 	}
 
-	registry.Logger.Info("topic created", "cluster", clusterName, "topic", req.Name)
+	utils.Logger.Info("topic created", "cluster", clusterName, "topic", req.Name)
 	return nil
 }
 
@@ -107,16 +107,16 @@ func (s *TopicService) DeleteTopic(clusterName, topicName string) error {
 
 	client, ok := s.repo.GetClient(clusterName)
 	if !ok {
-		registry.Logger.Warn("delete topic client not found", "cluster", clusterName)
+		utils.Logger.Warn("delete topic client not found", "cluster", clusterName)
 		return ErrClusterNotFound
 	}
 
 	if err := client.DeleteTopic(topicName); err != nil {
-		registry.Logger.Error("delete topic failed", "cluster", clusterName, "topic", topicName, "err", err)
+		utils.Logger.Error("delete topic failed", "cluster", clusterName, "topic", topicName, "err", err)
 		return err
 	}
 
-	registry.Logger.Info("topic deleted", "cluster", clusterName, "topic", topicName)
+	utils.Logger.Info("topic deleted", "cluster", clusterName, "topic", topicName)
 	return nil
 }
 
@@ -133,16 +133,16 @@ func (s *TopicService) UpdateTopicConfig(clusterName, topicName string, req doma
 
 	client, ok := s.repo.GetClient(clusterName)
 	if !ok {
-		registry.Logger.Warn("update topic config client not found", "cluster", clusterName)
+		utils.Logger.Warn("update topic config client not found", "cluster", clusterName)
 		return ErrClusterNotFound
 	}
 
 	if err := client.UpdateTopicConfig(topicName, req); err != nil {
-		registry.Logger.Error("update topic config failed", "cluster", clusterName, "topic", topicName, "err", err)
+		utils.Logger.Error("update topic config failed", "cluster", clusterName, "topic", topicName, "err", err)
 		return err
 	}
 
-	registry.Logger.Info("topic config updated", "cluster", clusterName, "topic", topicName)
+	utils.Logger.Info("topic config updated", "cluster", clusterName, "topic", topicName)
 	return nil
 }
 
@@ -159,16 +159,16 @@ func (s *TopicService) IncreasePartitions(clusterName, topicName string, req dom
 
 	client, ok := s.repo.GetClient(clusterName)
 	if !ok {
-		registry.Logger.Warn("increase partitions client not found", "cluster", clusterName)
+		utils.Logger.Warn("increase partitions client not found", "cluster", clusterName)
 		return ErrClusterNotFound
 	}
 
 	if err := client.IncreasePartitions(topicName, req); err != nil {
-		registry.Logger.Error("increase partitions failed", "cluster", clusterName, "topic", topicName, "err", err)
+		utils.Logger.Error("increase partitions failed", "cluster", clusterName, "topic", topicName, "err", err)
 		return err
 	}
 
-	registry.Logger.Info("topic partitions increased", "cluster", clusterName, "topic", topicName, "partitions", req.TotalPartitions)
+	utils.Logger.Info("topic partitions increased", "cluster", clusterName, "topic", topicName, "partitions", req.TotalPartitions)
 	return nil
 }
 
@@ -181,7 +181,7 @@ func (s *TopicService) StreamMessages(ctx context.Context, clusterName, topicNam
 
 	client, ok := s.repo.GetClient(clusterName)
 	if !ok {
-		registry.Logger.Warn("stream messages client not found", "cluster", clusterName)
+		utils.Logger.Warn("stream messages client not found", "cluster", clusterName)
 		return ErrClusterNotFound
 	}
 
@@ -196,7 +196,7 @@ func (s *TopicService) WriteMessage(clusterName, topicName string, msg domain.Me
 	}
 	client, ok := s.repo.GetClient(clusterName)
 	if !ok {
-		registry.Logger.Warn("write message client not found", "cluster", clusterName)
+		utils.Logger.Warn("write message client not found", "cluster", clusterName)
 		return ErrClusterNotFound
 	}
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)

@@ -7,7 +7,7 @@ import (
 
 	"github.com/OliveiraNt/maned-scout/internal/adapters/http/ui/templates/pages"
 	"github.com/OliveiraNt/maned-scout/internal/domain"
-	"github.com/OliveiraNt/maned-scout/internal/registry"
+	"github.com/OliveiraNt/maned-scout/internal/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/websocket"
 )
@@ -25,7 +25,7 @@ func (s *Server) wsStreamTopic(w http.ResponseWriter, r *http.Request) {
 
 	conn, err := wsUpgrader.Upgrade(w, r, nil)
 	if err != nil {
-		registry.Logger.Error("websocket upgrade failed", "cluster", clusterName, "topic", topicName, "err", err)
+		utils.Logger.Error("websocket upgrade failed", "cluster", clusterName, "topic", topicName, "err", err)
 		http.Error(w, "websocket upgrade failed", http.StatusBadRequest)
 		return
 	}
@@ -35,7 +35,7 @@ func (s *Server) wsStreamTopic(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	conn.SetCloseHandler(func(code int, text string) error {
-		registry.Logger.Info("websocket close handler triggered", "cluster", clusterName, "topic", topicName, "code", code)
+		utils.Logger.Info("websocket close handler triggered", "cluster", clusterName, "topic", topicName, "code", code)
 		cancel()
 		return nil
 	})
@@ -44,13 +44,13 @@ func (s *Server) wsStreamTopic(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer func() {
-			registry.Logger.Info("consumer goroutine stopping", "cluster", clusterName, "topic", topicName)
+			utils.Logger.Info("consumer goroutine stopping", "cluster", clusterName, "topic", topicName)
 			cancel()
 		}()
 		if err := s.topicService.StreamMessages(ctx, clusterName, topicName, msgs); err != nil {
-			registry.Logger.Error("stream messages failed", "cluster", clusterName, "topic", topicName, "err", err)
+			utils.Logger.Error("stream messages failed", "cluster", clusterName, "topic", topicName, "err", err)
 		}
-		registry.Logger.Info("stream stopped", "cluster", clusterName, "topic", topicName)
+		utils.Logger.Info("stream stopped", "cluster", clusterName, "topic", topicName)
 		close(msgs)
 	}()
 
@@ -58,7 +58,7 @@ func (s *Server) wsStreamTopic(w http.ResponseWriter, r *http.Request) {
 		defer cancel()
 		for {
 			if _, _, err := conn.ReadMessage(); err != nil {
-				registry.Logger.Info("websocket client disconnected",
+				utils.Logger.Info("websocket client disconnected",
 					"cluster", clusterName,
 					"topic", topicName,
 					"err", err,
@@ -74,18 +74,18 @@ func (s *Server) wsStreamTopic(w http.ResponseWriter, r *http.Request) {
 			return
 		case m, ok := <-msgs:
 			if !ok {
-				registry.Logger.Info("message channel closed", "cluster", clusterName, "topic", topicName)
+				utils.Logger.Info("message channel closed", "cluster", clusterName, "topic", topicName)
 				return
 			}
 
 			var buf bytes.Buffer
 			err := pages.Message(m).Render(r.Context(), &buf)
 			if err != nil {
-				registry.Logger.Error("failed to render message", "err", err)
+				utils.Logger.Error("failed to render message", "err", err)
 				continue
 			}
 			if err := conn.WriteMessage(websocket.TextMessage, buf.Bytes()); err != nil {
-				registry.Logger.Info("websocket write failed, stopping stream", "cluster", clusterName, "topic", topicName, "err", err)
+				utils.Logger.Info("websocket write failed, stopping stream", "cluster", clusterName, "topic", topicName, "err", err)
 				return
 			}
 		}

@@ -5,7 +5,7 @@ import (
 
 	httpserver "github.com/OliveiraNt/maned-scout/internal/adapters/http"
 	"github.com/OliveiraNt/maned-scout/internal/application"
-	"github.com/OliveiraNt/maned-scout/internal/registry"
+	"github.com/OliveiraNt/maned-scout/internal/utils"
 )
 
 // StartWeb starts the HTTP server using already-initialized application and repository layers.
@@ -16,8 +16,8 @@ func StartWeb(clusterService *application.ClusterService) {
 	if port == "" {
 		port = "8080"
 	}
-	registry.Logger.Info("HTTP UI starting", "port", port)
+	utils.Logger.Info("HTTP UI starting", "port", port)
 	if err := server.Run(":" + port); err != nil {
-		registry.Logger.Fatal("HTTP UI terminated", "err", err)
+		utils.Logger.Fatal("HTTP UI terminated", "err", err)
 	}
 }

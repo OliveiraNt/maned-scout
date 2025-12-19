@@ -9,7 +9,7 @@ import (
 	"github.com/OliveiraNt/maned-scout/internal/application"
 	"github.com/OliveiraNt/maned-scout/internal/infrastructure/kafka"
 	"github.com/OliveiraNt/maned-scout/internal/infrastructure/repository"
-	"github.com/OliveiraNt/maned-scout/internal/registry"
+	"github.com/OliveiraNt/maned-scout/internal/utils"
 	"github.com/joho/godotenv"
 )
 
@@ -78,7 +78,7 @@ func findConfigPath() string {
 
 func main() {
 	godotenv.Load()
-	registry.InitLogger()
+	utils.InitLogger()
 
 	configPath := os.Getenv("MANED_SCOUT_CONFIG")
 	if configPath == "" {
@@ -89,20 +89,20 @@ func main() {
 	repo := repository.NewClusterRepository(configPath, factory)
 	defer repo.Close()
 
-	registry.Logger.Info("initializing repository and kafka factory")
+	utils.Logger.Info("initializing repository and kafka factory")
 
 	if err := repo.LoadFromFile(); err != nil {
-		registry.Logger.Warn("failed to load config file", "err", err)
+		utils.Logger.Warn("failed to load config file", "err", err)
 	} else {
-		registry.Logger.Info("configuration loaded")
+		utils.Logger.Info("configuration loaded")
 	}
 	if err := repo.Watch(); err != nil {
-		registry.Logger.Error("failed to start config watcher", "err", err)
+		utils.Logger.Error("failed to start config watcher", "err", err)
 		panic(err)
 	}
 
 	clusterService := application.NewClusterService(repo)
-	registry.Logger.Info("application layer initialized")
+	utils.Logger.Info("application layer initialized")
 
 	cmd.StartWeb(clusterService)
 }

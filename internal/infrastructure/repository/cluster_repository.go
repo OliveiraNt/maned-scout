@@ -9,7 +9,7 @@ import (
 	"github.com/OliveiraNt/maned-scout/internal/config"
 	"github.com/OliveiraNt/maned-scout/internal/domain"
 	"github.com/OliveiraNt/maned-scout/internal/infrastructure/kafka"
-	"github.com/OliveiraNt/maned-scout/internal/registry"
+	"github.com/OliveiraNt/maned-scout/internal/utils"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -157,15 +157,15 @@ func (r *ClusterRepository) Watch() error {
 					return
 				}
 				abs := r.configPath
-				registry.Logger.Info("config file changed", "path", abs, "event", event)
+				utils.Logger.Info("config file changed", "path", abs, "event", event)
 				if err := r.LoadFromFile(); err != nil {
-					registry.Logger.Error("failed to reload config", "err", err)
+					utils.Logger.Error("failed to reload config", "err", err)
 				}
 			case err, ok := <-r.watcher.Errors:
 				if !ok {
 					return
 				}
-				registry.Logger.Error("fsnotify error", "err", err)
+				utils.Logger.Error("fsnotify error", "err", err)
 			}
 		}
 	}()
@@ -185,11 +185,11 @@ func (r *ClusterRepository) reconcile(cfg config.FileConfig) error {
 		if !ok {
 			client, err := r.factory.CreateClient(c)
 			if err != nil {
-				registry.Logger.Error("failed to create client", "cluster", c.Name, "err", err)
+				utils.Logger.Error("failed to create client", "cluster", c.Name, "err", err)
 				continue
 			}
 			r.clients[c.Name] = client
-			registry.Logger.Info("client created", "cluster", c.Name)
+			utils.Logger.Info("client created", "cluster", c.Name)
 			continue
 		}
 
@@ -198,11 +198,11 @@ func (r *ClusterRepository) reconcile(cfg config.FileConfig) error {
 				cur.Close()
 				client, err := r.factory.CreateClient(c)
 				if err != nil {
-					registry.Logger.Error("failed to recreate client", "cluster", c.Name, "err", err)
+					utils.Logger.Error("failed to recreate client", "cluster", c.Name, "err", err)
 					continue
 				}
 				r.clients[c.Name] = client
-				registry.Logger.Info("client recreated", "cluster", c.Name)
+				utils.Logger.Info("client recreated", "cluster", c.Name)
 			}
 		}
 	}
@@ -226,10 +226,10 @@ func (r *ClusterRepository) writeToFile() error {
 
 // Close releases all resources held by the ClusterRepository, including watcher and Kafka clients.
 func (r *ClusterRepository) Close() {
-	registry.Logger.Info("Closing repository")
+	utils.Logger.Info("Closing repository")
 	r.watcher.Close()
 	for k, client := range r.clients {
-		registry.Logger.Info("Closing client", "cluster", k)
+		utils.Logger.Info("Closing client", "cluster", k)
 		client.Close()
 	}
 }

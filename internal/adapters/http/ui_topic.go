@@ -4,14 +4,14 @@ import (
 	"net/http"
 
 	"github.com/OliveiraNt/maned-scout/internal/adapters/http/ui/templates/pages"
-	"github.com/OliveiraNt/maned-scout/internal/registry"
+	"github.com/OliveiraNt/maned-scout/internal/utils"
 
 	"github.com/go-chi/chi/v5"
 )
 
 func (s *Server) uiTopicsList(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "clusterName")
-	registry.Logger.Debug("render topics list", "cluster", name)
+	utils.Logger.Debug("render topics list", "cluster", name)
 	_, ok := s.clusterService.GetCluster(name)
 	if !ok {
 		http.Error(w, "cluster not found", http.StatusNotFound)
@@ -21,7 +21,7 @@ func (s *Server) uiTopicsList(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := pages.TopicsList(name, topics).Render(r.Context(), w); err != nil {
-		registry.Logger.Error("render topics list failed", "cluster", name, "err", err)
+		utils.Logger.Error("render topics list failed", "cluster", name, "err", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -30,7 +30,7 @@ func (s *Server) uiTopicsList(w http.ResponseWriter, r *http.Request) {
 func (s *Server) uiTopicDetail(w http.ResponseWriter, r *http.Request) {
 	clusterName := chi.URLParam(r, "clusterName")
 	topicName := chi.URLParam(r, "topicName")
-	registry.Logger.Debug("render topic detail", "cluster", clusterName, "topic", topicName)
+	utils.Logger.Debug("render topic detail", "cluster", clusterName, "topic", topicName)
 
 	_, ok := s.clusterService.GetCluster(clusterName)
 	if !ok {
@@ -40,14 +40,14 @@ func (s *Server) uiTopicDetail(w http.ResponseWriter, r *http.Request) {
 
 	topicDetail, err := s.topicService.GetTopicDetail(clusterName, topicName)
 	if err != nil {
-		registry.Logger.Error("get topic detail failed", "cluster", clusterName, "topic", topicName, "err", err)
+		utils.Logger.Error("get topic detail failed", "cluster", clusterName, "topic", topicName, "err", err)
 		http.Error(w, "topic not found", http.StatusNotFound)
 		return
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := pages.TopicDetail(clusterName, topicDetail).Render(r.Context(), w); err != nil {
-		registry.Logger.Error("render topic detail failed", "cluster", clusterName, "topic", topicName, "err", err)
+		utils.Logger.Error("render topic detail failed", "cluster", clusterName, "topic", topicName, "err", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

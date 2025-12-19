@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/OliveiraNt/maned-scout/internal/application"
-	"github.com/OliveiraNt/maned-scout/internal/registry"
+	"github.com/OliveiraNt/maned-scout/internal/utils"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -39,7 +39,7 @@ func (s *Server) Run(addr string) error {
 			start := time.Now()
 			next.ServeHTTP(ww, r)
 			dur := time.Since(start)
-			registry.Logger.Info("http request",
+			utils.Logger.Info("http request",
 				"method", r.Method,
 				"path", r.URL.Path,
 				"status", ww.Status(),
@@ -74,7 +74,7 @@ func (s *Server) Run(addr string) error {
 	r.Post("/api/clusters/{clusterName}/topics/{topicName}/messages", s.apiWriteMessage)
 	r.Get("/api/clusters/{clusterName}/topics/{topicName}/ws", s.wsStreamTopic)
 
-	registry.Logger.Info("HTTP server listening", "addr", addr)
+	utils.Logger.Info("HTTP server listening", "addr", addr)
 	return http.ListenAndServe(addr, r)
 }
 

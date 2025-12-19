@@ -9,7 +9,7 @@ import (
 
 	"github.com/OliveiraNt/maned-scout/internal/config"
 	"github.com/OliveiraNt/maned-scout/internal/domain"
-	"github.com/OliveiraNt/maned-scout/internal/registry"
+	"github.com/OliveiraNt/maned-scout/internal/utils"
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"github.com/twmb/franz-go/pkg/sasl"
@@ -197,7 +197,7 @@ func (c *Client) StreamMessages(ctx context.Context, topic string, out chan<- do
 			return
 		}
 		fetches.EachError(func(t string, p int32, err error) {
-			registry.Logger.Errorf("Error fetching messages from topic %s partition %d: %v", t, p, err)
+			utils.Logger.Errorf("Error fetching messages from topic %s partition %d: %v", t, p, err)
 		})
 		fetches.EachRecord(func(r *kgo.Record) {
 			select {
@@ -224,7 +224,7 @@ func (c *Client) WriteMessage(ctx context.Context, topic string, msg domain.Mess
 	}
 	c.client.Produce(ctx, &r, func(r *kgo.Record, err error) {
 		if err != nil {
-			registry.Logger.Errorf("Error producing message to topic %s: %v", topic, err)
+			utils.Logger.Errorf("Error producing message to topic %s: %v", topic, err)
 		}
 	})
 }

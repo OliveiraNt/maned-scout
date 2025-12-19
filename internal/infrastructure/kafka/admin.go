@@ -9,7 +9,6 @@ import (
 	"github.com/twmb/franz-go/pkg/kadm"
 )
 
-// Admin implements domain.KafkaAdmin using franz-go kadm
 type Admin struct {
 	client *kadm.Client
 }

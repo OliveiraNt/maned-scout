@@ -9,7 +9,7 @@ import (
 	"github.com/OliveiraNt/maned-scout/internal/config"
 	"github.com/OliveiraNt/maned-scout/internal/domain"
 	"github.com/OliveiraNt/maned-scout/internal/infrastructure/repository"
-	"github.com/OliveiraNt/maned-scout/internal/registry"
+	"github.com/OliveiraNt/maned-scout/internal/utils"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -76,7 +76,7 @@ func buildServerWithFactory(t *testing.T, factory testFactory) *Server {
 	repo := repository.NewClusterRepository(cfgPath, factory)
 	clusterSvc := application.NewClusterService(repo)
 	topicSvc := application.NewTopicService(clusterSvc)
-	registry.InitLogger()
+	utils.InitLogger()
 	return New(clusterSvc, topicSvc)
 }
 
