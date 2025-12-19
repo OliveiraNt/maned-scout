@@ -245,3 +245,24 @@ func (s *Server) apiWriteMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func (s *Server) apiGetConsumerGroups(w http.ResponseWriter, r *http.Request) {
+	clusterName := chi.URLParam(r, "clusterName")
+	topicName := chi.URLParam(r, "topicName")
+
+	service := application.NewConsumerGroupsService(s.clusterService)
+
+	cgs, err := service.ListConsumerGroupsWithLagFromTopic(r.Context(), clusterName, topicName)
+
+	if err != nil {
+		utils.Logger.Error("api get consumer groups failed", "cluster", clusterName, "topic", topicName, "err", err)
+		http.Error(w, err.Error(), mapErrorToHTTPStatus(err))
+		return
+	}
+
+	if err := pages.ConsumerGroupsListFragment(cgs, service).Render(r.Context(), w); err != nil {
+		utils.Logger.Error("render consumer groups list view failed", "err", err)
+		http.Error(w, "failed to render consumer groups list view", 500)
+		return
+	}
+}

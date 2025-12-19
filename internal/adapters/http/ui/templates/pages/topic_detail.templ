@@ -215,11 +215,18 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 				<!-- Consumer Groups Tab -->
 				<div id="consumer-groups-tab" class="tab-content hidden">
 					<div class="text-center py-16">
-						<div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-700 mb-4">
-							<i class="fas fa-users text-3xl text-neutral-400 dark:text-neutral-500"></i>
-						</div>
-						<p class="text-neutral-600 dark:text-neutral-400 font-medium">Nenhum grupo de consumidores</p>
-						<p class="text-sm text-neutral-500 dark:text-neutral-500 mt-1">Este tópico não tem grupos de consumidores associados</p>
+					    <div
+                    			id="consumer-groups-list"
+                    			hx-get={ templ.URL(fmt.Sprintf("/api/clusters/%s/topics/%s/consumer-groups", clusterName, topic.Name)) }
+                    			hx-include="[name=showInternal]"
+                    			hx-trigger="load"
+                    			hx-swap="outerHTML"
+                    			class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
+                    		>
+                    			<div class="p-6 text-center text-gray-500 dark:text-gray-400">
+                    				<i class="fas fa-rotate fa-spin mr-2"></i> Carregando Grupos Consumidores...
+                    			</div>
+                    		</div>
 					</div>
 				</div>
 				<!-- Configuration Tab -->

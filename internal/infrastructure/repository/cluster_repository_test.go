@@ -8,6 +8,7 @@ import (
 	"github.com/OliveiraNt/maned-scout/internal/config"
 	"github.com/OliveiraNt/maned-scout/internal/domain"
 	"github.com/OliveiraNt/maned-scout/internal/utils"
+	"github.com/twmb/franz-go/pkg/kadm"
 )
 
 type repoTestFactory struct{}
@@ -26,9 +27,12 @@ func (c *mockClient) GetClusterStats() (*domain.ClusterStats, error) {
 }
 func (c *mockClient) GetBrokerDetails() ([]domain.BrokerDetail, error)           { return nil, nil }
 func (c *mockClient) ListConsumerGroups() ([]domain.ConsumerGroupSummary, error) { return nil, nil }
-func (c *mockClient) GetTopicDetail(_ string) (*domain.TopicDetail, error)       { return nil, nil }
-func (c *mockClient) CreateTopic(_ domain.CreateTopicRequest) error              { return nil }
-func (c *mockClient) DeleteTopic(_ string) error                                 { return nil }
+func (c *mockClient) ListConsumerGroupsWithLagFromTopic(ctx context.Context, topicName string) (kadm.DescribedGroupLags, error) {
+	return nil, nil
+}
+func (c *mockClient) GetTopicDetail(_ string) (*domain.TopicDetail, error) { return nil, nil }
+func (c *mockClient) CreateTopic(_ domain.CreateTopicRequest) error        { return nil }
+func (c *mockClient) DeleteTopic(_ string) error                           { return nil }
 func (c *mockClient) UpdateTopicConfig(_ string, _ domain.UpdateTopicConfigRequest) error {
 	return nil
 }

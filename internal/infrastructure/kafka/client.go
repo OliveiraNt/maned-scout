@@ -129,6 +129,13 @@ func (c *Client) ListConsumerGroups() ([]domain.ConsumerGroupSummary, error) {
 	return c.admin.ListConsumerGroups(context.Background())
 }
 
+func (c *Client) ListConsumerGroupsWithLagFromTopic(ctx context.Context, topicName string) (kadm.DescribedGroupLags, error) {
+	if c == nil || c.admin == nil {
+		return nil, nil
+	}
+	return c.admin.ListConsumerGroupsWithLagFromTopic(ctx, topicName)
+}
+
 // GetTopicDetail returns detailed information about a topic
 func (c *Client) GetTopicDetail(topicName string) (*domain.TopicDetail, error) {
 	if c == nil || c.admin == nil {

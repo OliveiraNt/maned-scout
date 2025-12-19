@@ -70,9 +70,9 @@ func (s *Server) Run(addr string) error {
 	r.Post("/api/clusters/{clusterName}/topics/{topicName}/partitions", s.apiIncreasePartitions)
 	r.Get("/api/clusters/{clusterName}/topics/{topicName}/ws-on", s.apiReadMessages)
 	r.Get("/api/clusters/{clusterName}/topics/{topicName}/ws-off", s.apiStopMessages)
-
 	r.Post("/api/clusters/{clusterName}/topics/{topicName}/messages", s.apiWriteMessage)
 	r.Get("/api/clusters/{clusterName}/topics/{topicName}/ws", s.wsStreamTopic)
+	r.Get("/api/clusters/{clusterName}/topics/{topicName}/consumer-groups", s.apiGetConsumerGroups)
 
 	utils.Logger.Info("HTTP server listening", "addr", addr)
 	return http.ListenAndServe(addr, r)

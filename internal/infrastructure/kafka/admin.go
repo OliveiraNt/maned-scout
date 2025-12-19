@@ -167,7 +167,7 @@ func (a *Admin) ListConsumerGroups(ctx context.Context) ([]domain.ConsumerGroupS
 	cctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	groups, err := a.client.DescribeGroups(cctx)
+	groups, err := a.client.DescribeConsumerGroups(cctx)
 	if err != nil {
 		return nil, err
 	}
@@ -182,6 +182,33 @@ func (a *Admin) ListConsumerGroups(ctx context.Context) ([]domain.ConsumerGroupS
 	}
 
 	return result, nil
+}
+
+func (a *Admin) ListConsumerGroupsWithLagFromTopic(ctx context.Context, topicName string) (kadm.DescribedGroupLags, error) {
+	cctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	groups, err := a.client.DescribeConsumerGroups(cctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if topicName != "" {
+		for key, group := range groups {
+			set := group.AssignedPartitions()
+			_, ok := set[topicName]
+			if !ok {
+				delete(groups, key)
+			}
+
+		}
+	}
+
+	lag, err := a.client.Lag(cctx, groups.Names()...)
+	if err != nil {
+		return nil, err
+	}
+	return lag, nil
 }
 
 // GetTopicDetail returns detailed information about a topic including all configurations

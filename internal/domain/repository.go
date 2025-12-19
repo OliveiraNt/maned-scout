@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/OliveiraNt/maned-scout/internal/config"
+	"github.com/twmb/franz-go/pkg/kadm"
 )
 
 // ClusterRepository defines operations for managing cluster configurations.
@@ -29,6 +30,7 @@ type KafkaClient interface {
 	GetClusterStats() (*ClusterStats, error)
 	GetBrokerDetails() ([]BrokerDetail, error)
 	ListConsumerGroups() ([]ConsumerGroupSummary, error)
+	ListConsumerGroupsWithLagFromTopic(ctx context.Context, topicName string) (kadm.DescribedGroupLags, error)
 	GetTopicDetail(topicName string) (*TopicDetail, error)
 	CreateTopic(req CreateTopicRequest) error
 	DeleteTopic(topicName string) error

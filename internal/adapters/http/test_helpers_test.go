@@ -11,6 +11,7 @@ import (
 	"github.com/OliveiraNt/maned-scout/internal/infrastructure/repository"
 	"github.com/OliveiraNt/maned-scout/internal/utils"
 	"github.com/go-chi/chi/v5"
+	"github.com/twmb/franz-go/pkg/kadm"
 )
 
 // mockClient implements domain.KafkaClient for tests
@@ -27,6 +28,9 @@ func (c *mockClient) GetClusterStats() (*domain.ClusterStats, error) {
 }
 func (c *mockClient) GetBrokerDetails() ([]domain.BrokerDetail, error)           { return nil, nil }
 func (c *mockClient) ListConsumerGroups() ([]domain.ConsumerGroupSummary, error) { return nil, nil }
+func (c *mockClient) ListConsumerGroupsWithLagFromTopic(ctx context.Context, topicName string) (kadm.DescribedGroupLags, error) {
+	return nil, nil
+}
 func (c *mockClient) GetTopicDetail(_ string) (*domain.TopicDetail, error) {
 	return &domain.TopicDetail{
 		Name:              "test-topic",
