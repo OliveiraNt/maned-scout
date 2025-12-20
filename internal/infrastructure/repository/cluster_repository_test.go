@@ -27,7 +27,7 @@ func (c *mockClient) GetClusterStats() (*domain.ClusterStats, error) {
 }
 func (c *mockClient) GetBrokerDetails() ([]domain.BrokerDetail, error)           { return nil, nil }
 func (c *mockClient) ListConsumerGroups() ([]domain.ConsumerGroupSummary, error) { return nil, nil }
-func (c *mockClient) ListConsumerGroupsWithLagFromTopic(ctx context.Context, topicName string) (kadm.DescribedGroupLags, error) {
+func (c *mockClient) ListConsumerGroupsWithLagFromTopic(ctx context.Context, groupName []string, topicName string) (kadm.DescribedGroupLags, error) {
 	return nil, nil
 }
 func (c *mockClient) GetTopicDetail(_ string) (*domain.TopicDetail, error) { return nil, nil }

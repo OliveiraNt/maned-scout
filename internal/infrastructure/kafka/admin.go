@@ -184,11 +184,11 @@ func (a *Admin) ListConsumerGroups(ctx context.Context) ([]domain.ConsumerGroupS
 	return result, nil
 }
 
-func (a *Admin) ListConsumerGroupsWithLagFromTopic(ctx context.Context, topicName string) (kadm.DescribedGroupLags, error) {
+func (a *Admin) ListConsumerGroupsWithLagFromTopic(ctx context.Context, groupNames []string, topicName string) (kadm.DescribedGroupLags, error) {
 	cctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	lags, err := a.client.Lag(cctx)
+	lags, err := a.client.Lag(cctx, groupNames...)
 	if err != nil {
 		return nil, err
 	}

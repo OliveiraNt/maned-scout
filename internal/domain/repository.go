@@ -30,7 +30,7 @@ type KafkaClient interface {
 	GetClusterStats() (*ClusterStats, error)
 	GetBrokerDetails() ([]BrokerDetail, error)
 	ListConsumerGroups() ([]ConsumerGroupSummary, error)
-	ListConsumerGroupsWithLagFromTopic(ctx context.Context, topicName string) (kadm.DescribedGroupLags, error)
+	ListConsumerGroupsWithLagFromTopic(ctx context.Context, groupName []string, topicName string) (kadm.DescribedGroupLags, error)
 	GetTopicDetail(topicName string) (*TopicDetail, error)
 	CreateTopic(req CreateTopicRequest) error
 	DeleteTopic(topicName string) error

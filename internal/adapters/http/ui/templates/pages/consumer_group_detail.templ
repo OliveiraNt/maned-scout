@@ -1,0 +1,176 @@
+package pages
+
+import (
+	"fmt"
+
+	layout "github.com/OliveiraNt/maned-scout/internal/adapters/http/ui/templates/layout"
+	"github.com/twmb/franz-go/pkg/kadm"
+)
+
+templ ConsumerGroupDetail(clusterName string, group kadm.DescribedGroupLag) {
+	@layout.BaseWithSidebar("Detalhes do Grupo", clusterName, nil) {
+		<nav class="mb-6 text-sm">
+			<ol class="flex items-center space-x-2 text-neutral-600 dark:text-neutral-400">
+				<li><a href={ templ.URL(fmt.Sprintf("/clusters/%s", clusterName)) } class="hover:text-guara-600 dark:hover:text-guara-400">{ clusterName }</a></li>
+				<li><i class="fas fa-chevron-right text-xs"></i></li>
+				<li><a href={ templ.URL(fmt.Sprintf("/clusters/%s/consumer-groups", clusterName)) } class="hover:text-guara-600 dark:hover:text-guara-400">Grupos Consumidores</a></li>
+				<li><i class="fas fa-chevron-right text-xs"></i></li>
+				<li class="text-neutral-900 dark:text-white font-medium">{ group.Group }</li>
+			</ol>
+		</nav>
+		<div class="mb-6">
+			<div class="flex items-center justify-between">
+				<div>
+					<h2 class="text-3xl font-bold text-neutral-900 dark:text-white">{ group.Group }</h2>
+					<p class="text-neutral-600 dark:text-neutral-400 mt-2">Detalhes e lag do grupo consumidor</p>
+				</div>
+				<div class="flex items-center space-x-3">
+					// Ações futuras aqui
+				</div>
+			</div>
+		</div>
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">Estado</p>
+						<div class="mt-2">
+							@groupStateBadge(group.State)
+						</div>
+					</div>
+					<div class="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-lg">
+						<i class="fas fa-info-circle text-purple-600 dark:text-purple-400 text-2xl"></i>
+					</div>
+				</div>
+			</div>
+			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">Lag Total</p>
+						<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2">{ fmt.Sprintf("%d", group.Lag.Total()) }</p>
+					</div>
+					<div class="bg-orange-100 dark:bg-orange-900/30 p-3 rounded-lg">
+						<i class="fas fa-clock text-orange-600 dark:text-orange-400 text-2xl"></i>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+			<!-- Tab Navigation -->
+			<div class="bg-neutral-50 dark:bg-neutral-900/50 border-b border-neutral-200 dark:border-neutral-700">
+				<div class="flex overflow-x-auto">
+					<button
+						onclick="switchTab('lag-tab')"
+						class="tab-button tab-button-active px-6 py-4 font-semibold text-guara-600 dark:text-guara-400 border-b-2 border-guara-500 transition-all duration-200 whitespace-nowrap flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+						data-tab="lag-tab"
+					>
+						<i class="fas fa-chart-line"></i>Lag por Partição
+					</button>
+					<button
+						onclick="switchTab('members-tab')"
+						class="tab-button px-6 py-4 font-semibold text-neutral-600 dark:text-neutral-400 border-b-2 border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"
+						data-tab="members-tab"
+					>
+						<i class="fas fa-users"></i>Membros
+					</button>
+				</div>
+			</div>
+			<!-- Tab Content -->
+			<div class="p-6">
+				<!-- Lag Tab -->
+				<div id="lag-tab" class="tab-content">
+					<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-700">
+						<table class="w-full">
+							<thead class="bg-neutral-50 dark:bg-neutral-900">
+								<tr>
+									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Tópico</th>
+									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Partição</th>
+									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Group Offset</th>
+									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Lag</th>
+									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Membro</th>
+								</tr>
+							</thead>
+							<tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">
+								for _, lag := range getSortedLags(group) {
+									<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+										<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900 dark:text-white">
+											{ getTopic(lag) }
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-600 dark:text-neutral-300 font-mono">
+											{ getPartition(lag) }
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-600 dark:text-neutral-300 font-mono">
+											{ getGroupOffset(lag) }
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-600 dark:text-neutral-300 font-mono">
+											{ getLagValue(lag) }
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400 font-mono">
+											{ getMemberID(lag) }
+										</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<!-- Members Tab -->
+				<div id="members-tab" class="tab-content hidden">
+					<div class="grid grid-cols-1 gap-4">
+						for _, member := range group.Members {
+							<div class="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4">
+								<div class="flex items-start justify-between">
+									<div class="flex items-center space-x-3">
+										<div class="bg-neutral-100 dark:bg-neutral-700 p-2 rounded-full">
+											<i class="fas fa-user text-neutral-600 dark:text-neutral-400"></i>
+										</div>
+										<div>
+											<p class="text-sm font-semibold text-neutral-900 dark:text-white">{ member.MemberID }</p>
+											<p class="text-xs text-neutral-500 dark:text-neutral-400">{ member.ClientHost }</p>
+										</div>
+									</div>
+									<div class="text-right">
+										<p class="text-xs font-medium text-neutral-500 dark:text-neutral-400">ID do Cliente</p>
+				    					<p class="text-xs text-neutral-900 dark:text-white font-mono">{ member.ClientID }</p>
+									</div>
+								</div>
+							</div>
+						}
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+func getSortedLags(group kadm.DescribedGroupLag) []kadm.GroupMemberLag {
+	var res []kadm.GroupMemberLag
+	lags := group.Lag.Sorted()
+	for _, l := range lags {
+		res = append(res, l)
+	}
+	return res
+}
+
+func getTopic(l kadm.GroupMemberLag) string {
+	return l.Topic
+}
+
+func getPartition(l kadm.GroupMemberLag) string {
+	return fmt.Sprintf("%d", l.Partition)
+}
+
+func getGroupOffset(l kadm.GroupMemberLag) string {
+	return fmt.Sprintf("%d", l.Commit.At)
+}
+
+func getLagValue(l kadm.GroupMemberLag) string {
+	return fmt.Sprintf("%d", l.Lag)
+}
+
+func getMemberID(l kadm.GroupMemberLag) string {
+    if l.IsEmpty() {
+        return "N/A"
+    }
+	return l.Member.MemberID
+}

@@ -32,7 +32,31 @@ func (s *ConsumerGroupsService) ListConsumerGroupsWithLagFromTopic(ctx context.C
 		return nil, ErrClusterNotFound
 	}
 
-	return client.ListConsumerGroupsWithLagFromTopic(ctx, topicName)
+	return client.ListConsumerGroupsWithLagFromTopic(ctx, nil, topicName)
+}
+
+func (s *ConsumerGroupsService) FetchConsumerGroupWithLag(ctx context.Context, clusterName, groupName string) (kadm.DescribedGroupLag, error) {
+	_, ok := s.clusterService.GetCluster(clusterName)
+	if !ok {
+		return kadm.DescribedGroupLag{}, ErrClusterNotFound
+	}
+
+	client, ok := s.repo.GetClient(clusterName)
+	if !ok {
+		utils.Logger.Warn("get topic detail client not found", "cluster", clusterName)
+		return kadm.DescribedGroupLag{}, ErrClusterNotFound
+	}
+
+	lags, err := client.ListConsumerGroupsWithLagFromTopic(ctx, []string{groupName}, "")
+	if err != nil {
+		return kadm.DescribedGroupLag{}, err
+	}
+
+	if lag, ok := lags[groupName]; ok {
+		return lag, nil
+	}
+
+	return kadm.DescribedGroupLag{}, nil
 }
 
 func (s *ConsumerGroupsService) GetTopicsLags(group kadm.GroupLag) kadm.GroupTopicsLag {

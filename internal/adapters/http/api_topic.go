@@ -260,7 +260,7 @@ func (s *Server) apiListTopicConsumerGroups(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if err := pages.ConsumerGroupsListFragment(cgs, service).Render(r.Context(), w); err != nil {
+	if err := pages.ConsumerGroupsListFragment(clusterName, cgs, service).Render(r.Context(), w); err != nil {
 		utils.Logger.Error("render consumer groups list view failed", "err", err)
 		http.Error(w, "failed to render consumer groups list view", 500)
 		return

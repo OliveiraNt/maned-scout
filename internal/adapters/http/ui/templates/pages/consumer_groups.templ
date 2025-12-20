@@ -65,7 +65,7 @@ templ ConsumerGroups(clusterName string) {
 	}
 }
 
-templ ConsumerGroupsListFragment(groups kadm.DescribedGroupLags, service *application.ConsumerGroupsService) {
+templ ConsumerGroupsListFragment(clusterName string, groups kadm.DescribedGroupLags, service *application.ConsumerGroupsService) {
 	<div
 		id="consumer-goups-list"
 		class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700"
@@ -103,7 +103,7 @@ templ ConsumerGroupsListFragment(groups kadm.DescribedGroupLags, service *applic
 					</thead>
 					<tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">
 						for _, group := range groups {
-							@groupTableRow(group, service)
+							@groupTableRow(clusterName, group, service)
 						}
 					</tbody>
 				</table>
@@ -112,13 +112,13 @@ templ ConsumerGroupsListFragment(groups kadm.DescribedGroupLags, service *applic
 	</div>
 }
 
-templ groupTableRow(group kadm.DescribedGroupLag, service *application.ConsumerGroupsService) {
+templ groupTableRow(clusterName string, group kadm.DescribedGroupLag, service *application.ConsumerGroupsService) {
 	<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-700/30 transition-colors border-b border-neutral-100 dark:border-neutral-700 last:border-0" data-filter-value={ group.Group }>
 		<td class="px-6 py-4">
 			<div class="flex items-center space-x-2">
-				<span class="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+				<a href={ templ.URL(fmt.Sprintf("/clusters/%s/consumer-groups/%s", clusterName, group.Group)) } class="text-sm font-medium text-guara-600 dark:text-guara-400 hover:underline">
 					{ group.Group }
-				</span>
+				</a>
 			</div>
 		</td>
 		<td class="px-6 py-4">
