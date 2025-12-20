@@ -45,6 +45,11 @@ func (s *Server) uiTopicDetail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if topicDetail == nil {
+		http.Error(w, "topic not found", http.StatusNotFound)
+		return
+	}
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := pages.TopicDetail(clusterName, topicDetail).Render(r.Context(), w); err != nil {
 		utils.Logger.Error("render topic detail failed", "cluster", clusterName, "topic", topicName, "err", err)

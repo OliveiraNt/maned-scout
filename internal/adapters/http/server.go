@@ -56,6 +56,8 @@ func (s *Server) Run(addr string) error {
 	r.Get("/clusters/{clusterName}", s.uiClusterDetail)
 	r.Get("/clusters/{clusterName}/topics", s.uiTopicsList)
 	r.Get("/clusters/{clusterName}/topics/{topicName}", s.uiTopicDetail)
+	r.Get("/clusters/{clusterName}/consumer-groups", s.uiConsumerGroupList)
+	r.Get("/clusters/{clusterName}/consumer-groups/{consumerGroupName}", s.uiConsumerGroupDetail)
 
 	r.Get("/api/clusters", s.apiListClusters)
 	r.Post("/api/clusters", s.apiAddCluster)
@@ -72,7 +74,8 @@ func (s *Server) Run(addr string) error {
 	r.Get("/api/clusters/{clusterName}/topics/{topicName}/ws-off", s.apiStopMessages)
 	r.Post("/api/clusters/{clusterName}/topics/{topicName}/messages", s.apiWriteMessage)
 	r.Get("/api/clusters/{clusterName}/topics/{topicName}/ws", s.wsStreamTopic)
-	r.Get("/api/clusters/{clusterName}/topics/{topicName}/consumer-groups", s.apiGetConsumerGroups)
+	r.Get("/api/clusters/{clusterName}/topics/{topicName}/consumer-groups", s.apiListTopicConsumerGroups)
+	r.Get("/api/clusters/{clusterName}/consumer-groups", s.apiListConsumerGroup)
 
 	utils.Logger.Info("HTTP server listening", "addr", addr)
 	return http.ListenAndServe(addr, r)

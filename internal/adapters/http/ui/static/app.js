@@ -52,38 +52,47 @@ if (localStorage.getItem('darkMode') === 'true' || (!localStorage.getItem('darkM
 }
 
 (function () {
-    function filterTopics(query) {
-        const q = (query || '').trim().toLowerCase();
-        const rows = document.querySelectorAll('#topicsTable tbody tr[data-topic-name]');
-        if (!rows.length) return;
+    function filterItems(input) {
+        const query = (input.value || '').trim().toLowerCase();
+        const targetTableId = input.getAttribute('data-filter-target');
+        if (!targetTableId) return;
+
+        const table = document.getElementById(targetTableId);
+        if (!table) return;
+
+        const rows = table.querySelectorAll('tbody tr[data-filter-value]');
         rows.forEach(function (row) {
-            const name = (row.getAttribute('data-topic-name') || '').toLowerCase();
-            const show = q === '' || name.includes(q);
+            const value = (row.getAttribute('data-filter-value') || '').toLowerCase();
+            const show = query === '' || value.includes(query);
             row.style.display = show ? '' : 'none';
         });
     }
 
-    function setupFilter() {
-        const input = document.querySelector('input[type="text"][placeholder="Buscar tópicos"]');
-        if (!input) return;
-        input.addEventListener('input', function (e) {
-            filterTopics(e.target.value);
+    function setupFilters() {
+        const inputs = document.querySelectorAll('input[data-filter-target]');
+        inputs.forEach(function (input) {
+            // Remove existing listener to avoid duplicates if setupFilters is called multiple times
+            input.removeEventListener('input', handleFilterInput);
+            input.addEventListener('input', handleFilterInput);
+            filterItems(input);
         });
-        filterTopics(input.value);
+    }
+
+    function handleFilterInput(e) {
+        filterItems(e.target);
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', setupFilter);
+        document.addEventListener('DOMContentLoaded', setupFilters);
     } else {
-        setupFilter();
+        setupFilters();
     }
 
     document.addEventListener('htmx:afterSwap', function (evt) {
         const target = evt && evt.detail && evt.detail.target;
         if (!target) return;
-        if (target.id === 'topics-list' || target.querySelector && target.querySelector('#topicsTable')) {
-            const input = document.querySelector('input[type="text"][placeholder="Buscar tópicos"]');
-            if (input) filterTopics(input.value);
-        }
+        
+        // Se o swap trouxe uma nova tabela ou o próprio container da lista, re-configura os filtros
+        setupFilters();
     });
 })();

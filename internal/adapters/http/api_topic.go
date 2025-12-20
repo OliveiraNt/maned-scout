@@ -246,7 +246,7 @@ func (s *Server) apiWriteMessage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) apiGetConsumerGroups(w http.ResponseWriter, r *http.Request) {
+func (s *Server) apiListTopicConsumerGroups(w http.ResponseWriter, r *http.Request) {
 	clusterName := chi.URLParam(r, "clusterName")
 	topicName := chi.URLParam(r, "topicName")
 

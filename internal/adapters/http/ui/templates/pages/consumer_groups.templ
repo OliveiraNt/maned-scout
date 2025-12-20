@@ -4,7 +4,66 @@ import (
 	"fmt"
 	"github.com/OliveiraNt/maned-scout/internal/application"
 	"github.com/twmb/franz-go/pkg/kadm"
+
+	layout "github.com/OliveiraNt/maned-scout/internal/adapters/http/ui/templates/layout"
 )
+
+templ ConsumerGroups(clusterName string) {
+	@layout.BaseWithSidebar("Grupos Consumidores", clusterName, nil) {
+		<div class="mb-6">
+			<div class="flex items-center justify-between">
+				<div>
+					<h2 class="text-3xl font-bold text-neutral-900 dark:text-white">Grupos Consumidores</h2>
+					<p class="text-neutral-600 dark:text-neutral-400 mt-2">
+						Gerencie os grupos consumidores do cluster <span class="font-semibold">{ clusterName }</span>
+					</p>
+				</div>
+			</div>
+		</div>
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">Total de Grupos</p>
+						<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2" id="groups-total">—</p>
+					</div>
+					<div class="bg-guara-100 dark:bg-guara-900/30 p-3 rounded-lg">
+						<i class="fas fa-list text-guara-500 dark:text-guara-400 text-2xl"></i>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="mb-6">
+			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-4">
+				<div class="flex items-center space-x-4">
+					<div class="flex-1">
+						<div class="relative">
+							<i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"></i>
+							<input
+								type="text"
+								placeholder="Buscar grupos"
+								data-filter-target="groupsTable"
+								class="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-guara-500 focus:border-transparent"
+							/>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div
+			id="consumer-groups-list"
+			hx-get={ templ.URL(fmt.Sprintf("/api/clusters/%s/consumer-groups", clusterName)) }
+			hx-include="[name=showInternal]"
+			hx-trigger="load"
+			hx-swap="outerHTML"
+			class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
+		>
+			<div class="p-6 text-center text-gray-500 dark:text-gray-400">
+				<i class="fas fa-rotate fa-spin mr-2"></i> Carregando Grupos Consumidores...
+			</div>
+		</div>
+	}
+}
 
 templ ConsumerGroupsListFragment(groups kadm.DescribedGroupLags, service *application.ConsumerGroupsService) {
 	<div
@@ -54,7 +113,7 @@ templ ConsumerGroupsListFragment(groups kadm.DescribedGroupLags, service *applic
 }
 
 templ groupTableRow(group kadm.DescribedGroupLag, service *application.ConsumerGroupsService) {
-	<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-700/30 transition-colors border-b border-neutral-100 dark:border-neutral-700 last:border-0" data-group-name={ group.Group }>
+	<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-700/30 transition-colors border-b border-neutral-100 dark:border-neutral-700 last:border-0" data-filter-value={ group.Group }>
 		<td class="px-6 py-4">
 			<div class="flex items-center space-x-2">
 				<span class="text-sm font-medium text-neutral-900 dark:text-neutral-100">

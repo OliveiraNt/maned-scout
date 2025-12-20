@@ -188,27 +188,21 @@ func (a *Admin) ListConsumerGroupsWithLagFromTopic(ctx context.Context, topicNam
 	cctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	groups, err := a.client.DescribeConsumerGroups(cctx)
+	lags, err := a.client.Lag(cctx)
 	if err != nil {
 		return nil, err
 	}
 
 	if topicName != "" {
-		for key, group := range groups {
-			set := group.AssignedPartitions()
-			_, ok := set[topicName]
+		for key, lag := range lags {
+			_, ok := lag.Lag[topicName]
 			if !ok {
-				delete(groups, key)
+				delete(lags, key)
 			}
-
 		}
 	}
 
-	lag, err := a.client.Lag(cctx, groups.Names()...)
-	if err != nil {
-		return nil, err
-	}
-	return lag, nil
+	return lags, nil
 }
 
 // GetTopicDetail returns detailed information about a topic including all configurations
