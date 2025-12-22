@@ -1,9 +1,9 @@
 package pages
 
 import (
-    layout "github.com/OliveiraNt/maned-scout/internal/adapters/http/ui/templates/layout"
-    "github.com/OliveiraNt/maned-scout/internal/domain"
-    "fmt"
+	"fmt"
+	layout "github.com/OliveiraNt/maned-scout/internal/adapters/http/ui/templates/layout"
+	"github.com/OliveiraNt/maned-scout/internal/domain"
 )
 
 type ClusterWithStats struct {
@@ -17,12 +17,10 @@ templ ClusterList(clusters []ClusterWithStats) {
 			<h2 class="text-3xl font-bold text-neutral-900 dark:text-white">Clusters Kafka</h2>
 			<p class="text-neutral-600 dark:text-neutral-400 mt-2">Gerencie e monitore seus clusters Apache Kafka</p>
 		</div>
-		
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 			for _, item := range clusters {
 				@ClusterCard(item.Cluster, item.Stats)
 			}
-			
 			@AddClusterCard()
 		</div>
 	}
@@ -57,7 +55,6 @@ templ ClusterCard(cluster domain.Cluster, stats *domain.ClusterStats) {
 				</span>
 			}
 		</div>
-		
 		if cluster.IsOnline && stats != nil {
 			<div class="grid grid-cols-2 gap-3 mb-4">
 				<div class="text-center p-2 bg-neutral-50 dark:bg-neutral-700/50 rounded">
@@ -81,37 +78,39 @@ templ ClusterCard(cluster domain.Cluster, stats *domain.ClusterStats) {
 					}
 				</div>
 			</div>
-			<div class="mb-4 flex items-center space-x-2 text-sm">
-				<i class="fas fa-shield-alt text-neutral-500 dark:text-neutral-400"></i>
-				<span class="text-neutral-600 dark:text-neutral-400">Autenticação:</span>
-				<span class="font-medium text-neutral-900 dark:text-white">{ cluster.AuthType }</span>
-			if cluster.CertInfo != nil {
+			<div class="mb-4 flex flex-wrap items-center gap-x-4 gap-y-0 text-sm">
 				<div class="flex items-center space-x-2 text-sm">
-					<i class="fas fa-certificate text-neutral-500 dark:text-neutral-400"></i>
-					<span class="text-neutral-600 dark:text-neutral-400">Certificado:</span>
-					if cluster.CertInfo.Status == "expired" {
-						<span class="flex items-center space-x-1 text-red-600 dark:text-red-400 font-semibold">
-							<i class="fas fa-exclamation-circle"></i>
-							<span>Expirado</span>
-						</span>
-					} else if cluster.CertInfo.Status == "critical" {
-						<span class="flex items-center space-x-1 text-red-600 dark:text-red-400 font-semibold">
-							<i class="fas fa-exclamation-triangle"></i>
-							<span>{ fmt.Sprintf("%d dias", cluster.CertInfo.DaysToExpiry) }</span>
-						</span>
-					} else if cluster.CertInfo.Status == "warning" {
-						<span class="flex items-center space-x-1 text-yellow-600 dark:text-yellow-400 font-semibold">
-							<i class="fas fa-exclamation-triangle"></i>
-							<span>{ fmt.Sprintf("%d dias", cluster.CertInfo.DaysToExpiry) }</span>
-						</span>
-					} else {
-						<span class="flex items-center space-x-1 text-green-600 dark:text-green-400 font-medium">
-							<i class="fas fa-check-circle"></i>
-							<span>{ fmt.Sprintf("%d dias", cluster.CertInfo.DaysToExpiry) }</span>
-						</span>
-					}
+					<i class="fas fa-shield-alt text-neutral-500 dark:text-neutral-400"></i>
+					<span class="text-neutral-600 dark:text-neutral-400">Autenticação:</span>
+					<span class="font-medium text-neutral-900 dark:text-white">{ cluster.AuthType }</span>
 				</div>
-			}
+				if cluster.CertInfo != nil {
+					<div class="flex items-center space-x-2 text-sm">
+						<i class="fas fa-certificate text-neutral-500 dark:text-neutral-400"></i>
+						<span class="text-neutral-600 dark:text-neutral-400">Certificado:</span>
+						if cluster.CertInfo.Status == "expired" {
+							<span class="flex items-center space-x-1 text-red-600 dark:text-red-400 font-semibold">
+								<i class="fas fa-exclamation-circle"></i>
+								<span>Expirado</span>
+							</span>
+						} else if cluster.CertInfo.Status == "critical" {
+							<span class="flex items-center space-x-1 text-red-600 dark:text-red-400 font-semibold">
+								<i class="fas fa-exclamation-triangle"></i>
+								<span>{ fmt.Sprintf("%d dias", cluster.CertInfo.DaysToExpiry) }</span>
+							</span>
+						} else if cluster.CertInfo.Status == "warning" {
+							<span class="flex items-center space-x-1 text-yellow-600 dark:text-yellow-400 font-semibold">
+								<i class="fas fa-exclamation-triangle"></i>
+								<span>{ fmt.Sprintf("%d dias", cluster.CertInfo.DaysToExpiry) }</span>
+							</span>
+						} else {
+							<span class="flex items-center space-x-1 text-green-600 dark:text-green-400 font-medium">
+								<i class="fas fa-check-circle"></i>
+								<span>{ fmt.Sprintf("%d dias", cluster.CertInfo.DaysToExpiry) }</span>
+							</span>
+						}
+					</div>
+				}
 			</div>
 		} else {
 			<div class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 mb-4">
@@ -154,7 +153,6 @@ templ ClusterCard(cluster domain.Cluster, stats *domain.ClusterStats) {
 				</div>
 			</div>
 		}
-
 		<div class="pt-3 border-t border-neutral-200 dark:border-neutral-700">
 			<span class="text-guara-500 dark:text-guara-400 hover:text-guara-600 dark:hover:text-guara-300 text-sm font-medium">
 				Ver Dashboard <i class="fas fa-arrow-right ml-1"></i>
