@@ -13,6 +13,7 @@ import (
 
 	layout "github.com/OliveiraNt/maned-scout/internal/adapters/http/ui/templates/layout"
 	"github.com/OliveiraNt/maned-scout/internal/domain"
+	"github.com/invopop/ctxi18n/i18n"
 )
 
 templ Imports(clusterName string, topicName string) {
@@ -25,12 +26,12 @@ templ Imports(clusterName string, topicName string) {
 }
 
 templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
-	@layout.BaseWithSidebar("Detalhes do Tópico", clusterName, Imports(clusterName, topic.Name)) {
+	@layout.BaseWithSidebar("generics.topic-details", clusterName, Imports(clusterName, topic.Name)) {
 		<nav class="mb-6 text-sm">
 			<ol class="flex items-center space-x-2 text-neutral-600 dark:text-neutral-400">
 				<li><a href={ templ.URL(fmt.Sprintf("/clusters/%s", clusterName)) } class="hover:text-guara-600 dark:hover:text-guara-400">{ clusterName }</a></li>
 				<li><i class="fas fa-chevron-right text-xs"></i></li>
-				<li><a href={ templ.URL(fmt.Sprintf("/clusters/%s/topics", clusterName)) } class="hover:text-guara-600 dark:hover:text-guara-400">Tópicos</a></li>
+				<li><a href={ templ.URL(fmt.Sprintf("/clusters/%s/topics", clusterName)) } class="hover:text-guara-600 dark:hover:text-guara-400">{ i18n.T(ctx, "topic.title") }</a></li>
 				<li><i class="fas fa-chevron-right text-xs"></i></li>
 				<li class="text-neutral-900 dark:text-white font-medium">{ topic.Name }</li>
 			</ol>
@@ -39,7 +40,7 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 			<div class="flex items-center justify-between">
 				<div>
 					<h2 class="text-3xl font-bold text-neutral-900 dark:text-white">{ topic.Name }</h2>
-					<p class="text-neutral-600 dark:text-neutral-400 mt-2">Detalhes e configurações do tópico</p>
+					<p class="text-neutral-600 dark:text-neutral-400 mt-2">{ i18n.T(ctx, "generics.topics-details") }</p>
 				</div>
 				<div class="flex items-center space-x-3">
 					<button
@@ -47,21 +48,21 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 						class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition flex items-center space-x-2"
 					>
 						<i class="fas fa-edit"></i>
-						<span>Editar Configs</span>
+						<span>{ i18n.T(ctx, "generics.edit-configs") }</span>
 					</button>
 					<button
 						onclick="showIncreasePartitionsModal()"
 						class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition flex items-center space-x-2"
 					>
 						<i class="fas fa-plus"></i>
-						<span>Aumentar Partições</span>
+						<span>{ i18n.T(ctx, "generics.increase-partitions") }</span>
 					</button>
 					<button
 						onclick="confirmDeleteTopic()"
 						class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition flex items-center space-x-2 shadow-lg shadow-red-600/30"
 					>
 						<i class="fas fa-trash"></i>
-						<span>Deletar Tópico</span>
+						<span>{ i18n.T(ctx, "generics.delete-topic") }</span>
 					</button>
 				</div>
 			</div>
@@ -70,7 +71,7 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
 				<div class="flex items-center justify-between">
 					<div>
-						<p class="text-sm text-neutral-600 dark:text-neutral-400">Partições</p>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">{ i18n.T(ctx, "generics.partitions") }</p>
 						<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2">{ fmt.Sprintf("%d", topic.Partitions) }</p>
 					</div>
 					<div class="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-lg">
@@ -81,7 +82,7 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
 				<div class="flex items-center justify-between">
 					<div>
-						<p class="text-sm text-neutral-600 dark:text-neutral-400">Fator de Replicação</p>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">{ i18n.T(ctx, "generics.replication-factor-label") }</p>
 						<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2">{ fmt.Sprintf("%d", topic.ReplicationFactor) }</p>
 					</div>
 					<div class="bg-green-100 dark:bg-green-900/30 p-3 rounded-lg">
@@ -92,7 +93,7 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
 				<div class="flex items-center justify-between">
 					<div>
-						<p class="text-sm text-neutral-600 dark:text-neutral-400">Configurações</p>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">{ i18n.T(ctx, "generics.configurations") }</p>
 						<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2">{ fmt.Sprintf("%d", len(topic.Configs)) }</p>
 					</div>
 					<div class="bg-guara-100 dark:bg-guara-900/30 p-3 rounded-lg">
@@ -110,28 +111,28 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 						class="tab-button tab-button-active px-6 py-4 font-semibold text-guara-600 dark:text-guara-400 border-b-2 border-guara-500 transition-all duration-200 whitespace-nowrap flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
 						data-tab="partitions-tab"
 					>
-						<i class="fas fa-layer-group"></i>Partições
+						<i class="fas fa-layer-group"></i>{ i18n.T(ctx, "generics.partitions") }
 					</button>
 					<button
 						onclick="switchTab('messages-tab')"
 						class="tab-button px-6 py-4 font-semibold text-neutral-600 dark:text-neutral-400 border-b-2 border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"
 						data-tab="messages-tab"
 					>
-						<i class="fas fa-envelope"></i>Mensagens
+						<i class="fas fa-envelope"></i>{ i18n.T(ctx, "generics.messages") }
 					</button>
 					<button
 						onclick="switchTab('consumer-groups-tab')"
 						class="tab-button px-6 py-4 font-semibold text-neutral-600 dark:text-neutral-400 border-b-2 border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"
 						data-tab="consumer-groups-tab"
 					>
-						<i class="fas fa-users"></i>Grupos de Consumidores
+						<i class="fas fa-users"></i>{ i18n.T(ctx, "consumer-groups.title") }
 					</button>
 					<button
 						onclick="switchTab('config-tab')"
 						class="tab-button px-6 py-4 font-semibold text-neutral-600 dark:text-neutral-400 border-b-2 border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"
 						data-tab="config-tab"
 					>
-						<i class="fas fa-sliders-h"></i>Configurações
+						<i class="fas fa-sliders-h"></i>{ i18n.T(ctx, "generics.configurations") }
 					</button>
 				</div>
 			</div>
@@ -143,11 +144,11 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 						<table class="w-full">
 							<thead class="bg-neutral-50 dark:bg-neutral-900">
 								<tr>
-									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Partição</th>
-									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Leader</th>
-									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Réplicas</th>
-									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">ISR</th>
-									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Status</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{ i18n.T(ctx, "generics.partition-label") }</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{ i18n.T(ctx, "generics.leader") }</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{ i18n.T(ctx, "generics.replicas") }</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{ i18n.T(ctx, "generics.isr") }</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{ i18n.T(ctx, "generics.status") }</th>
 								</tr>
 							</thead>
 							<tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">
@@ -194,16 +195,16 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 				<div id="messages-tab" class="tab-content hidden">
 					<div class="flex items-center justify-between mb-6">
 						<div>
-							<h3 class="text-lg font-semibold text-neutral-900 dark:text-white">Stream de Mensagens</h3>
-							<p class="text-sm text-neutral-600 dark:text-neutral-400 mt-1">Leia e escreva mensagens no tópico em tempo real</p>
-						</div>
-						<div class="flex items-center space-x-3">
-							<button
-								class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white text-white rounded-lg font-medium transition flex items-center space-x-2"
-								onclick="showWriteMessageModal()"
-							>
-								<i class="fas fa-paper-plane"></i>
-								<span>Escrever Mensagem</span>
+						<h3 class="text-lg font-semibold text-neutral-900 dark:text-white">{ i18n.T(ctx, "generics.message-stream") }</h3>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400 mt-1">{ i18n.T(ctx, "generics.read-write-messages") }</p>
+					</div>
+					<div class="flex items-center space-x-3">
+						<button
+							class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white text-white rounded-lg font-medium transition flex items-center space-x-2"
+							onclick="showWriteMessageModal()"
+						>
+							<i class="fas fa-paper-plane"></i>
+							<span>{ i18n.T(ctx, "generics.write-message") }</span>
 							</button>
 							<div id="topic-actions">
 								@readButton(clusterName, topic.Name)
@@ -224,7 +225,7 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
                     			class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
                     		>
                     			<div class="p-6 text-center text-gray-500 dark:text-gray-400">
-                    				<i class="fas fa-rotate fa-spin mr-2"></i> Carregando Grupos Consumidores...
+                    				<i class="fas fa-rotate fa-spin mr-2"></i> { i18n.T(ctx, "generics.loading-groups") }
                     			</div>
                     		</div>
 					</div>
@@ -235,8 +236,8 @@ templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
 						<table class="w-full">
 							<thead class="bg-neutral-50 dark:bg-neutral-900">
 								<tr>
-									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Configuração</th>
-									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Valor</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{ i18n.T(ctx, "generics.configuration-name") }</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{ i18n.T(ctx, "generics.value") }</th>
 								</tr>
 							</thead>
 							<tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">
@@ -267,11 +268,11 @@ templ updateConfigModal() {
 	<div id="updateConfigModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
 		<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-xl max-w-2xl w-full mx-4">
 			<div class="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
-				<h3 class="text-lg font-semibold text-neutral-900 dark:text-white">Atualizar Configurações</h3>
+				<h3 class="text-lg font-semibold text-neutral-900 dark:text-white">{ i18n.T(ctx, "generics.update-configs") }</h3>
 			</div>
 			<div class="px-6 py-4">
 				<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
-					Atualize as configurações do tópico. Use <code>null</code> para remover uma configuração.
+					{ i18n.T(ctx, "generics.update-configs-desc") }
 				</p>
 				<form id="updateConfigForm" onsubmit="updateTopicConfig(event)">
 					<div class="space-y-4">
@@ -294,7 +295,7 @@ templ updateConfigModal() {
 								name="cleanup.policy"
 								class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white"
 							>
-								<option value="">-- Manter Atual --</option>
+								<option value="">{ i18n.T(ctx, "generics.keep-current") }</option>
 								<option value="delete">delete</option>
 								<option value="compact">compact</option>
 								<option value="compact,delete">compact,delete</option>
@@ -308,7 +309,7 @@ templ updateConfigModal() {
 								name="compression.type"
 								class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white"
 							>
-								<option value="">-- Manter Atual --</option>
+								<option value="">{ i18n.T(ctx, "generics.keep-current") }</option>
 								<option value="uncompressed">uncompressed</option>
 								<option value="gzip">gzip</option>
 								<option value="snappy">snappy</option>
@@ -334,13 +335,13 @@ templ updateConfigModal() {
 							onclick="closeUpdateConfigModal()"
 							class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 rounded-lg font-medium transition hover:bg-neutral-50 dark:hover:bg-neutral-700"
 						>
-							Cancelar
+							{ i18n.T(ctx, "generics.cancel") }
 						</button>
 						<button
 							type="submit"
 							class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition"
 						>
-							Atualizar
+							{ i18n.T(ctx, "generics.update") }
 						</button>
 					</div>
 				</form>
@@ -353,17 +354,16 @@ templ increasePartitionsModal(currentPartitions int) {
 	<div id="increasePartitionsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
 		<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-xl max-w-md w-full mx-4">
 			<div class="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
-				<h3 class="text-lg font-semibold text-neutral-900 dark:text-white">Aumentar Partições</h3>
+				<h3 class="text-lg font-semibold text-neutral-900 dark:text-white">{ i18n.T(ctx, "generics.increase-partitions") }</h3>
 			</div>
 			<div class="px-6 py-4">
 				<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
-					O tópico atualmente tem <strong>{ fmt.Sprintf("%d", currentPartitions) }</strong> partições.
-					Defina o novo total de partições (deve ser maior que o atual).
+					{ i18n.T(ctx, "generics.increase-partitions-desc", currentPartitions) }
 				</p>
 				<form id="increasePartitionsForm" onsubmit="increasePartitions(event)">
 					<div class="mb-4">
 						<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-							Total de Partições
+							{ i18n.T(ctx, "generics.total-partitions-label") }
 						</label>
 						<input
 							type="number"
@@ -379,13 +379,13 @@ templ increasePartitionsModal(currentPartitions int) {
 							onclick="closeIncreasePartitionsModal()"
 							class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 rounded-lg font-medium transition hover:bg-neutral-50 dark:hover:bg-neutral-700"
 						>
-							Cancelar
+							{ i18n.T(ctx, "generics.cancel") }
 						</button>
 						<button
 							type="submit"
 							class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition"
 						>
-							Aumentar
+							{ i18n.T(ctx, "generics.increase") }
 						</button>
 					</div>
 				</form>
@@ -398,12 +398,11 @@ templ deleteTopicModal(topicName string) {
 	<div id="deleteTopicModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
 		<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-xl max-w-md w-full mx-4">
 			<div class="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
-				<h3 class="text-lg font-semibold text-neutral-900 dark:text-white">Deletar Tópico</h3>
+				<h3 class="text-lg font-semibold text-neutral-900 dark:text-white">{ i18n.T(ctx, "generics.delete-topic") }</h3>
 			</div>
 			<div class="px-6 py-4">
 				<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
-					Tem certeza que deseja deletar o tópico <strong>{ topicName }</strong>?
-					Esta ação não pode ser desfeita e todos os dados serão perdidos.
+					{ i18n.T(ctx, "generics.delete-topic-confirm", topicName) }
 				</p>
 				<div class="flex justify-end space-x-3">
 					<button
@@ -411,14 +410,14 @@ templ deleteTopicModal(topicName string) {
 						onclick="closeDeleteTopicModal()"
 						class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 rounded-lg font-medium transition hover:bg-neutral-50 dark:hover:bg-neutral-700"
 					>
-						Cancelar
+						{ i18n.T(ctx, "generics.cancel") }
 					</button>
 					<button
 						type="button"
 						onclick="deleteTopic()"
 						class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition shadow-lg shadow-red-600/30"
 					>
-						Deletar
+						{ i18n.T(ctx, "generics.delete") }
 					</button>
 				</div>
 			</div>
@@ -430,28 +429,28 @@ templ writeMessageModal() {
     <div id="writeMessageModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
         <div class="bg-white dark:bg-neutral-800 rounded-lg shadow-xl max-w-2xl w-full mx-4">
             <div class="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
-                <h3 class="text-lg font-semibold text-neutral-900 dark:text-white">Nova Mensagem</h3>
+                <h3 class="text-lg font-semibold text-neutral-900 dark:text-white">{ i18n.T(ctx, "generics.new-message") }</h3>
             </div>
             <div class="px-6 py-4">
                 <form id="writeMessageForm" onsubmit="sendMessage(event)">
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Chave</label>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{ i18n.T(ctx, "generics.key-label") }</label>
                             <input
                                 type="text"
                                 name="key"
                                 class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white font-mono"
-                                placeholder="Chave da mensagem (opcional)"
+                                placeholder= { i18n.T(ctx, "generics.message-key-placeholder") }
                             />
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Value</label>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{ i18n.T(ctx, "generics.value-label") }</label>
                             <textarea
                                 name="value"
                                 required
                                 rows="6"
                                 class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white font-mono"
-                                placeholder="Conteúdo da mensagem (valor) — texto ou JSON"
+                                placeholder= { i18n.T(ctx, "generics.message-value-placeholder") }
                             ></textarea>
                         </div>
                     </div>
@@ -461,13 +460,13 @@ templ writeMessageModal() {
                             onclick="closeWriteMessageModal()"
                             class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 rounded-lg font-medium transition hover:bg-neutral-50 dark:hover:bg-neutral-700"
                         >
-                            Cancelar
+                            { i18n.T(ctx, "generics.cancel") }
                         </button>
                         <button
                             type="submit"
                             class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition"
                         >
-                            Enviar
+                            { i18n.T(ctx, "generics.send") }
                         </button>
                     </div>
                 </form>
@@ -505,7 +504,7 @@ templ readButton(clusterName string, topicName string) {
 		class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition flex items-center space-x-2"
 	>
 		<i class="fas fa-play"></i>
-		<span>Ler mensagens</span>
+		<span>{ i18n.T(ctx, "generics.read-messages") }</span>
 	</button>
 }
 
@@ -517,14 +516,14 @@ templ stopButton(clusterName string, topicName string) {
 		class="px-4 py-2 bg-guara-700 hover:bg-guara-900 text-white text-white rounded-lg font-medium transition flex items-center space-x-2"
 	>
 		<i class="fas fa-stop"></i>
-		<span>Parar leitura</span>
+		<span>{ i18n.T(ctx, "generics.stop-reading") }</span>
 	</button>
 }
 
 templ MessageView(clusterName string, topicName string) {
 	<div id="message-stream-view" class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 mt-6 mb-6">
 		<div class="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-neutral-900 dark:text-white">Mensagens</h3>
+            <h3 class="text-lg font-semibold text-neutral-900 dark:text-white">{ i18n.T(ctx, "generics.messages") }</h3>
             <div id="message-spinner" class="p-6 text-center text-neutral-500 dark:text-neutral-400">
                 <i class="fas fa-rotate fa-spin mr-2"></i>
             </div>
@@ -610,27 +609,27 @@ templ Message(m domain.Message) {
 			<div class="flex items-center gap-3">
 				<span class="inline-flex items-center gap-1">
 					<i class="fas fa-stream"></i>
-					<span class="font-semibold">Partição:</span>
+					<span class="font-semibold">{ fmt.Sprintf("%s:", i18n.T(ctx, "generics.partition-label")) }</span>
 					<span class="font-mono">{ fmt.Sprintf("%d", m.Partition) }</span>
 				</span>
 				<span class="inline-flex items-center gap-1">
 					<i class="fas fa-hashtag"></i>
-					<span class="font-semibold">Offset:</span>
+					<span class="font-semibold">{ fmt.Sprintf("%s:", i18n.T(ctx, "generics.offset")) }</span>
 					<span class="font-mono">{ fmt.Sprintf("%d", m.Offset) }</span>
 				</span>
 			</div>
 			<div class="inline-flex items-center gap-1">
 				<i class="fas fa-clock"></i>
-				<span class="font-semibold">Timestamp:</span>
+				<span class="font-semibold">{ fmt.Sprintf("%s:", i18n.T(ctx, "generics.timestamp")) }</span>
 				<span class="font-mono">{ m.Timestamp.Format("2006-01-02 15:04:05.000") }</span>
 			</div>
 		</div>
 		<div class="mt-2">
-			<div class="text-[11px] uppercase tracking-wide text-neutral-400">Key</div>
+			<div class="text-[11px] uppercase tracking-wide text-neutral-400">{ i18n.T(ctx, "generics.key-label") }</div>
 			<pre class="whitespace-pre-wrap break-words font-mono text-sm text-neutral-800 dark:text-neutral-200 bg-neutral-50 dark:bg-neutral-900/40 rounded px-2 py-1">{ renderKafkaBytes(m.Key) }</pre>
 		</div>
 		<div class="mt-2">
-			<div class="text-[11px] uppercase tracking-wide text-neutral-400">Value</div>
+			<div class="text-[11px] uppercase tracking-wide text-neutral-400">{ i18n.T(ctx, "generics.value-label") }</div>
 			<pre class="whitespace-pre-wrap break-words font-mono text-sm text-neutral-800 dark:text-neutral-200 bg-neutral-50 dark:bg-neutral-900/40 rounded px-2 py-1">{ renderKafkaBytes(m.Value) }</pre>
 		</div>
 	</div>

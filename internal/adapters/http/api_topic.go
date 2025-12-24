@@ -38,8 +38,9 @@ func (s *Server) apiListTopics(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		utils.Logger.Error("api list topics failed", "cluster", name, "err", err)
 		w.Header().Set("X-Notification-Type", "error")
-		w.Header().Set("X-Notification", "Falha ao listar tópicos")
-		w.Header().Set("X-Notification-Base64", base64.StdEncoding.EncodeToString([]byte("Falha ao listar tópicos")))
+		msg := "Falha ao listar tópicos"
+		w.Header().Set("X-Notification", msg)
+		w.Header().Set("X-Notification-Base64", base64.StdEncoding.EncodeToString([]byte(msg)))
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

@@ -51,6 +51,10 @@ if (localStorage.getItem('darkMode') === 'true' || (!localStorage.getItem('darkM
     document.documentElement.classList.add('dark');
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    initLanguageDropdown();
+});
+
 (function () {
     function filterItems(input) {
         const query = (input.value || '').trim().toLowerCase();
@@ -97,15 +101,49 @@ if (localStorage.getItem('darkMode') === 'true' || (!localStorage.getItem('darkM
     });
 })();
 
+function initLanguageDropdown() {
+    const toggle = document.getElementById('lang-toggle');
+    const menu = document.getElementById('lang-menu');
+    const current = document.getElementById('current-lang');
+    const options = document.querySelectorAll('.lang-option');
+
+    if (!toggle || !menu || !current || options.length === 0) {
+        return;
+    }
+
+    function getLangFromCookie() {
+        const match = document.cookie.match(/(?:^|; )lang=([^;]+)/);
+        return match ? decodeURIComponent(match[1]) : 'pt-BR';
+    }
+
+    const activeLang = getLangFromCookie();
+    options.forEach(opt => {
+        if (opt.dataset.lang === activeLang) {
+            opt.classList.add(
+                'bg-neutral-100',
+                'dark:bg-neutral-700',
+                'font-medium'
+            );
+            current.textContent = activeLang.startsWith('en') ? 'EN' : 'PT';
+        }
+    });
+    toggle.addEventListener('click', () => {
+        menu.classList.toggle('hidden');
+    });
+    document.addEventListener('click', (e) => {
+        if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+            menu.classList.add('hidden');
+        }
+    });
+}
+
 function switchTab(tabId) {
-    // Hide all tab contents with transition
     const tabContents = document.querySelectorAll('.tab-content');
     tabContents.forEach(content => {
         content.classList.add('hidden');
         content.classList.remove('fade-in');
     });
 
-    // Reset all tab buttons
     const tabButtons = document.querySelectorAll('.tab-button');
     tabButtons.forEach(button => {
         button.classList.remove('tab-button-active');
@@ -114,14 +152,12 @@ function switchTab(tabId) {
         button.classList.add('border-transparent');
     });
 
-    // Show selected tab with animation
     const selectedTab = document.getElementById(tabId);
     if (selectedTab) {
         selectedTab.classList.remove('hidden');
         selectedTab.classList.add('fade-in');
     }
 
-    // Activate selected button
     const selectedButton = document.querySelector(`[data-tab="${tabId}"]`);
     if (selectedButton) {
         selectedButton.classList.add('tab-button-active');

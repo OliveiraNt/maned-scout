@@ -4,13 +4,14 @@ import (
 	"fmt"
 	layout "github.com/OliveiraNt/maned-scout/internal/adapters/http/ui/templates/layout"
 	"github.com/OliveiraNt/maned-scout/internal/domain"
+	"github.com/invopop/ctxi18n/i18n"
 )
 
 templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain.ClusterStats, brokerDetails []domain.BrokerDetail, consumerGroups []domain.ConsumerGroupSummary) {
-	@layout.BaseWithSidebar(cluster.Name, cluster.Name, nil) {
+	@layout.BaseWithSidebar("cluster.title", cluster.Name, nil) {
 		<div class="mb-6">
 			<nav class="flex items-center space-x-2 text-sm text-neutral-600 dark:text-neutral-400">
-				<a href="/" hx-boost="true" hx-indicator="#page-loading" class="hover:text-guara-600 dark:hover:text-guara-400">Clusters</a>
+				<a href="/" hx-boost="true" hx-indicator="#page-loading" class="hover:text-guara-600 dark:hover:text-guara-400">{ i18n.T(ctx, "cluster.title") }</a>
 				<i class="fas fa-chevron-right text-xs"></i>
 				<span class="text-neutral-900 dark:text-white font-medium">{ cluster.Name }</span>
 			</nav>
@@ -23,18 +24,18 @@ templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain
 					</div>
 					<div>
 						<h2 class="text-3xl font-bold text-neutral-900 dark:text-white">{ cluster.Name }</h2>
-						<p class="text-neutral-600 dark:text-neutral-400 mt-1">Cluster ID: { cluster.ID }</p>
+						<p class="text-neutral-600 dark:text-neutral-400 mt-1">{ fmt.Sprintf("%s: %s", i18n.T(ctx, "generics.cluster-id-label"), cluster.ID) }</p>
 					</div>
 				</div>
 				if cluster.IsOnline {
 					<span class="px-3 py-1.5 text-sm font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">
 						<i class="fas fa-circle text-xs mr-2"></i>
-						Online
+						{ i18n.T(ctx, "cluster.online") }
 					</span>
 				} else {
 					<span class="px-3 py-1.5 text-sm font-semibold rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">
 						<i class="fas fa-circle text-xs mr-2"></i>
-						Offline
+						{ i18n.T(ctx, "cluster.offline") }
 					</span>
 				}
 			</div>
@@ -46,19 +47,19 @@ templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain
 						<i class="fas fa-shield-alt text-guara-500 dark:text-guara-400 text-lg"></i>
 					</div>
 					<div>
-						<p class="text-sm text-neutral-600 dark:text-neutral-400">Tipo de Autenticação</p>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">{ i18n.T(ctx, "cluster.auth-type") }</p>
 						<p class="text-lg font-semibold text-neutral-900 dark:text-white">{ cluster.AuthType }</p>
 					</div>
 				</div>
 				if cluster.CertInfo != nil {
 					<div class="flex items-center space-x-3">
 						<div>
-							<p class="text-sm text-neutral-600 dark:text-neutral-400 text-right">Validade do Certificado</p>
+							<p class="text-sm text-neutral-600 dark:text-neutral-400 text-right">{ i18n.T(ctx, "cluster.certificate.exp-date") }</p>
 							<div class="flex items-center justify-end space-x-2 mt-1">
 								if cluster.CertInfo.Status == "expired" {
 									<span class="px-3 py-1.5 text-sm font-semibold rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">
 										<i class="fas fa-exclamation-circle mr-1"></i>
-										Expirado
+										{ i18n.T(ctx, "cluster.certificate.expired") }
 									</span>
 								} else if cluster.CertInfo.Status == "critical" {
 									<span class="px-3 py-1.5 text-sm font-semibold rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">
@@ -88,11 +89,11 @@ templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain
 				<div class="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
 						<div>
-							<span class="text-neutral-600 dark:text-neutral-400">Válido desde:</span>
+							<span class="text-neutral-600 dark:text-neutral-400">{ i18n.T(ctx, "generics.valid-from-label") }:</span>
 							<span class="ml-2 font-medium text-neutral-900 dark:text-white">{ cluster.CertInfo.NotBefore.Format("02/01/2006 15:04") }</span>
 						</div>
 						<div>
-							<span class="text-neutral-600 dark:text-neutral-400">Expira em:</span>
+							<span class="text-neutral-600 dark:text-neutral-400">{ i18n.T(ctx, "generics.expires-at-label") }:</span>
 							<span class="ml-2 font-medium text-neutral-900 dark:text-white">{ cluster.CertInfo.NotAfter.Format("02/01/2006 15:04") }</span>
 						</div>
 					</div>
@@ -103,7 +104,7 @@ templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain
 			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
 				<div class="flex items-center justify-between">
 					<div>
-						<p class="text-sm text-neutral-600 dark:text-neutral-400">Brokers</p>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">{ i18n.T(ctx, "generics.brokers") }</p>
 						<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2">{ fmt.Sprintf("%d", len(cluster.Brokers)) }</p>
 					</div>
 					<div class="bg-guara-100 dark:bg-guara-900/30 p-3 rounded-lg">
@@ -115,7 +116,7 @@ templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain
 				<a href={ templ.URL("/clusters/" + cluster.Name + "/topics") }>
 					<div class="flex items-center justify-between">
 						<div>
-							<p class="text-sm text-neutral-600 dark:text-neutral-400">Tópicos</p>
+							<p class="text-sm text-neutral-600 dark:text-neutral-400">{ i18n.T(ctx, "topic.title") }</p>
 							if stats != nil {
 								<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2">{ fmt.Sprintf("%d", stats.TotalTopics) }</p>
 							} else {
@@ -131,7 +132,7 @@ templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain
 			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
 				<div class="flex items-center justify-between">
 					<div>
-						<p class="text-sm text-neutral-600 dark:text-neutral-400">Partições Totais</p>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">{ i18n.T(ctx, "cluster.partitions.total") }</p>
 						if stats != nil {
 							<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2">{ fmt.Sprintf("%d", stats.TotalPartitions) }</p>
 						} else {
@@ -146,7 +147,7 @@ templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain
 			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
 				<div class="flex items-center justify-between">
 					<div>
-						<p class="text-sm text-neutral-600 dark:text-neutral-400">Consumer Groups</p>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">{ i18n.T(ctx, "consumer-groups.title") }</p>
 						if stats != nil {
 							<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2">{ fmt.Sprintf("%d", stats.TotalConsumerGroups) }</p>
 						} else {
@@ -164,7 +165,7 @@ templ ClusterDetail(cluster domain.Cluster, topics map[string]int, stats *domain
 				<div class="flex items-start space-x-3">
 					<i class="fas fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 text-xl mt-0.5"></i>
 					<div class="flex-1">
-						<h3 class="font-semibold text-yellow-900 dark:text-yellow-200 mb-2">Alertas de Saúde</h3>
+						<h3 class="font-semibold text-yellow-900 dark:text-yellow-200 mb-2">{ i18n.T(ctx, "cluster.title") }</h3>
 						<div class="space-y-1 text-sm text-yellow-800 dark:text-yellow-300">
 							if stats.UnderReplicatedPartitions > 0 {
 								<div>

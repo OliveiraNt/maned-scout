@@ -1,0 +1,150 @@
+en:
+  cluster:
+    title: Clusters
+    current: Current Cluster
+    go-back: Go Back to Clusters
+    auth-type: Auth Type
+    online: Online
+    offline: Offline
+    health-alerts: Health Alerts
+    under-replicated-partitions: "%d under-replicated partitions"
+    offline-partitions: "%d offline partitions"
+    days-remaining: "%d days remaining"
+    certificate:
+      exp-date: Certificate Expiration Date
+      expired: Expired
+      valid-from: Valid from
+      expires-at: Expires at
+    brokers:
+      title: Brokers
+      active: Active
+      inactive: Inactive
+      address: Address
+      rack: Rack
+      leader-partitions: Leader Partitions
+      controller: Controller
+    partitions:
+      total: Total Partitions
+  topic:
+    title: Topics
+  consumer-groups:
+    title: Consumer Groups
+    group-id: Group ID
+    state: State
+    members: Members
+    states:
+      stable: Stable
+      empty: Empty
+  generics:
+    metrics: Metrics
+    dashboard: Dashboard
+    brokers: Brokers
+    authentication: Authentication
+    certificate: Certificate
+    days: days
+    expired-cert: Expired
+    active: Active
+    inactive: Inactive
+    address: Address
+    rack: Rack
+    leader-partitions: Leader Partitions
+    controller: Controller
+    kafka-clusters: Kafka Clusters
+    manage-clusters-desc: Manage and monitor your Apache Kafka clusters
+    add-cluster: Add Cluster
+    connect-new-cluster: Connect a new Kafka cluster
+    view-dashboard: View Dashboard
+    no-topics-found: No topics found
+    create-first-topic: Create your first topic to get started
+    loading-topics: Loading topics...
+    loading-groups: Loading Consumer Groups...
+    loading-messages: Loading Messages...
+    topic-name-label: Topic Name
+    num-partitions: Number of Partitions
+    replication-factor: Replication Factor
+    retention-ms: Retention MS
+    cleanup-policy: Cleanup Policy
+    compression-type: Compression Type
+    cancel: Cancel
+    create-topic: Create Topic
+    create-1st-topic: Create First Topic
+    search-topics: Search topics
+    internal-topics: Internal Topics
+    actions: Actions
+    details: Details
+    cluster-label: cluster
+    partitions: Partitions
+    total-topics: Total Topics
+    total-partitions: Total Partitions
+    avg-partitions: Average Partitions
+    topics-details: Topic details and settings
+    edit-configs: Edit Configs
+    increase-partitions: Increase Partitions
+    delete-topic: Delete Topic
+    replication-factor-label: Replication Factor
+    configurations: Configurations
+    partition-label: Partition
+    leader: Leader
+    replicas: Replicas
+    isr: ISR
+    status: Status
+    offline: Offline
+    under-replicated: Under-replicated
+    healthy: Healthy
+    messages: Messages
+    message-stream: Message Stream
+    read-write-messages: Read and write messages to the topic in real time
+    write-message: Write Message
+    read-messages: Read messages
+    stop-reading: Stop reading
+    consumer-groups-tab: Consumer Groups
+    configuration-tab: Configurations
+    lag-per-partition: Lag by Partition
+    members: Members
+    configuration-name: Configuration
+    value: Value
+    update-configs: Update Configurations
+    update-configs-desc: Update topic configurations. Use null to remove a configuration.
+    keep-current: -- Keep Current --
+    update: Update
+    increase-partitions-title: Increase Partitions
+    increase-partitions-desc: The topic currently has %d partitions. Set the new total partitions (must be greater than current).
+    total-partitions-label: Total Partitions
+    increase: Increase
+    delete-topic-title: Delete Topic
+    delete-topic-confirm: Are you sure you want to delete the topic %s? This action cannot be undone and all data will be lost.
+    delete: Delete
+    new-message: New Message
+    key-label: Key
+    message-key-placeholder: Message key (optional)
+    value-label: Value
+    message-value-placeholder: Message content (value) — text or JSON
+    send: Send
+    offset: Offset
+    timestamp: Timestamp
+    topic-details: Topic details
+    group-details: Group details and lag
+    state: State
+    total-lag: Total Lag
+    topic: Topic
+    group-offset: Group Offset
+    lag: Lag
+    member: Member
+    member-id: Member ID
+    client-id: Client ID
+    total-groups: Total Groups
+    search-groups: Search groups
+    group-name: Group Name
+    topics-lag: Topics and Lag
+    no-lag-detected: No lag detected
+    manage-consumer-groups: Manage consumer groups of cluster
+    cluster-id-label: Cluster ID
+    valid-from-label: Valid from
+    expires-at-label: Expires at
+    create-new-topic: Create New Topic
+    required-field: required
+    retention-ms-help: Retention time in milliseconds
+    max-message-bytes: Max Message Bytes
+    default-option: -- Default --
+    no-groups-found: No consumer groups found
+    optional: (optional)

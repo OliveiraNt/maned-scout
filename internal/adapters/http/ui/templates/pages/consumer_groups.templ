@@ -3,19 +3,20 @@ package pages
 import (
 	"fmt"
 	"github.com/OliveiraNt/maned-scout/internal/application"
+	"github.com/invopop/ctxi18n/i18n"
 	"github.com/twmb/franz-go/pkg/kadm"
 
 	layout "github.com/OliveiraNt/maned-scout/internal/adapters/http/ui/templates/layout"
 )
 
 templ ConsumerGroups(clusterName string) {
-	@layout.BaseWithSidebar("Grupos Consumidores", clusterName, nil) {
+	@layout.BaseWithSidebar("consumer-groups.title", clusterName, nil) {
 		<div class="mb-6">
 			<div class="flex items-center justify-between">
 				<div>
-					<h2 class="text-3xl font-bold text-neutral-900 dark:text-white">Grupos Consumidores</h2>
+					<h2 class="text-3xl font-bold text-neutral-900 dark:text-white">{ i18n.T(ctx, "consumer-groups.title") }</h2>
 					<p class="text-neutral-600 dark:text-neutral-400 mt-2">
-						Gerencie os grupos consumidores do cluster <span class="font-semibold">{ clusterName }</span>
+						{ fmt.Sprintf("%s %s", i18n.T(ctx, "generics.manage-consumer-groups"), clusterName) }
 					</p>
 				</div>
 			</div>
@@ -24,7 +25,7 @@ templ ConsumerGroups(clusterName string) {
 			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
 				<div class="flex items-center justify-between">
 					<div>
-						<p class="text-sm text-neutral-600 dark:text-neutral-400">Total de Grupos</p>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">{ i18n.T(ctx, "generics.total-groups") }</p>
 						<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2" id="groups-total">—</p>
 					</div>
 					<div class="bg-guara-100 dark:bg-guara-900/30 p-3 rounded-lg">
@@ -41,7 +42,7 @@ templ ConsumerGroups(clusterName string) {
 							<i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"></i>
 							<input
 								type="text"
-								placeholder="Buscar grupos"
+							placeholder={ i18n.T(ctx, "generics.search-groups") }
 								data-filter-target="groupsTable"
 								class="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-guara-500 focus:border-transparent"
 							/>
@@ -59,7 +60,7 @@ templ ConsumerGroups(clusterName string) {
 			class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
 		>
 			<div class="p-6 text-center text-gray-500 dark:text-gray-400">
-				<i class="fas fa-rotate fa-spin mr-2"></i> Carregando Grupos Consumidores...
+				<i class="fas fa-rotate fa-spin mr-2"></i> { i18n.T(ctx, "generics.loading-groups") }
 			</div>
 		</div>
 	}
@@ -75,7 +76,7 @@ templ ConsumerGroupsListFragment(clusterName string, groups kadm.DescribedGroupL
 			if len(groups) == 0 {
 				<div class="text-center py-16">
 					<i class="fas fa-inbox text-neutral-400 dark:text-neutral-600 text-6xl mb-4"></i>
-					<p class="text-xl text-neutral-600 dark:text-neutral-400 mb-2">Nenhum Grupo Consumidor encontrado</p>
+					<p class="text-xl text-neutral-600 dark:text-neutral-400 mb-2">{ i18n.T(ctx, "generics.no-groups-found") }</p>
 				</div>
 			} else {
 				<table class="w-full" id="groupsTable">
@@ -84,19 +85,19 @@ templ ConsumerGroupsListFragment(clusterName string, groups kadm.DescribedGroupL
 							<th class="px-6 py-4 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
 								<div class="flex items-center space-x-2">
 									<i class="fas fa-stream w-4"></i>
-									<span>Nome do Grupo</span>
+									<span>{ i18n.T(ctx, "generics.group-name") }</span>
 								</div>
 							</th>
 							<th class="px-6 py-4 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
 								<div class="flex items-center space-x-2">
 									<i class="fas fa-circle-info w-4"></i>
-									<span>Estado</span>
+									<span>{ i18n.T(ctx, "generics.state") }</span>
 								</div>
 							</th>
 							<th class="px-6 py-4 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
 								<div class="flex items-center space-x-2">
 									<i class="fas fa-layer-group w-4"></i>
-									<span>Tópicos & Lag</span>
+									<span>{ i18n.T(ctx, "generics.topics-lag") }</span>
 								</div>
 							</th>
 						</tr>
@@ -166,7 +167,7 @@ templ groupStateBadge(state string) {
 
 templ groupTopicsLagList(topicsLags kadm.GroupTopicsLag) {
 	if len(topicsLags) == 0 {
-		<span class="text-neutral-400 dark:text-neutral-500 text-sm italic">Sem lag detectado</span>
+		<span class="text-neutral-400 dark:text-neutral-500 text-sm italic">{ i18n.T(ctx, "generics.no-lag-detected") }</span>
 	} else {
 		<div class="flex flex-wrap gap-2">
 			for _, tl := range topicsLags {

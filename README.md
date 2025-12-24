@@ -391,15 +391,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 🙏 Acknowledgments
-
-- [franz-go](https://github.com/twmb/franz-go) - Excellent Kafka client library
-- [templ](https://github.com/a-h/templ) - Type-safe Go templating
-- [chi](https://github.com/go-chi/chi) - Lightweight HTTP router
-- Inspired by [AKHQ](https://akhq.io/), [Kafka UI](https://github.com/provectus/kafka-ui), and [Redpanda Console](https://github.com/redpanda-data/console)
-
----
-
 ## 📞 Support
 
 - **Issues**: [GitHub Issues](https://github.com/OliveiraNt/maned-scout/issues)

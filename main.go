@@ -7,6 +7,7 @@ import (
 
 	"github.com/OliveiraNt/maned-scout/cmd"
 	"github.com/OliveiraNt/maned-scout/internal/application"
+	"github.com/OliveiraNt/maned-scout/internal/config"
 	"github.com/OliveiraNt/maned-scout/internal/infrastructure/kafka"
 	"github.com/OliveiraNt/maned-scout/internal/infrastructure/repository"
 	"github.com/OliveiraNt/maned-scout/internal/utils"
@@ -103,6 +104,8 @@ func main() {
 
 	clusterService := application.NewClusterService(repo)
 	utils.Logger.Info("application layer initialized")
+
+	config.InitI18n()
 
 	cmd.StartWeb(clusterService)
 }

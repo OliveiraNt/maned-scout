@@ -4,16 +4,17 @@ import (
 	"fmt"
 
 	layout "github.com/OliveiraNt/maned-scout/internal/adapters/http/ui/templates/layout"
+	"github.com/invopop/ctxi18n/i18n"
 	"github.com/twmb/franz-go/pkg/kadm"
 )
 
 templ ConsumerGroupDetail(clusterName string, group kadm.DescribedGroupLag) {
-	@layout.BaseWithSidebar("Detalhes do Grupo", clusterName, nil) {
+	@layout.BaseWithSidebar("generics.group-details", clusterName, nil) {
 		<nav class="mb-6 text-sm">
 			<ol class="flex items-center space-x-2 text-neutral-600 dark:text-neutral-400">
 				<li><a href={ templ.URL(fmt.Sprintf("/clusters/%s", clusterName)) } class="hover:text-guara-600 dark:hover:text-guara-400">{ clusterName }</a></li>
 				<li><i class="fas fa-chevron-right text-xs"></i></li>
-				<li><a href={ templ.URL(fmt.Sprintf("/clusters/%s/consumer-groups", clusterName)) } class="hover:text-guara-600 dark:hover:text-guara-400">Grupos Consumidores</a></li>
+				<li><a href={ templ.URL(fmt.Sprintf("/clusters/%s/consumer-groups", clusterName)) } class="hover:text-guara-600 dark:hover:text-guara-400">{ i18n.T(ctx, "consumer-groups.title") }</a></li>
 				<li><i class="fas fa-chevron-right text-xs"></i></li>
 				<li class="text-neutral-900 dark:text-white font-medium">{ group.Group }</li>
 			</ol>
@@ -22,7 +23,7 @@ templ ConsumerGroupDetail(clusterName string, group kadm.DescribedGroupLag) {
 			<div class="flex items-center justify-between">
 				<div>
 					<h2 class="text-3xl font-bold text-neutral-900 dark:text-white">{ group.Group }</h2>
-					<p class="text-neutral-600 dark:text-neutral-400 mt-2">Detalhes e lag do grupo consumidor</p>
+					<p class="text-neutral-600 dark:text-neutral-400 mt-2">{ i18n.T(ctx, "generics.group-details") }</p>
 				</div>
 				<div class="flex items-center space-x-3">
 					// Ações futuras aqui
@@ -33,7 +34,7 @@ templ ConsumerGroupDetail(clusterName string, group kadm.DescribedGroupLag) {
 			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
 				<div class="flex items-center justify-between">
 					<div>
-						<p class="text-sm text-neutral-600 dark:text-neutral-400">Estado</p>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">{ i18n.T(ctx, "generics.state") }</p>
 						<div class="mt-2">
 							@groupStateBadge(group.State)
 						</div>
@@ -46,7 +47,7 @@ templ ConsumerGroupDetail(clusterName string, group kadm.DescribedGroupLag) {
 			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
 				<div class="flex items-center justify-between">
 					<div>
-						<p class="text-sm text-neutral-600 dark:text-neutral-400">Lag Total</p>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">{ i18n.T(ctx, "generics.total-lag") }</p>
 						<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2">{ fmt.Sprintf("%d", group.Lag.Total()) }</p>
 					</div>
 					<div class="bg-orange-100 dark:bg-orange-900/30 p-3 rounded-lg">
@@ -64,14 +65,14 @@ templ ConsumerGroupDetail(clusterName string, group kadm.DescribedGroupLag) {
 						class="tab-button tab-button-active px-6 py-4 font-semibold text-guara-600 dark:text-guara-400 border-b-2 border-guara-500 transition-all duration-200 whitespace-nowrap flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
 						data-tab="lag-tab"
 					>
-						<i class="fas fa-chart-line"></i>Lag por Partição
+						<i class="fas fa-chart-line"></i>{ i18n.T(ctx, "generics.lag-per-partition") }
 					</button>
 					<button
 						onclick="switchTab('members-tab')"
 						class="tab-button px-6 py-4 font-semibold text-neutral-600 dark:text-neutral-400 border-b-2 border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"
 						data-tab="members-tab"
 					>
-						<i class="fas fa-users"></i>Membros
+						<i class="fas fa-users"></i>{ i18n.T(ctx, "generics.members") }
 					</button>
 				</div>
 			</div>
@@ -83,11 +84,11 @@ templ ConsumerGroupDetail(clusterName string, group kadm.DescribedGroupLag) {
 						<table class="w-full">
 							<thead class="bg-neutral-50 dark:bg-neutral-900">
 								<tr>
-									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Tópico</th>
-									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Partição</th>
-									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Group Offset</th>
-									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Lag</th>
-									<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Membro</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{ i18n.T(ctx, "generics.topic") }</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{ i18n.T(ctx, "generics.partition-label") }</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{ i18n.T(ctx, "generics.group-offset") }</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{ i18n.T(ctx, "generics.lag") }</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{ i18n.T(ctx, "generics.member") }</th>
 								</tr>
 							</thead>
 							<tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">
@@ -130,7 +131,7 @@ templ ConsumerGroupDetail(clusterName string, group kadm.DescribedGroupLag) {
 										</div>
 									</div>
 									<div class="text-right">
-										<p class="text-xs font-medium text-neutral-500 dark:text-neutral-400">ID do Cliente</p>
+									<p class="text-xs font-medium text-neutral-500 dark:text-neutral-400">{ i18n.T(ctx, "generics.client-id") }</p>
 				    					<p class="text-xs text-neutral-900 dark:text-white font-mono">{ member.ClientID }</p>
 									</div>
 								</div>

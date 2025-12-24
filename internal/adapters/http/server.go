@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/OliveiraNt/maned-scout/internal/adapters/http/mid"
 	"github.com/OliveiraNt/maned-scout/internal/application"
 	"github.com/OliveiraNt/maned-scout/internal/utils"
 
@@ -31,6 +32,7 @@ func New(clusterService *application.ClusterService, topicService *application.T
 // Run starts the HTTP server on the given address.
 func (s *Server) Run(addr string) error {
 	r := chi.NewRouter()
+	r.Use(mid.I18n)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(func(next http.Handler) http.Handler {
@@ -51,6 +53,8 @@ func (s *Server) Run(addr string) error {
 
 	cacheDuration := 7 * 24 * time.Hour
 	r.Handle("/static/*", http.StripPrefix("/static/", StaticWithCache("./internal/adapters/http/ui/static", cacheDuration)))
+
+	r.Get("/lang", ChangeLanguage)
 
 	r.Get("/", s.uiHome)
 	r.Get("/clusters/{clusterName}", s.uiClusterDetail)
@@ -95,4 +99,29 @@ func StaticWithCache(dir string, maxAge time.Duration) http.HandlerFunc {
 
 		http.ServeFile(w, r, fullPath)
 	}
+}
+
+// ChangeLanguage changes the language preference via a query parameter and sets a cookie.
+func ChangeLanguage(w http.ResponseWriter, r *http.Request) {
+	lang := r.URL.Query().Get("lang")
+	if lang == "" {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "lang",
+		Value:    lang,
+		Path:     "/",
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   31536000,
+	})
+
+	// volta para a página anterior
+	ref := r.Header.Get("Referer")
+	if ref == "" {
+		ref = "/"
+	}
+
+	http.Redirect(w, r, ref, http.StatusSeeOther)
 }
