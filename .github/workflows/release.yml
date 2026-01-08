@@ -24,7 +24,7 @@ jobs:
           cache: true
 
       - name: Install templ
-        uses: a-h/templ-action@v0.0.1
+        run: go install github.com/a-h/templ/cmd/templ@latest
 
       - name: Run templ generate
         run: templ generate

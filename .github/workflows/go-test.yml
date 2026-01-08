@@ -18,13 +18,13 @@ jobs:
           cache: true
 
       - name: Install templ
-        uses: a-h/templ-action@v0.0.1
+        run: go install github.com/a-h/templ/cmd/templ@latest
 
       - name: Run templ generate
         run: templ generate
 
       - name: golangci-lint
-        uses: golangci-lint/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v6
         with:
           version: latest
 
@@ -39,7 +39,7 @@ jobs:
           cache: true
 
       - name: Install templ
-        uses: a-h/templ-action@v0.0.1
+        run: go install github.com/a-h/templ/cmd/templ@latest
 
       - name: Run templ generate
         run: templ generate
