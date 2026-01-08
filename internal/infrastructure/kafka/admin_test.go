@@ -10,10 +10,11 @@ import (
 )
 
 func TestNewAdmin(t *testing.T) {
+	brokers := getTestBrokers(t)
 	// Create a basic client
 	cfg := config.ClusterConfig{
 		Name:    "test",
-		Brokers: []string{"localhost:9092"},
+		Brokers: brokers,
 	}
 
 	client, err := NewClient(cfg)
@@ -30,9 +31,10 @@ func TestNewAdmin(t *testing.T) {
 }
 
 func TestAdminListTopics(t *testing.T) {
+	brokers := getTestBrokers(t)
 	cfg := config.ClusterConfig{
 		Name:    "test",
-		Brokers: []string{"localhost:9092"},
+		Brokers: brokers,
 	}
 
 	client, err := NewClient(cfg)
@@ -72,9 +74,10 @@ func TestAdminListTopics(t *testing.T) {
 }
 
 func TestAdminGetClusterInfo(t *testing.T) {
+	brokers := getTestBrokers(t)
 	cfg := config.ClusterConfig{
 		Name:    "test",
-		Brokers: []string{"localhost:9092"},
+		Brokers: brokers,
 	}
 
 	client, err := NewClient(cfg)
@@ -96,9 +99,10 @@ func TestAdminGetClusterInfo(t *testing.T) {
 }
 
 func TestAdminGetClusterStats(t *testing.T) {
+	brokers := getTestBrokers(t)
 	cfg := config.ClusterConfig{
 		Name:    "test",
-		Brokers: []string{"localhost:9092"},
+		Brokers: brokers,
 	}
 
 	client, err := NewClient(cfg)
@@ -120,9 +124,10 @@ func TestAdminGetClusterStats(t *testing.T) {
 }
 
 func TestAdminGetBrokerDetails(t *testing.T) {
+	brokers := getTestBrokers(t)
 	cfg := config.ClusterConfig{
 		Name:    "test",
-		Brokers: []string{"localhost:9092"},
+		Brokers: brokers,
 	}
 
 	client, err := NewClient(cfg)
@@ -144,9 +149,10 @@ func TestAdminGetBrokerDetails(t *testing.T) {
 }
 
 func TestAdminListConsumerGroups(t *testing.T) {
+	brokers := getTestBrokers(t)
 	cfg := config.ClusterConfig{
 		Name:    "test",
-		Brokers: []string{"localhost:9092"},
+		Brokers: brokers,
 	}
 
 	client, err := NewClient(cfg)
@@ -168,9 +174,10 @@ func TestAdminListConsumerGroups(t *testing.T) {
 }
 
 func TestAdminGetTopicDetail(t *testing.T) {
+	brokers := getTestBrokers(t)
 	cfg := config.ClusterConfig{
 		Name:    "test",
-		Brokers: []string{"localhost:9092"},
+		Brokers: brokers,
 	}
 
 	client, err := NewClient(cfg)
@@ -200,9 +207,10 @@ func TestAdminGetTopicDetail(t *testing.T) {
 }
 
 func TestAdminCreateTopic(t *testing.T) {
+	brokers := getTestBrokers(t)
 	cfg := config.ClusterConfig{
 		Name:    "test",
-		Brokers: []string{"localhost:9092"},
+		Brokers: brokers,
 	}
 
 	client, err := NewClient(cfg)
@@ -248,9 +256,10 @@ func TestAdminCreateTopic(t *testing.T) {
 }
 
 func TestAdminDeleteTopic(t *testing.T) {
+	brokers := getTestBrokers(t)
 	cfg := config.ClusterConfig{
 		Name:    "test",
-		Brokers: []string{"localhost:9092"},
+		Brokers: brokers,
 	}
 
 	client, err := NewClient(cfg)
@@ -280,9 +289,10 @@ func TestAdminDeleteTopic(t *testing.T) {
 }
 
 func TestAdminUpdateTopicConfig(t *testing.T) {
+	brokers := getTestBrokers(t)
 	cfg := config.ClusterConfig{
 		Name:    "test",
-		Brokers: []string{"localhost:9092"},
+		Brokers: brokers,
 	}
 
 	client, err := NewClient(cfg)
@@ -340,9 +350,10 @@ func TestAdminUpdateTopicConfig(t *testing.T) {
 }
 
 func TestAdminIncreasePartitions(t *testing.T) {
+	brokers := getTestBrokers(t)
 	cfg := config.ClusterConfig{
 		Name:    "test",
-		Brokers: []string{"localhost:9092"},
+		Brokers: brokers,
 	}
 
 	client, err := NewClient(cfg)
@@ -381,9 +392,10 @@ func TestAdminIncreasePartitions(t *testing.T) {
 }
 
 func TestAdminBrokerMetadata(t *testing.T) {
+	brokers := getTestBrokers(t)
 	cfg := config.ClusterConfig{
 		Name:    "test",
-		Brokers: []string{"localhost:9092"},
+		Brokers: brokers,
 	}
 
 	client, err := NewClient(cfg)
@@ -420,9 +432,10 @@ func TestAdminIntegration(t *testing.T) {
 		t.Skip("skipping integration test in short mode")
 	}
 
+	brokers := getTestBrokers(t)
 	cfg := config.ClusterConfig{
 		Name:    "test",
-		Brokers: []string{"localhost:9092"},
+		Brokers: brokers,
 	}
 
 	client, err := NewClient(cfg)
@@ -468,9 +481,10 @@ func TestAdminIntegration(t *testing.T) {
 
 // Test context timeout behavior
 func TestAdminContextTimeout(t *testing.T) {
+	brokers := getTestBrokers(t)
 	cfg := config.ClusterConfig{
 		Name:    "test",
-		Brokers: []string{"localhost:9092"},
+		Brokers: brokers,
 	}
 
 	client, err := NewClient(cfg)

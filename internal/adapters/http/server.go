@@ -1,13 +1,12 @@
 package httpserver
 
 import (
+	"io/fs"
 	"net/http"
-	"os"
-	"path/filepath"
-	"strconv"
 	"time"
 
 	"github.com/OliveiraNt/maned-scout/internal/adapters/http/mid"
+	"github.com/OliveiraNt/maned-scout/internal/adapters/http/ui"
 	"github.com/OliveiraNt/maned-scout/internal/application"
 	"github.com/OliveiraNt/maned-scout/internal/utils"
 
@@ -51,8 +50,19 @@ func (s *Server) Run(addr string) error {
 		})
 	})
 
-	cacheDuration := 7 * 24 * time.Hour
-	r.Handle("/static/*", http.StripPrefix("/static/", StaticWithCache("./internal/adapters/http/ui/static", cacheDuration)))
+	r.Group(func(r chi.Router) {
+		r.Use(func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Cache-Control", "public, max-age=86400")
+				next.ServeHTTP(w, r)
+			})
+		})
+
+		staticFS, _ := fs.Sub(ui.StaticFiles, "static")
+		r.Handle("/static/*", http.StripPrefix("/static/",
+			http.FileServer(http.FS(staticFS)),
+		))
+	})
 
 	r.Get("/lang", ChangeLanguage)
 
@@ -83,22 +93,6 @@ func (s *Server) Run(addr string) error {
 
 	utils.Logger.Info("HTTP server listening", "addr", addr)
 	return http.ListenAndServe(addr, r)
-}
-
-// StaticWithCache serves static files from dir applying a public max-age cache header.
-func StaticWithCache(dir string, maxAge time.Duration) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		path := r.URL.Path
-		fullPath := filepath.Join(dir, filepath.Clean(path))
-		info, err := os.Stat(fullPath)
-		if err != nil || info.IsDir() {
-			http.NotFound(w, r)
-			return
-		}
-		w.Header().Set("Cache-Control", "public, max-age="+strconv.Itoa(int(maxAge.Seconds())))
-
-		http.ServeFile(w, r, fullPath)
-	}
 }
 
 // ChangeLanguage changes the language preference via a query parameter and sets a cookie.

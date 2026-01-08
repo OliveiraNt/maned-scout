@@ -7,8 +7,9 @@ import (
 )
 
 func TestFactory_CreateClient(t *testing.T) {
+	brokers := getTestBrokers(t)
 	f := NewFactory()
-	c, err := f.CreateClient(config.ClusterConfig{Name: "dev", Brokers: []string{"localhost:9092"}})
+	c, err := f.CreateClient(config.ClusterConfig{Name: "dev", Brokers: brokers})
 	if err != nil {
 		t.Fatalf("unexpected: %v", err)
 	}

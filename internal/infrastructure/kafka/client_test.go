@@ -18,9 +18,10 @@ import (
 
 func TestNewClient(t *testing.T) {
 	t.Run("basic client creation", func(t *testing.T) {
+		brokers := getTestBrokers(t)
 		cfg := config.ClusterConfig{
 			Name:     "test",
-			Brokers:  []string{"localhost:9092"},
+			Brokers:  brokers,
 			ClientID: "test-client",
 		}
 
@@ -58,9 +59,10 @@ func TestNewClient(t *testing.T) {
 	})
 
 	t.Run("client without client_id", func(t *testing.T) {
+		brokers := getTestBrokers(t)
 		cfg := config.ClusterConfig{
 			Name:    "test",
-			Brokers: []string{"localhost:9092"},
+			Brokers: brokers,
 		}
 
 		client, err := NewClient(cfg)
@@ -367,9 +369,10 @@ func TestNewClientWithAWS(t *testing.T) {
 }
 
 func TestClientMethods(t *testing.T) {
+	brokers := getTestBrokers(t)
 	cfg := config.ClusterConfig{
 		Name:    "test",
-		Brokers: []string{"localhost:9092"},
+		Brokers: brokers,
 	}
 
 	client, err := NewClient(cfg)
@@ -386,35 +389,51 @@ func TestClientMethods(t *testing.T) {
 	})
 
 	t.Run("IsHealthy - cannot connect", func(t *testing.T) {
-		// This will fail to connect to localhost:9092 in test environment
+		// This should succeed now as we have a running Kafka
 		healthy := client.IsHealthy()
-		// We don't assert the result since it depends on whether Kafka is running
-		_ = healthy
+		if !healthy {
+			t.Error("expected client to be healthy")
+		}
 	})
 
 	t.Run("ListTopics", func(t *testing.T) {
 		topics, err := client.ListTopics(false)
-		// May fail if no Kafka is running, which is fine for unit tests
-		_ = topics
-		_ = err
+		if err != nil {
+			t.Errorf("ListTopics() error = %v", err)
+		}
+		if topics == nil {
+			t.Error("expected non-nil topics")
+		}
 	})
 
 	t.Run("GetClusterInfo", func(t *testing.T) {
 		info, err := client.GetClusterInfo()
-		_ = info
-		_ = err
+		if err != nil {
+			t.Errorf("GetClusterInfo() error = %v", err)
+		}
+		if info == nil {
+			t.Error("expected non-nil cluster info")
+		}
 	})
 
 	t.Run("GetClusterStats", func(t *testing.T) {
 		stats, err := client.GetClusterStats()
-		_ = stats
-		_ = err
+		if err != nil {
+			t.Errorf("GetClusterStats() error = %v", err)
+		}
+		if stats == nil {
+			t.Error("expected non-nil cluster stats")
+		}
 	})
 
 	t.Run("GetBrokerDetails", func(t *testing.T) {
 		brokers, err := client.GetBrokerDetails()
-		_ = brokers
-		_ = err
+		if err != nil {
+			t.Errorf("GetBrokerDetails() error = %v", err)
+		}
+		if len(brokers) == 0 {
+			t.Error("expected at least one broker")
+		}
 	})
 
 	t.Run("ListConsumerGroups", func(t *testing.T) {
