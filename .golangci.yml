@@ -14,7 +14,6 @@ linters:
     - unparam
     - nakedret
     - prealloc
-    - goimports
     - revive
     - bodyclose
     - whitespace
@@ -43,6 +42,13 @@ linters:
       range-loops: true
       for-loops: true
 
+formatters:
+  enable:
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+      - github.com/OliveiraNt/maned-scout
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
