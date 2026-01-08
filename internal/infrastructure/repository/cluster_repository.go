@@ -227,7 +227,10 @@ func (r *ClusterRepository) writeToFile() error {
 // Close releases all resources held by the ClusterRepository, including watcher and Kafka clients.
 func (r *ClusterRepository) Close() {
 	utils.Logger.Info("Closing repository")
-	r.watcher.Close()
+	err := r.watcher.Close()
+	if err != nil {
+		return
+	}
 	for k, client := range r.clients {
 		utils.Logger.Info("Closing client", "cluster", k)
 		client.Close()

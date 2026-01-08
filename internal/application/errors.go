@@ -5,7 +5,6 @@ import "errors"
 var (
 	ErrClusterNotFound          = errors.New("cluster not found")
 	ErrInvalidClusterConfig     = errors.New("invalid cluster configuration")
-	ErrClusterOffline           = errors.New("cluster is offline")
 	ErrInvalidTopicName         = errors.New("topic name is required")
 	ErrInvalidPartitionCount    = errors.New("partition count must be greater than 0")
 	ErrInvalidReplicationFactor = errors.New("replication factor must be greater than 0")

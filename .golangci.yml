@@ -41,6 +41,10 @@ linters:
       simple: true
       range-loops: true
       for-loops: true
+  exclusions:
+    paths:
+      - ".*/.*_test\.go"
+      - ".*/testutils/.*"
 
 formatters:
   enable:

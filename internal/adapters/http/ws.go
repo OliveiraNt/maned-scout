@@ -29,7 +29,12 @@ func (s *Server) wsStreamTopic(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "websocket upgrade failed", http.StatusBadRequest)
 		return
 	}
-	defer conn.Close()
+	defer func(conn *websocket.Conn) {
+		err := conn.Close()
+		if err != nil {
+			utils.Logger.Error("websocket close failed", "cluster", clusterName, "topic", topicName, "err", err)
+		}
+	}(conn)
 
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
