@@ -10,8 +10,15 @@ import (
 // Logger is the application-wide structured logger.
 var Logger *chlog.Logger
 
+const (
+	debugLevel = "debug"
+	infoLevel  = "info"
+	warnLevel  = "warn"
+	errorLevel = "errorLevel"
+)
+
 // InitLogger initializes the global logger with level from MANED_SCOUT_LOG_LEVEL.
-// Valid levels: debug, info, warn, error.
+// Valid levels: debug, info, warn, errorLevel.
 func InitLogger() {
 	if Logger != nil {
 		return
@@ -21,11 +28,11 @@ func InitLogger() {
 	l.SetReportTimestamp(true)
 	levelStr := strings.ToLower(strings.TrimSpace(os.Getenv("MANED_SCOUT_LOG_LEVEL")))
 	switch levelStr {
-	case "debug":
+	case debugLevel:
 		l.SetLevel(chlog.DebugLevel)
-	case "warn":
+	case warnLevel:
 		l.SetLevel(chlog.WarnLevel)
-	case "error":
+	case errorLevel:
 		l.SetLevel(chlog.ErrorLevel)
 	default:
 		l.SetLevel(chlog.InfoLevel)
@@ -39,13 +46,13 @@ func SetLogLevel(level string) {
 		InitLogger()
 	}
 	switch strings.ToLower(strings.TrimSpace(level)) {
-	case "debug":
+	case debugLevel:
 		Logger.SetLevel(chlog.DebugLevel)
-	case "info":
+	case infoLevel:
 		Logger.SetLevel(chlog.InfoLevel)
-	case "warn":
+	case warnLevel:
 		Logger.SetLevel(chlog.WarnLevel)
-	case "error":
+	case errorLevel:
 		Logger.SetLevel(chlog.ErrorLevel)
 	}
 }

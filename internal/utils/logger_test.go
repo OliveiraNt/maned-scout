@@ -28,5 +28,5 @@ func TestSetLogLevel_NoPanics(t *testing.T) {
 	require.NotPanics(t, func() { SetLogLevel("debug") })
 	require.NotPanics(t, func() { SetLogLevel("info") })
 	require.NotPanics(t, func() { SetLogLevel("warn") })
-	require.NotPanics(t, func() { SetLogLevel("error") })
+	require.NotPanics(t, func() { SetLogLevel("errorLevel") })
 }
