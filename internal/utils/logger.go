@@ -21,7 +21,7 @@ const (
 	debugLevel = "debug"
 	infoLevel  = "info"
 	warnLevel  = "warn"
-	errorLevel = "errorLevel"
+	errorLevel = "error"
 )
 
 // InitLogger initializes the global logger with level from MANED_SCOUT_LOG_LEVEL.

@@ -36,5 +36,5 @@ main
 # Certificate files for TLS testing
 certs/
 
-config.yml
+/config/
 *.prompt.md

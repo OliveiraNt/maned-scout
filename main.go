@@ -83,11 +83,11 @@ func findConfigPath() string {
 }
 
 func main() {
+	utils.InitLogger()
 	err := godotenv.Load()
 	if err != nil {
 		utils.Logger.Warn("failed to load .env file", "err", err)
 	}
-	utils.InitLogger()
 
 	configPath := os.Getenv("MANED_SCOUT_CONFIG")
 	if configPath == "" {
