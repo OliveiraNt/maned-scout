@@ -21,7 +21,7 @@ import (
 
 func findConfigPath() string {
 	names := []string{"config.yml", "config.yaml"}
-	var candidates []string
+	candidates := make([]string, 0, 20)
 
 	for _, n := range names {
 		candidates = append(candidates, "./"+n)
