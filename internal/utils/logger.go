@@ -15,7 +15,6 @@ import (
 var (
 	Logger *chlog.Logger
 	mu     sync.RWMutex
-	once   sync.Once
 )
 
 const (
