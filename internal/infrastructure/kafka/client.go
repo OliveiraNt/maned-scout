@@ -44,19 +44,13 @@ func NewClient(cfg config.ClusterConfig) (*Client, error) {
 		opts = append(opts, kgo.DialTLSConfig(tlsCfg))
 	}
 	if cfg.SASL != nil && cfg.SASL.Mechanism != "" {
-		mech, err := buildSASLMechanism(cfg.SASL)
-		if err != nil {
-			return nil, err
-		}
+		mech := buildSASLMechanism(cfg.SASL)
 		if mech != nil {
 			opts = append(opts, kgo.SASL(mech))
 		}
 	}
 	if cfg.AWS != nil && cfg.AWS.IAM {
-		awsMech, err := buildAWSMechanism(cfg.AWS)
-		if err != nil {
-			return nil, err
-		}
+		awsMech := buildAWSMechanism(cfg.AWS)
 		if awsMech != nil {
 			opts = append(opts, kgo.SASL(awsMech))
 		}
@@ -272,7 +266,7 @@ func buildTLSConfig(t *config.TLSConfig) (*tls.Config, error) {
 }
 
 // buildSASLMechanism creates a franz-go sasl.Mechanism based on SASLConfig
-func buildSASLMechanism(s *config.SASLConfig) (sasl.Mechanism, error) {
+func buildSASLMechanism(s *config.SASLConfig) sasl.Mechanism {
 	username := s.Username
 	password := s.Password
 
@@ -289,18 +283,18 @@ func buildSASLMechanism(s *config.SASLConfig) (sasl.Mechanism, error) {
 
 	switch s.Mechanism {
 	case "PLAIN", "plain":
-		return plain.Auth{User: username, Pass: password}.AsMechanism(), nil
+		return plain.Auth{User: username, Pass: password}.AsMechanism()
 	case "SCRAM-SHA-256", "SCRAM-SHA256", "scram-sha-256":
-		return scram.Auth{User: username, Pass: password}.AsSha256Mechanism(), nil
+		return scram.Auth{User: username, Pass: password}.AsSha256Mechanism()
 	case "SCRAM-SHA-512", "SCRAM-SHA512", "scram-sha-512":
-		return scram.Auth{User: username, Pass: password}.AsSha512Mechanism(), nil
+		return scram.Auth{User: username, Pass: password}.AsSha512Mechanism()
 	default:
-		return nil, nil
+		return nil
 	}
 }
 
 // buildAWSMechanism constructs an AWS IAM SASL mechanism
-func buildAWSMechanism(a *config.AWSConfig) (sasl.Mechanism, error) {
+func buildAWSMechanism(a *config.AWSConfig) sasl.Mechanism {
 	access := ""
 	secret := ""
 	session := ""
@@ -328,12 +322,12 @@ func buildAWSMechanism(a *config.AWSConfig) (sasl.Mechanism, error) {
 	}
 
 	if access == "" || secret == "" {
-		return nil, nil
+		return nil
 	}
 
 	return aws.Auth{
 		AccessKey:    access,
 		SecretKey:    secret,
 		SessionToken: session,
-	}.AsManagedStreamingIAMMechanism(), nil
+	}.AsManagedStreamingIAMMechanism()
 }

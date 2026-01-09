@@ -690,10 +690,7 @@ func TestBuildSASLMechanism(t *testing.T) {
 			Password:  "pass",
 		}
 
-		mech, err := buildSASLMechanism(saslCfg)
-		if err != nil {
-			t.Fatalf("buildSASLMechanism() error = %v", err)
-		}
+		mech := buildSASLMechanism(saslCfg)
 		if mech == nil {
 			t.Error("expected non-nil mechanism")
 		}
@@ -706,10 +703,7 @@ func TestBuildSASLMechanism(t *testing.T) {
 			Password:  "pass",
 		}
 
-		mech, err := buildSASLMechanism(saslCfg)
-		if err != nil {
-			t.Fatalf("buildSASLMechanism() error = %v", err)
-		}
+		mech := buildSASLMechanism(saslCfg)
 		if mech == nil {
 			t.Error("expected non-nil mechanism")
 		}
@@ -722,10 +716,7 @@ func TestBuildSASLMechanism(t *testing.T) {
 			Password:  "pass",
 		}
 
-		mech, err := buildSASLMechanism(saslCfg)
-		if err != nil {
-			t.Fatalf("buildSASLMechanism() error = %v", err)
-		}
+		mech := buildSASLMechanism(saslCfg)
 		if mech == nil {
 			t.Error("expected non-nil mechanism")
 		}
@@ -745,10 +736,7 @@ func TestBuildSASLMechanism(t *testing.T) {
 			PasswordEnv: "SASL_PASS",
 		}
 
-		mech, err := buildSASLMechanism(saslCfg)
-		if err != nil {
-			t.Fatalf("buildSASLMechanism() error = %v", err)
-		}
+		mech := buildSASLMechanism(saslCfg)
 		if mech == nil {
 			t.Error("expected non-nil mechanism")
 		}
@@ -761,10 +749,7 @@ func TestBuildSASLMechanism(t *testing.T) {
 			Password:  "pass",
 		}
 
-		mech, err := buildSASLMechanism(saslCfg)
-		if err != nil {
-			t.Fatalf("buildSASLMechanism() error = %v", err)
-		}
+		mech := buildSASLMechanism(saslCfg)
 		if mech != nil {
 			t.Error("expected nil mechanism for unknown type")
 		}
@@ -779,10 +764,7 @@ func TestBuildSASLMechanism(t *testing.T) {
 				Password:  "pass",
 			}
 
-			mech, err := buildSASLMechanism(saslCfg)
-			if err != nil {
-				t.Errorf("buildSASLMechanism(%s) error = %v", m, err)
-			}
+			mech := buildSASLMechanism(saslCfg)
 			if mech == nil {
 				t.Errorf("expected non-nil mechanism for %s", m)
 			}
@@ -804,10 +786,7 @@ func TestBuildAWSMechanism(t *testing.T) {
 			Region: "us-east-1",
 		}
 
-		mech, err := buildAWSMechanism(awsCfg)
-		if err != nil {
-			t.Fatalf("buildAWSMechanism() error = %v", err)
-		}
+		mech := buildAWSMechanism(awsCfg)
 		if mech == nil {
 			t.Error("expected non-nil mechanism")
 		}
@@ -831,10 +810,7 @@ func TestBuildAWSMechanism(t *testing.T) {
 			SessionTokenEnv: "CUSTOM_SESSION",
 		}
 
-		mech, err := buildAWSMechanism(awsCfg)
-		if err != nil {
-			t.Fatalf("buildAWSMechanism() error = %v", err)
-		}
+		mech := buildAWSMechanism(awsCfg)
 		if mech == nil {
 			t.Error("expected non-nil mechanism")
 		}
@@ -849,10 +825,7 @@ func TestBuildAWSMechanism(t *testing.T) {
 			Region: "us-east-1",
 		}
 
-		mech, err := buildAWSMechanism(awsCfg)
-		if err != nil {
-			t.Fatalf("buildAWSMechanism() error = %v", err)
-		}
+		mech := buildAWSMechanism(awsCfg)
 		if mech != nil {
 			t.Error("expected nil mechanism without credentials")
 		}
@@ -868,10 +841,7 @@ func TestBuildAWSMechanism(t *testing.T) {
 			Region: "us-east-1",
 		}
 
-		mech, err := buildAWSMechanism(awsCfg)
-		if err != nil {
-			t.Fatalf("buildAWSMechanism() error = %v", err)
-		}
+		mech := buildAWSMechanism(awsCfg)
 		if mech != nil {
 			t.Error("expected nil mechanism with incomplete credentials")
 		}
@@ -885,10 +855,7 @@ func TestBuildAWSMechanism(t *testing.T) {
 			os.Unsetenv("AWS_SECRET_ACCESS_KEY")
 		}()
 
-		mech, err := buildAWSMechanism(nil)
-		if err != nil {
-			t.Fatalf("buildAWSMechanism() error = %v", err)
-		}
+		mech := buildAWSMechanism(nil)
 		if mech == nil {
 			t.Error("expected non-nil mechanism with default env vars")
 		}
