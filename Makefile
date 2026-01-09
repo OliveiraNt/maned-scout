@@ -48,7 +48,7 @@ docker-down:
 # Test the application
 test:
 	@echo "Testing..."
-	@go test ./... -v
+	@go test -tags testing ./... -v
 
 # Clean the binary
 clean:

@@ -158,18 +158,18 @@ templ Sidebar(clusterName string) {
 						<span>{ i18n.T(ctx, "consumer-groups.title") }</span>
 					</a>
 				</li>
-				<li>
-					<a href={ templ.URL("/clusters/" + clusterName + "/brokers") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-guara-50 dark:hover:bg-guara-900/30 hover:text-guara-600 dark:hover:text-guara-400 rounded-lg transition">
-						<i class="fas fa-network-wired"></i>
-						<span>{ i18n.T(ctx, "generics.brokers") }</span>
-					</a>
-				</li>
-				<li>
-					<a href={ templ.URL("/clusters/" + clusterName + "/metrics") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-guara-50 dark:hover:bg-guara-900/30 hover:text-guara-600 dark:hover:text-guara-400 rounded-lg transition">
-						<i class="fas fa-chart-line"></i>
-						<span>{ i18n.T(ctx, "generics.metrics") }</span>
-					</a>
-				</li>
+				//<li>
+				//	<a href={ templ.URL("/clusters/" + clusterName + "/brokers") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-guara-50 dark:hover:bg-guara-900/30 hover:text-guara-600 dark:hover:text-guara-400 rounded-lg transition">
+				//		<i class="fas fa-network-wired"></i>
+				//		<span>{ i18n.T(ctx, "generics.brokers") }</span>
+				//	</a>
+				//</li>
+				//<li>
+				//	<a href={ templ.URL("/clusters/" + clusterName + "/metrics") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-guara-50 dark:hover:bg-guara-900/30 hover:text-guara-600 dark:hover:text-guara-400 rounded-lg transition">
+				//		<i class="fas fa-chart-line"></i>
+				//		<span>{ i18n.T(ctx, "generics.metrics") }</span>
+				//	</a>
+				//</li>
 			</ul>
 			<!-- Back to Clusters -->
 			<div class="mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-700">
