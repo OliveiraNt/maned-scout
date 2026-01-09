@@ -229,7 +229,7 @@ func (c *Client) WriteMessage(ctx context.Context, topic string, msg domain.Mess
 		Timestamp: time.Now(),
 		Topic:     topic,
 	}
-	c.client.Produce(ctx, &r, func(r *kgo.Record, err error) {
+	c.client.Produce(ctx, &r, func(_ *kgo.Record, err error) {
 		if err != nil {
 			utils.Logger.Errorf("Error producing message to topic %s: %v", topic, err)
 		}

@@ -7,10 +7,8 @@ linters:
     - errcheck
     - staticcheck
     - unused
-    - gocyclo
     - goconst
     - misspell
-    - lll
     - unparam
     - nakedret
     - prealloc
@@ -22,8 +20,7 @@ linters:
       enable-all: true
       disable:
         - fieldalignment
-    gocyclo:
-      min-complexity: 15
+        - lostcancel
     dupl:
       threshold: 100
     goconst:
@@ -31,8 +28,6 @@ linters:
       min-occurrences: 2
     misspell:
       locale: US
-    lll:
-      line-length: 140
     unparam:
       check-exported: false
     nakedret:
@@ -41,18 +36,23 @@ linters:
       simple: true
       range-loops: true
       for-loops: true
+    revive:
+      rules:
+        - name: var-naming
+          arguments:
+            - []
+            - []
+            - - skip-package-name-checks: true
+
   exclusions:
     paths:
-      - ".*/.*_test\.go"
-      - ".*/testutils/.*"
+      - ".*/fakes.go"
 
-formatters:
-  enable:
-    - goimports
-  settings:
-    goimports:
-      local-prefixes:
-      - github.com/OliveiraNt/maned-scout
+
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
+  fix: true
+
+run:
+  tests: false

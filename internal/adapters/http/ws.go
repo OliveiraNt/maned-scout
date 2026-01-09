@@ -14,7 +14,7 @@ import (
 
 var wsUpgrader = websocket.Upgrader{
 	// TODO: tighten CORS/origin as needed. For now allow all to simplify local usage.
-	CheckOrigin: func(r *http.Request) bool { return true },
+	CheckOrigin: func(_ *http.Request) bool { return true },
 }
 
 // wsStreamTopic upgrades to WebSocket and streams Kafka messages from the given topic to the client.
@@ -39,7 +39,7 @@ func (s *Server) wsStreamTopic(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithCancel(r.Context())
 	defer cancel()
 
-	conn.SetCloseHandler(func(code int, text string) error {
+	conn.SetCloseHandler(func(code int, _ string) error {
 		utils.Logger.Info("websocket close handler triggered", "cluster", clusterName, "topic", topicName, "code", code)
 		cancel()
 		return nil

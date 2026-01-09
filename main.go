@@ -16,7 +16,7 @@ import (
 
 func findConfigPath() string {
 	names := []string{"config.yml", "config.yaml"}
-	candidates := []string{}
+	var candidates []string
 
 	for _, n := range names {
 		candidates = append(candidates, "./"+n)
@@ -78,7 +78,10 @@ func findConfigPath() string {
 }
 
 func main() {
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		utils.Logger.Warn("failed to load .env file", "err", err)
+	}
 	utils.InitLogger()
 
 	configPath := os.Getenv("MANED_SCOUT_CONFIG")

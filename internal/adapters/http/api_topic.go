@@ -143,7 +143,6 @@ func (s *Server) apiCreateTopic(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("HX-Trigger", "topic-created")
 	w.WriteHeader(http.StatusNoContent)
-	return
 }
 
 func (s *Server) apiDeleteTopic(w http.ResponseWriter, r *http.Request) {

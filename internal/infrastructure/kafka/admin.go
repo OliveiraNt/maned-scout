@@ -306,7 +306,7 @@ func (a *Admin) UpdateTopicConfig(ctx context.Context, topicName string, req dom
 	defer cancel()
 
 	// AlterTopicConfigs expects individual configs to be set
-	var configs []kadm.AlterConfig
+	configs := make([]kadm.AlterConfig, 0, len(req.Configs))
 
 	for key, value := range req.Configs {
 		configs = append(configs, kadm.AlterConfig{
