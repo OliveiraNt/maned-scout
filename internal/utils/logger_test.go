@@ -8,7 +8,6 @@ import (
 )
 
 func TestInitLogger_IdempotentAndDefaultLevel(t *testing.T) {
-	t.Parallel()
 	_ = os.Unsetenv("MANED_SCOUT_LOG_LEVEL")
 	Logger = nil
 	InitLogger()
@@ -21,7 +20,6 @@ func TestInitLogger_IdempotentAndDefaultLevel(t *testing.T) {
 }
 
 func TestSetLogLevel_NoPanics(t *testing.T) {
-	t.Parallel()
 	Logger = nil
 	InitLogger()
 

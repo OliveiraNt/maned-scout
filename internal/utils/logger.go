@@ -6,12 +6,17 @@ package utils
 import (
 	"os"
 	"strings"
+	"sync"
 
 	chlog "github.com/charmbracelet/log"
 )
 
 // Logger is the application-wide structured logger.
-var Logger *chlog.Logger
+var (
+	Logger *chlog.Logger
+	mu     sync.RWMutex
+	once   sync.Once
+)
 
 const (
 	debugLevel = "debug"
@@ -23,6 +28,12 @@ const (
 // InitLogger initializes the global logger with level from MANED_SCOUT_LOG_LEVEL.
 // Valid levels: debug, info, warn, errorLevel.
 func InitLogger() {
+	mu.Lock()
+	defer mu.Unlock()
+	initLogger()
+}
+
+func initLogger() {
 	if Logger != nil {
 		return
 	}
@@ -45,8 +56,11 @@ func InitLogger() {
 
 // SetLogLevel allows changing level at runtime.
 func SetLogLevel(level string) {
+	mu.Lock()
+	defer mu.Unlock()
+
 	if Logger == nil {
-		InitLogger()
+		initLogger()
 	}
 	switch strings.ToLower(strings.TrimSpace(level)) {
 	case debugLevel:
