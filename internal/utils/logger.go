@@ -1,3 +1,6 @@
+// Package utils provides common utilities for the Maned Scout application.
+// It includes logging functionality with structured logging support via charmbracelet/log,
+// configurable log levels through environment variables, and runtime log level adjustment.
 package utils
 
 import (

@@ -1,3 +1,6 @@
+// Package mid provides HTTP middleware implementations for request processing.
+// It includes middleware for internationalization (i18n) that handles locale detection
+// from cookies, query parameters, and headers.
 package mid
 
 import (
@@ -10,6 +13,7 @@ import (
 
 const langCookie = "lang"
 
+// I18n is middleware that sets the request context with a locale based on cookies, query parameters, or headers.
 func I18n(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var lang string

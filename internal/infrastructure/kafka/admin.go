@@ -1,3 +1,6 @@
+// Package kafka provides infrastructure layer implementations for interacting with Apache Kafka clusters.
+// It includes the Admin client wrapper for administrative operations such as managing topics, brokers,
+// consumer groups, and retrieving cluster metadata and statistics using the franz-go kadm client.
 package kafka
 
 import (
@@ -9,6 +12,7 @@ import (
 	"github.com/twmb/franz-go/pkg/kadm"
 )
 
+// Admin provides methods for managing and retrieving Kafka cluster information through the kadm client.
 type Admin struct {
 	client *kadm.Client
 }
@@ -184,6 +188,7 @@ func (a *Admin) ListConsumerGroups(ctx context.Context) ([]domain.ConsumerGroupS
 	return result, nil
 }
 
+// ListConsumerGroupsWithLagFromTopic retrieves lag information for specified consumer groups and filters it by a given topic name.
 func (a *Admin) ListConsumerGroupsWithLagFromTopic(ctx context.Context, groupNames []string, topicName string) (kadm.DescribedGroupLags, error) {
 	cctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()

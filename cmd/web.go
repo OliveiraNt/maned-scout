@@ -1,3 +1,6 @@
+// Package cmd provides command implementations for the maned-scout application.
+// It includes the StartWeb function which initializes and starts the HTTP server
+// with the necessary application services and handles server configuration.
 package cmd
 
 import (

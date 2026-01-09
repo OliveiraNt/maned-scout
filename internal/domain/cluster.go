@@ -1,3 +1,6 @@
+// Package domain defines the core business entities and interfaces for the Maned Scout application.
+// It includes data structures for Kafka clusters, topics, consumer groups, brokers, and their associated
+// statistics, as well as abstractions for Kafka client operations and client factory creation.
 package domain
 
 import "github.com/OliveiraNt/maned-scout/internal/config"

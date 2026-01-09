@@ -1,3 +1,6 @@
+// Package application provides the business logic layer for the Maned Scout Kafka management tool.
+// It contains service implementations that orchestrate domain operations, coordinate with repositories,
+// and enforce business rules for cluster management, topic operations, and consumer group monitoring.
 package application
 
 import (

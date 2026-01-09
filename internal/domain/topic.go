@@ -58,6 +58,7 @@ type Message struct {
 	Timestamp time.Time
 }
 
+// MessageRequest represents a request to produce a message to a Kafka topic
 type MessageRequest struct {
 	Key   string
 	Value string

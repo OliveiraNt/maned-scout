@@ -129,6 +129,7 @@ func (c *Client) ListConsumerGroups() ([]domain.ConsumerGroupSummary, error) {
 	return c.admin.ListConsumerGroups(context.Background())
 }
 
+// ListConsumerGroupsWithLagFromTopic retrieves consumer group lag details for a specific topic and given group names.
 func (c *Client) ListConsumerGroupsWithLagFromTopic(ctx context.Context, groupNames []string, topicName string) (kadm.DescribedGroupLags, error) {
 	if c == nil || c.admin == nil {
 		return nil, nil
@@ -188,6 +189,7 @@ func (c *Client) GetConfig() config.ClusterConfig {
 	return c.config
 }
 
+// StreamMessages streams messages from a Kafka topic into the given channel until the context is canceled or an error occurs.
 func (c *Client) StreamMessages(ctx context.Context, topic string, out chan<- domain.Message) {
 	if c == nil || c.client == nil {
 		return
@@ -222,6 +224,7 @@ func (c *Client) StreamMessages(ctx context.Context, topic string, out chan<- do
 	}
 }
 
+// WriteMessage writes a message to the specified Kafka topic asynchronously and logs errors if the operation fails.
 func (c *Client) WriteMessage(ctx context.Context, topic string, msg domain.Message) {
 	r := kgo.Record{
 		Key:       msg.Key,

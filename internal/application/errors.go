@@ -2,6 +2,7 @@ package application
 
 import "errors"
 
+// Application-level error constants for common use cases
 var (
 	ErrClusterNotFound          = errors.New("cluster not found")
 	ErrInvalidClusterConfig     = errors.New("invalid cluster configuration")

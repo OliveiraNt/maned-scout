@@ -1,3 +1,8 @@
+// Package main is the entry point for the Maned Scout application.
+// Maned Scout is a Kafka cluster monitoring and management tool that provides
+// a web interface for viewing and managing Kafka clusters, topics, and consumer groups.
+// It supports multiple cluster configurations loaded from YAML files and monitors
+// them in real-time.
 package main
 
 import (

@@ -189,6 +189,7 @@ func (s *TopicService) StreamMessages(ctx context.Context, clusterName, topicNam
 	return nil
 }
 
+// WriteMessage writes a message to the specified topic within the given cluster. Returns an error if the operation fails.
 func (s *TopicService) WriteMessage(clusterName, topicName string, msg domain.Message) (err error) {
 	_, ok := s.clusterService.GetCluster(clusterName)
 	if !ok {

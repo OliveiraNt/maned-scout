@@ -1,3 +1,8 @@
+// Package config provides configuration management for Kafka cluster connectivity.
+// It handles loading, parsing, and persisting cluster configurations from YAML files,
+// including support for TLS, SASL, and AWS IAM authentication mechanisms.
+// The package also provides utilities for extracting certificate information and
+// determining authentication types for configured clusters.
 package config
 
 import (

@@ -1,3 +1,6 @@
+// Package repository provides infrastructure layer implementations for data persistence and management.
+// It includes the ClusterRepository, which manages Kafka cluster configurations, their associated clients,
+// and handles configuration file watching for hot-reloading capabilities.
 package repository
 
 import (

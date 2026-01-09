@@ -1,3 +1,6 @@
+// Package httpserver provides HTTP adapter implementations for the maned-scout application.
+// It includes API handlers for cluster management operations such as listing, adding,
+// updating, and deleting Kafka cluster configurations through RESTful endpoints.
 package httpserver
 
 import (
