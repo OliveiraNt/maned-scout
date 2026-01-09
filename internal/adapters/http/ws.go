@@ -1,0 +1,98 @@
+package httpserver
+
+import (
+	"bytes"
+	"context"
+	"net/http"
+
+	"github.com/OliveiraNt/maned-scout/internal/adapters/http/ui/templates/pages"
+	"github.com/OliveiraNt/maned-scout/internal/domain"
+	"github.com/OliveiraNt/maned-scout/internal/utils"
+	"github.com/go-chi/chi/v5"
+	"github.com/gorilla/websocket"
+)
+
+var wsUpgrader = websocket.Upgrader{
+	// TODO: tighten CORS/origin as needed. For now allow all to simplify local usage.
+	CheckOrigin: func(_ *http.Request) bool { return true },
+}
+
+// wsStreamTopic upgrades to WebSocket and streams Kafka messages from the given topic to the client.
+// On client disconnect, the Kafka consumption is canceled via context.
+func (s *Server) wsStreamTopic(w http.ResponseWriter, r *http.Request) {
+	clusterName := chi.URLParam(r, "clusterName")
+	topicName := chi.URLParam(r, "topicName")
+
+	conn, err := wsUpgrader.Upgrade(w, r, nil)
+	if err != nil {
+		utils.Logger.Error("websocket upgrade failed", "cluster", clusterName, "topic", topicName, "err", err)
+		http.Error(w, "websocket upgrade failed", http.StatusBadRequest)
+		return
+	}
+	defer func(conn *websocket.Conn) {
+		err := conn.Close()
+		if err != nil {
+			utils.Logger.Error("websocket close failed", "cluster", clusterName, "topic", topicName, "err", err)
+		}
+	}(conn)
+
+	ctx, cancel := context.WithCancel(r.Context())
+	defer cancel()
+
+	conn.SetCloseHandler(func(code int, _ string) error {
+		utils.Logger.Info("websocket close handler triggered", "cluster", clusterName, "topic", topicName, "code", code)
+		cancel()
+		return nil
+	})
+
+	msgs := make(chan domain.Message, 256)
+
+	go func() {
+		defer func() {
+			utils.Logger.Info("consumer goroutine stopping", "cluster", clusterName, "topic", topicName)
+			cancel()
+		}()
+		if err := s.topicService.StreamMessages(ctx, clusterName, topicName, msgs); err != nil {
+			utils.Logger.Error("stream messages failed", "cluster", clusterName, "topic", topicName, "err", err)
+		}
+		utils.Logger.Info("stream stopped", "cluster", clusterName, "topic", topicName)
+		close(msgs)
+	}()
+
+	go func() {
+		defer cancel()
+		for {
+			if _, _, err := conn.ReadMessage(); err != nil {
+				utils.Logger.Info("websocket client disconnected",
+					"cluster", clusterName,
+					"topic", topicName,
+					"err", err,
+				)
+				return
+			}
+		}
+	}()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case m, ok := <-msgs:
+			if !ok {
+				utils.Logger.Info("message channel closed", "cluster", clusterName, "topic", topicName)
+				return
+			}
+
+			var buf bytes.Buffer
+			err := pages.Message(m).Render(r.Context(), &buf)
+			if err != nil {
+				utils.Logger.Error("failed to render message", "err", err)
+				continue
+			}
+			if err := conn.WriteMessage(websocket.TextMessage, buf.Bytes()); err != nil {
+				utils.Logger.Info("websocket write failed, stopping stream", "cluster", clusterName, "topic", topicName, "err", err)
+				return
+			}
+		}
+	}
+}

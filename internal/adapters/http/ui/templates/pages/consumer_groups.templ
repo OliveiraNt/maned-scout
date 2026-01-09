@@ -1,0 +1,187 @@
+package pages
+
+import (
+	"fmt"
+	"github.com/OliveiraNt/maned-scout/internal/application"
+	"github.com/invopop/ctxi18n/i18n"
+	"github.com/twmb/franz-go/pkg/kadm"
+
+	layout "github.com/OliveiraNt/maned-scout/internal/adapters/http/ui/templates/layout"
+)
+
+templ ConsumerGroups(clusterName string) {
+	@layout.BaseWithSidebar("consumer-groups.title", clusterName, nil) {
+		<div class="mb-6">
+			<div class="flex items-center justify-between">
+				<div>
+					<h2 class="text-3xl font-bold text-neutral-900 dark:text-white">{ i18n.T(ctx, "consumer-groups.title") }</h2>
+					<p class="text-neutral-600 dark:text-neutral-400 mt-2">
+						{ fmt.Sprintf("%s %s", i18n.T(ctx, "generics.manage-consumer-groups"), clusterName) }
+					</p>
+				</div>
+			</div>
+		</div>
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">{ i18n.T(ctx, "generics.total-groups") }</p>
+						<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2" id="groups-total">—</p>
+					</div>
+					<div class="bg-guara-100 dark:bg-guara-900/30 p-3 rounded-lg">
+						<i class="fas fa-list text-guara-500 dark:text-guara-400 text-2xl"></i>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="mb-6">
+			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-4">
+				<div class="flex items-center space-x-4">
+					<div class="flex-1">
+						<div class="relative">
+							<i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"></i>
+							<input
+								type="text"
+							placeholder={ i18n.T(ctx, "generics.search-groups") }
+								data-filter-target="groupsTable"
+								class="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-guara-500 focus:border-transparent"
+							/>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div
+			id="consumer-groups-list"
+			hx-get={ templ.URL(fmt.Sprintf("/api/clusters/%s/consumer-groups", clusterName)) }
+			hx-include="[name=showInternal]"
+			hx-trigger="load"
+			hx-swap="outerHTML"
+			class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
+		>
+			<div class="p-6 text-center text-gray-500 dark:text-gray-400">
+				<i class="fas fa-rotate fa-spin mr-2"></i> { i18n.T(ctx, "generics.loading-groups") }
+			</div>
+		</div>
+	}
+}
+
+templ ConsumerGroupsListFragment(clusterName string, groups kadm.DescribedGroupLags, service *application.ConsumerGroupsService) {
+	<div
+		id="consumer-goups-list"
+		class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700"
+		hx-include="[name=showInternal]"
+	>
+		<div class="overflow-x-auto">
+			if len(groups) == 0 {
+				<div class="text-center py-16">
+					<i class="fas fa-inbox text-neutral-400 dark:text-neutral-600 text-6xl mb-4"></i>
+					<p class="text-xl text-neutral-600 dark:text-neutral-400 mb-2">{ i18n.T(ctx, "generics.no-groups-found") }</p>
+				</div>
+			} else {
+				<table class="w-full" id="groupsTable">
+					<thead class="bg-neutral-50 dark:bg-neutral-700/50 border-b border-neutral-200 dark:border-neutral-600">
+						<tr>
+							<th class="px-6 py-4 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+								<div class="flex items-center space-x-2">
+									<i class="fas fa-stream w-4"></i>
+									<span>{ i18n.T(ctx, "generics.group-name") }</span>
+								</div>
+							</th>
+							<th class="px-6 py-4 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+								<div class="flex items-center space-x-2">
+									<i class="fas fa-circle-info w-4"></i>
+									<span>{ i18n.T(ctx, "generics.state") }</span>
+								</div>
+							</th>
+							<th class="px-6 py-4 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+								<div class="flex items-center space-x-2">
+									<i class="fas fa-layer-group w-4"></i>
+									<span>{ i18n.T(ctx, "generics.topics-lag") }</span>
+								</div>
+							</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">
+						for _, group := range groups {
+							@groupTableRow(clusterName, group, service)
+						}
+					</tbody>
+				</table>
+			}
+		</div>
+	</div>
+}
+
+templ groupTableRow(clusterName string, group kadm.DescribedGroupLag, service *application.ConsumerGroupsService) {
+	<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-700/30 transition-colors border-b border-neutral-100 dark:border-neutral-700 last:border-0" data-filter-value={ group.Group }>
+		<td class="px-6 py-4">
+			<div class="flex items-center space-x-2">
+				<a href={ templ.URL(fmt.Sprintf("/clusters/%s/consumer-groups/%s", clusterName, group.Group)) } class="text-sm font-medium text-guara-600 dark:text-guara-400 hover:underline">
+					{ group.Group }
+				</a>
+			</div>
+		</td>
+		<td class="px-6 py-4">
+			<div class="flex items-center">
+				@groupStateBadge(group.State)
+			</div>
+		</td>
+		<td class="px-6 py-4">
+			<div class="flex items-center">
+				@groupTopicsLagList(service.GetTopicsLags(group.Lag))
+			</div>
+		</td>
+	</tr>
+}
+
+templ groupStateBadge(state string) {
+	switch state {
+		case "Stable":
+			<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+				<span class="w-1 h-1 mr-1.5 rounded-full bg-green-500"></span>
+				{ state }
+			</span>
+		case "PreparingRebalance", "CompletingRebalance":
+			<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+				<span class="w-1 h-1 mr-1.5 rounded-full bg-yellow-500"></span>
+				{ state }
+			</span>
+		case "Empty":
+			<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-800 dark:bg-neutral-700/50 dark:text-neutral-400">
+				<span class="w-1 h-1 mr-1.5 rounded-full bg-neutral-500"></span>
+				{ state }
+			</span>
+		case "Dead":
+			<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+				<span class="w-1 h-1 mr-1.5 rounded-full bg-red-500"></span>
+				{ state }
+			</span>
+		default:
+			<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
+				<span class="w-1 h-1 mr-1.5 rounded-full bg-purple-500"></span>
+				{ state }
+			</span>
+	}
+}
+
+templ groupTopicsLagList(topicsLags kadm.GroupTopicsLag) {
+	if len(topicsLags) == 0 {
+		<span class="text-neutral-400 dark:text-neutral-500 text-sm italic">{ i18n.T(ctx, "generics.no-lag-detected") }</span>
+	} else {
+		<div class="flex flex-wrap gap-2">
+			for _, tl := range topicsLags {
+				<div class="flex items-center bg-neutral-100 dark:bg-neutral-700/50 rounded-md px-2 py-1 border border-neutral-200 dark:border-neutral-600">
+					<span class="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mr-2">{ tl.Topic }</span>
+					if tl.Lag > 0 {
+						<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400">
+							LAG: { fmt.Sprintf("%d", tl.Lag) }
+						</span>
+					} else {
+						<span class="text-[10px] font-bold text-green-600 dark:text-green-400 uppercase tracking-tight">OK</span>
+					}
+				</div>
+			}
+		</div>
+	}
+}

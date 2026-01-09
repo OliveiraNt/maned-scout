@@ -1,0 +1,218 @@
+package layout
+
+import "github.com/invopop/ctxi18n/i18n"
+
+// Base template without sidebar (for home page)
+templ Base(title string, imports templ.Component) {
+	<!DOCTYPE html>
+	<html lang={ i18n.GetLocale(ctx).Code() }>
+		@Head(title, imports)
+		<body class="bg-neutral-50 dark:bg-neutral-900 transition-colors duration-200">
+			<div id="page-loading" class="htmx-indicator fixed top-0 left-0 w-full h-1 bg-guara-500 z-50">
+				<div class="h-full bg-guara-400 animate-pulse"></div>
+			</div>
+			<div id="notification-container" class="fixed top-4 left-0 right-0 z-50 px-4"></div>
+			@Header()
+			<main class="p-6">
+				{ children... }
+			</main>
+		</body>
+	</html>
+}
+
+// BaseWithSidebar template with sidebar (for cluster pages)
+templ BaseWithSidebar(title string, clusterName string, imports templ.Component) {
+	<!DOCTYPE html>
+	<html lang={ i18n.GetLocale(ctx).Code() }>
+		@Head(title, imports)
+		<body class="bg-neutral-50 dark:bg-neutral-900 transition-colors duration-200">
+			<div id="page-loading" class="htmx-indicator fixed top-0 left-0 w-full h-1 bg-guara-500 z-50">
+				<div class="h-full bg-guara-400 animate-pulse"></div>
+			</div>
+			<div id="notification-container" class="fixed top-4 left-0 right-0 z-50 px-4"></div>
+			@Header()
+			<div class="flex">
+				@Sidebar(clusterName)
+				<main class="flex-1 p-6">
+					{ children... }
+				</main>
+			</div>
+		</body>
+	</html>
+}
+
+templ Head(title string, imports templ.Component) {
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16x16.png"/>
+		<link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32x32.png"/>
+		<script src="https://cdn.tailwindcss.com"></script>
+		<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
+		<script src="/static/app.js"></script>
+		<script src="/static/notifications.js"></script>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+		<link rel="stylesheet" href="/static/app.css"/>
+		if imports != nil {
+			@imports
+		}
+		<title>{ i18n.T(ctx, title) } - Maned Scout</title>
+	</head>
+}
+
+templ Header() {
+	<header class="bg-white dark:bg-neutral-800 shadow-sm border-b border-neutral-200 dark:border-neutral-700 transition-colors duration-200">
+    	<div class="px-6 py-4">
+    		<div class="flex items-center justify-between">
+    			<div class="flex items-center space-x-3">
+    				<img src="/static/icons/maned-wolf.png" alt="Maned Scout" class="w-12 h-12"/>
+    				<h1 class="text-2xl font-bold text-neutral-900 dark:text-white">
+    					Maned Scout
+    				</h1>
+    			</div>
+    			<div class="flex items-center space-x-4">
+    				<div class="relative">
+    					<button
+    						id="lang-toggle"
+    						class="flex items-center space-x-1 px-3 py-2 text-sm rounded-md
+    							   text-neutral-600 dark:text-neutral-300
+    							   hover:text-neutral-900 dark:hover:text-white
+    							   hover:bg-neutral-100 dark:hover:bg-neutral-700
+    							   transition-colors"
+    					>
+    						<span id="current-lang">PT</span>
+    						<i class="fas fa-chevron-down text-xs"></i>
+    					</button>
+
+    					<div
+    						id="lang-menu"
+    						class="hidden absolute right-0 mt-2 w-32 rounded-md shadow-lg
+    							   bg-white dark:bg-neutral-800
+    							   border border-neutral-200 dark:border-neutral-700
+    							   overflow-hidden z-50"
+    					>
+    						<a
+    							href="/lang?lang=pt-BR"
+    							data-lang="pt-BR"
+    							class="lang-option block px-4 py-2 text-sm
+    								   text-neutral-700 dark:text-neutral-300
+    								   hover:bg-neutral-100 dark:hover:bg-neutral-700"
+    						>
+    							Português
+    						</a>
+    						<a
+    							href="/lang?lang=en"
+    							data-lang="en"
+    							class="lang-option block px-4 py-2 text-sm
+    								   text-neutral-700 dark:text-neutral-300
+    								   hover:bg-neutral-100 dark:hover:bg-neutral-700"
+    						>
+    							English
+    						</a>
+    					</div>
+    				</div>
+    				<button
+    					onclick="document.documentElement.classList.toggle('dark'); localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'))"
+    					class="text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition-colors"
+    					title="Alternar tema"
+    				>
+    					<i class="fas fa-moon dark:hidden"></i>
+    					<i class="fas fa-sun hidden dark:inline"></i>
+    				</button>
+    			</div>
+    		</div>
+    	</div>
+    </header>
+}
+
+templ Sidebar(clusterName string) {
+	<aside class="w-64 bg-white dark:bg-neutral-800 border-r border-neutral-200 dark:border-neutral-700 min-h-screen transition-colors duration-200">
+		<nav class="p-4">
+			<!-- Cluster Info Header -->
+			<div class="mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-700">
+				<div class="flex items-center space-x-2 mb-2">
+					<i class="fas fa-server text-guara-500 dark:text-guara-400"></i>
+					<span class="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase">{ i18n.T(ctx, "cluster.current") }</span>
+				</div>
+				<h3 class="text-sm font-bold text-neutral-900 dark:text-white truncate" title={ clusterName }>
+					{ clusterName }
+				</h3>
+			</div>
+			<!-- Navigation Links -->
+			<ul class="space-y-2">
+				<li>
+					<a href={ templ.URL("/clusters/" + clusterName) } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-guara-50 dark:hover:bg-guara-900/30 hover:text-guara-600 dark:hover:text-guara-400 rounded-lg transition">
+						<i class="fas fa-tachometer-alt"></i>
+						<span>{ i18n.T(ctx, "generics.dashboard") }</span>
+					</a>
+				</li>
+				<li>
+					<a href={ templ.URL("/clusters/" + clusterName + "/topics") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-guara-50 dark:hover:bg-guara-900/30 hover:text-guara-600 dark:hover:text-guara-400 rounded-lg transition">
+						<i class="fas fa-list"></i>
+						<span>{ i18n.T(ctx, "topic.title") }</span>
+					</a>
+				</li>
+				<li>
+					<a href={ templ.URL("/clusters/" + clusterName + "/consumer-groups") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-guara-50 dark:hover:bg-guara-900/30 hover:text-guara-600 dark:hover:text-guara-400 rounded-lg transition">
+						<i class="fas fa-users"></i>
+						<span>{ i18n.T(ctx, "consumer-groups.title") }</span>
+					</a>
+				</li>
+				//<li>
+				//	<a href={ templ.URL("/clusters/" + clusterName + "/brokers") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-guara-50 dark:hover:bg-guara-900/30 hover:text-guara-600 dark:hover:text-guara-400 rounded-lg transition">
+				//		<i class="fas fa-network-wired"></i>
+				//		<span>{ i18n.T(ctx, "generics.brokers") }</span>
+				//	</a>
+				//</li>
+				//<li>
+				//	<a href={ templ.URL("/clusters/" + clusterName + "/metrics") } hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-neutral-700 dark:text-neutral-300 hover:bg-guara-50 dark:hover:bg-guara-900/30 hover:text-guara-600 dark:hover:text-guara-400 rounded-lg transition">
+				//		<i class="fas fa-chart-line"></i>
+				//		<span>{ i18n.T(ctx, "generics.metrics") }</span>
+				//	</a>
+				//</li>
+			</ul>
+			<!-- Back to Clusters -->
+			<div class="mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+				<a href="/" hx-boost="true" hx-indicator="#page-loading" class="flex items-center space-x-3 px-4 py-3 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 hover:text-neutral-900 dark:hover:text-white rounded-lg transition">
+					<i class="fas fa-arrow-left"></i>
+					<span>{ i18n.T(ctx, "cluster.go-back") }</span>
+				</a>
+			</div>
+		</nav>
+	</aside>
+}
+
+templ Card(title string, icon string) {
+	<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 transition-colors duration-200">
+		<div class="flex items-center justify-between mb-4">
+			<h3 class="text-lg font-semibold text-neutral-900 dark:text-white">{ title }</h3>
+			if icon != "" {
+				<i class={ "fas " + icon + " text-neutral-400 dark:text-neutral-500" }></i>
+			}
+		</div>
+		<div>
+			{ children... }
+		</div>
+	</div>
+}
+
+templ Badge(text string, color string) {
+	<span class={ "px-2 py-1 text-xs font-semibold rounded-full", getBadgeColor(color) }>
+		{ text }
+	</span>
+}
+
+func getBadgeColor(color string) string {
+	switch color {
+	case "green":
+		return "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400"
+	case "red":
+		return "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400"
+	case "yellow":
+		return "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400"
+	case "blue":
+		return "bg-guara-100 dark:bg-guara-900/30 text-guara-800 dark:text-guara-400"
+	default:
+		return "bg-neutral-100 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-300"
+	}
+}

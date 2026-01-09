@@ -1,0 +1,325 @@
+package pages
+
+import (
+	"fmt"
+	layout "github.com/OliveiraNt/maned-scout/internal/adapters/http/ui/templates/layout"
+	"github.com/invopop/ctxi18n/i18n"
+)
+
+templ TopicsList(clusterName string, topics map[string]int) {
+	@layout.BaseWithSidebar("topic.title", clusterName, nil) {
+		<div class="mb-6">
+			<div class="flex items-center justify-between">
+				<div>
+					<h2 class="text-3xl font-bold text-neutral-900 dark:text-white">{ i18n.T(ctx, "topic.title") }</h2>
+					<p class="text-neutral-600 dark:text-neutral-400 mt-2">
+						{ fmt.Sprintf("%s %s", i18n.T(ctx, "generics.manage-consumer-groups"), clusterName) }
+					</p>
+				</div>
+				<button class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition flex items-center space-x-2" onclick="document.getElementById('createTopicModal').classList.remove('hidden')">
+					<i class="fas fa-plus"></i>
+					<span>{ i18n.T(ctx, "generics.create-topic") }</span>
+				</button>
+			</div>
+		</div>
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">{ i18n.T(ctx, "generics.total-topics") }</p>
+						<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2" id="topics-total">—</p>
+					</div>
+					<div class="bg-guara-100 dark:bg-guara-900/30 p-3 rounded-lg">
+						<i class="fas fa-list text-guara-500 dark:text-guara-400 text-2xl"></i>
+					</div>
+				</div>
+			</div>
+			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">{ i18n.T(ctx, "generics.total-partitions") }</p>
+						<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2" id="partitions-total">—</p>
+					</div>
+					<div class="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-lg">
+						<i class="fas fa-layer-group text-purple-600 dark:text-purple-400 text-2xl"></i>
+					</div>
+				</div>
+			</div>
+			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">{ i18n.T(ctx, "generics.avg-partitions") }</p>
+						<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2" id="partitions-avg">—</p>
+					</div>
+					<div class="bg-green-100 dark:bg-green-900/30 p-3 rounded-lg">
+						<i class="fas fa-calculator text-green-600 dark:text-green-400 text-2xl"></i>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="mb-6">
+			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-4">
+				<div class="flex items-center space-x-4">
+					<div class="flex-1">
+						<div class="relative">
+							<i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"></i>
+							<input
+								type="text"
+							placeholder={ i18n.T(ctx, "generics.search-topics") }
+							data-filter-target="topicsTable"
+							class="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-guara-500 focus:border-transparent"
+						/>
+					</div>
+				</div>
+				<div class="flex items-center space-x-3 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800">
+					<label class="flex items-center cursor-pointer">
+						<span class="mr-3 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+							<i class="fas fa-eye-slash mr-1"></i>
+							{ i18n.T(ctx, "generics.internal-topics") }
+							</span>
+							<div class="relative">
+								<input
+									type="checkbox"
+									id="showInternal"
+									name="showInternal"
+									value="true"
+									class="sr-only"
+									hx-get={ templ.URL(fmt.Sprintf("/api/clusters/%s/topics", clusterName)) }
+									hx-include="[name=showInternal]"
+									hx-target="#topics-list"
+								/>
+								<div class="block bg-neutral-300 dark:bg-neutral-600 w-14 h-8 rounded-full"></div>
+								<div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+							</div>
+						</label>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div
+			id="topics-list"
+			hx-get={ templ.URL(fmt.Sprintf("/api/clusters/%s/topics", clusterName)) }
+			hx-include="[name=showInternal]"
+			hx-trigger="load, topic-created from:body"
+			hx-target="#topics-list"
+			hx-swap="outerHTML"
+			class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
+		>
+			<div class="p-6 text-center text-gray-500 dark:text-gray-400">
+				<i class="fas fa-rotate fa-spin mr-2"></i> { i18n.T(ctx, "generics.loading-topics") }
+			</div>
+		</div>
+		@createTopicModal(clusterName)
+	}
+}
+
+templ TopicsListFragment(clusterName string, topics map[string]int, oob bool) {
+	<div
+		id="topics-list"
+		class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700"
+		hx-get={ templ.URL(fmt.Sprintf("/api/clusters/%s/topics", clusterName)) }
+		hx-include="[name=showInternal]"
+		hx-trigger="topic-created from:body"
+		hx-target="#topics-list"
+		hx-swap="outerHTML"
+		if oob {
+			hx-swap-oob="true"
+		}
+	>
+		<div class="overflow-x-auto">
+			if len(topics) == 0 {
+				<div class="text-center py-16">
+					<i class="fas fa-inbox text-neutral-400 dark:text-neutral-600 text-6xl mb-4"></i>
+					<p class="text-xl text-neutral-600 dark:text-neutral-400 mb-2">{ i18n.T(ctx, "generics.no-topics-found") }</p>
+					<p class="text-sm text-neutral-500 dark:text-neutral-500 mb-6">{ i18n.T(ctx, "generics.create-first-topic") }</p>
+					<button class="px-6 py-3 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition" onclick="document.getElementById('createTopicModal').classList.remove('hidden')">
+						<i class="fas fa-plus mr-2"></i>
+						{ i18n.T(ctx, "generics.create-1st-topic") }
+					</button>
+				</div>
+			} else {
+				<table class="w-full" id="topicsTable">
+					<thead class="bg-neutral-50 dark:bg-neutral-700/50 border-b border-neutral-200 dark:border-neutral-600">
+						<tr>
+							<th class="px-6 py-4 text-left text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
+								<div class="flex items-center space-x-2">
+									<i class="fas fa-stream"></i>
+									<span>{ i18n.T(ctx, "generics.topic-name-label") }</span>
+								</div>
+							</th>
+							<th class="px-6 py-4 text-left text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
+								<div class="flex items-center space-x-2">
+									<i class="fas fa-layer-group"></i>
+									<span>{ i18n.T(ctx, "generics.partitions") }</span>
+								</div>
+							</th>
+							<th class="px-6 py-4 text-right text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
+								{ i18n.T(ctx, "generics.actions") }
+							</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">
+						for name, partitions := range topics {
+							@topicTableRow(name, partitions, clusterName)
+						}
+					</tbody>
+				</table>
+			}
+		</div>
+	</div>
+}
+
+templ topicTableRow(topicName string, partitions int, clusterName string) {
+	<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-700/30 transition" data-filter-value={ topicName }>
+		<td class="px-6 py-4">
+			<div class="flex items-center space-x-3">
+				<div class="bg-guara-100 dark:bg-guara-900/30 p-2 rounded">
+					<i class="fas fa-stream text-guara-500 dark:text-guara-400 text-sm"></i>
+				</div>
+				<div>
+					<a
+						href={ templ.URL(fmt.Sprintf("/clusters/%s/topics/%s", clusterName, topicName)) }
+						class="font-medium text-neutral-900 dark:text-white hover:text-guara-600 dark:hover:text-guara-400"
+					>
+						{ topicName }
+					</a>
+					<p class="text-xs text-neutral-500 dark:text-neutral-400">
+						{ fmt.Sprintf("cluster: %s", clusterName) }
+					</p>
+				</div>
+			</div>
+		</td>
+		<td class="px-6 py-4">
+			<span class="inline-flex items-center px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400 text-sm font-semibold rounded-full">
+				<i class="fas fa-layer-group text-xs mr-2"></i>
+				{ fmt.Sprintf("%d", partitions) }
+			</span>
+		</td>
+		<td class="px-6 py-4 text-right">
+			<div class="flex items-center justify-end space-x-2">
+				<a
+					href={ templ.URL(fmt.Sprintf("/clusters/%s/topics/%s", clusterName, topicName)) }
+					class="px-3 py-1.5 text-guara-500 dark:text-guara-400 hover:bg-guara-50 dark:hover:bg-guara-900/30 rounded-lg text-sm font-medium transition"
+					title="Ver detalhes"
+				>
+					<i class="fas fa-eye mr-1"></i>
+					{ i18n.T(ctx, "generics.details") }
+				</a>
+			</div>
+		</td>
+	</tr>
+}
+
+templ createTopicModal(clusterName string) {
+	<div id="createTopicModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+		<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-xl max-w-2xl w-full mx-4">
+			<div class="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
+				<h3 class="text-lg font-semibold text-neutral-900 dark:text-white">{ i18n.T(ctx, "generics.create-new-topic") }</h3>
+			</div>
+			<div class="px-6 py-4">
+				<div id="create-topic-error"></div>
+				<form id="createTopicForm" hx-post={ templ.URL(fmt.Sprintf("/api/clusters/%s/topics", clusterName)) } hx-swap="none">
+					<div class="space-y-4">
+						<div>
+							<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+								{ i18n.T(ctx, "generics.topic-name-label") } <span class="text-red-500">*</span>
+							</label>
+							<input
+								type="text"
+								name="name"
+								required
+								class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white"
+								placeholder="my-topic"
+							/>
+						</div>
+						<div class="grid grid-cols-2 gap-4">
+							<div>
+								<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+									{ i18n.T(ctx, "generics.num-partitions") } <span class="text-red-500">*</span>
+								</label>
+								<input
+									type="number"
+									name="numPartitions"
+									required
+									min="1"
+									value="1"
+									class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white"
+								/>
+							</div>
+							<div>
+								<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+									{ i18n.T(ctx, "generics.replication-factor-label") } <span class="text-red-500">*</span>
+								</label>
+								<input
+									type="number"
+									name="replicationFactor"
+									required
+									min="1"
+									value="1"
+									class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white"
+								/>
+							</div>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+								Retention MS { i18n.T(ctx, "generics.optional") }
+							</label>
+							<input
+								type="number"
+								name="retention.ms"
+								class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white"
+								placeholder="604800000 (7 dias)"
+							/>
+							<p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">{ i18n.T(ctx, "generics.retention-ms-help") }</p>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+								Cleanup Policy { i18n.T(ctx, "generics.optional") }
+							</label>
+							<select
+								name="cleanup.policy"
+								class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white"
+							>
+								<option value="">-- Default --</option>
+								<option value="delete">delete</option>
+								<option value="compact">compact</option>
+								<option value="compact,delete">compact,delete</option>
+							</select>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+								Compression Type { i18n.T(ctx, "generics.optional") }
+							</label>
+							<select
+								name="compression.type"
+								class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white"
+							>
+								<option value="">-- Default --</option>
+								<option value="uncompressed">uncompressed</option>
+								<option value="gzip">gzip</option>
+								<option value="snappy">snappy</option>
+								<option value="lz4">lz4</option>
+								<option value="zstd">zstd</option>
+							</select>
+						</div>
+					</div>
+					<div class="flex justify-end space-x-3 mt-6">
+						<button
+							type="button"
+							onclick="document.getElementById('createTopicModal').classList.add('hidden')"
+							class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700"
+						>
+							{ i18n.T(ctx, "generics.cancel") }
+						</button>
+						<button
+							type="submit"
+							class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg"
+						>
+							{ i18n.T(ctx, "generics.create-topic") }
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+}

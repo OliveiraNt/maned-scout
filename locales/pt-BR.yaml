@@ -1,0 +1,150 @@
+pt-BR:
+  cluster:
+    title: Clusters
+    current: Cluster Atual
+    go-back: Voltar para Clusters
+    auth-type: Tipo de Autenticação
+    online: Online
+    offline: Offline
+    health-alerts: Alertas de Saúde
+    under-replicated-partitions: "%d partições sub-replicadas"
+    offline-partitions: "%d partições offline"
+    days-remaining: "%d dias restantes"
+    certificate:
+      exp-date: Validade do Certificado
+      expired: Expirado
+      valid-from: Válido desde
+      expires-at: Expira em
+    brokers:
+      title: Brokers
+      active: Ativo
+      inactive: Inativo
+      address: Endereço
+      rack: Rack
+      leader-partitions: Partições Líder
+      controller: Controller
+    partitions:
+      total: Partições Totais
+  topic:
+    title: Tópicos
+  consumer-groups:
+    title: Grupos de consumidores
+    group-id: Group ID
+    state: Estado
+    members: Membros
+    states:
+      stable: Stable
+      empty: Empty
+  generics:
+    metrics: Métricas
+    dashboard: Dashboard
+    brokers: Brokers
+    authentication: Autenticação
+    certificate: Certificado
+    days: dias
+    expired-cert: Expirado
+    active: Ativo
+    inactive: Inativo
+    address: Endereço
+    rack: Rack
+    leader-partitions: Partições Líder
+    controller: Controller
+    kafka-clusters: Clusters Kafka
+    manage-clusters-desc: Gerencie e monitore seus clusters Apache Kafka
+    add-cluster: Adicionar Cluster
+    connect-new-cluster: Conecte um novo cluster Kafka
+    view-dashboard: Ver Dashboard
+    no-topics-found: Nenhum tópico encontrado
+    create-first-topic: Crie seu primeiro tópico para começar
+    loading-topics: Carregando tópicos...
+    loading-groups: Carregando Grupos Consumidores...
+    loading-messages: Carregando Mensagens...
+    topic-name-label: Nome do Tópico
+    num-partitions: Número de Partições
+    replication-factor: Fator de Replicação
+    retention-ms: Retention MS
+    cleanup-policy: Cleanup Policy
+    compression-type: Compression Type
+    cancel: Cancelar
+    create-topic: Criar Tópico
+    create-1st-topic: Criar Primeiro Tópico
+    search-topics: Buscar tópicos
+    internal-topics: Tópicos Internos
+    actions: Ações
+    details: Detalhes
+    cluster-label: cluster
+    partitions: Partições
+    total-topics: Total de Tópicos
+    total-partitions: Total de Partições
+    avg-partitions: Média de Partições
+    topics-details: Detalhes e configurações do tópico
+    edit-configs: Editar Configs
+    increase-partitions: Aumentar Partições
+    delete-topic: Deletar Tópico
+    replication-factor-label: Fator de Replicação
+    configurations: Configurações
+    partition-label: Partição
+    leader: Leader
+    replicas: Réplicas
+    isr: ISR
+    status: Status
+    offline: Offline
+    under-replicated: Under-replicated
+    healthy: Healthy
+    messages: Mensagens
+    message-stream: Stream de Mensagens
+    read-write-messages: Leia e escreva mensagens no tópico em tempo real
+    write-message: Escrever Mensagem
+    read-messages: Ler mensagens
+    stop-reading: Parar leitura
+    consumer-groups-tab: Grupos de Consumidores
+    configuration-tab: Configurações
+    lag-per-partition: Lag por Partição
+    members: Membros
+    configuration-name: Configuração
+    value: Valor
+    update-configs: Atualizar Configurações
+    update-configs-desc: Atualize as configurações do tópico. Use null para remover uma configuração.
+    keep-current: -- Manter Atual --
+    update: Atualizar
+    increase-partitions-title: Aumentar Partições
+    increase-partitions-desc: O tópico atualmente tem %d partições. Defina o novo total de partições (deve ser maior que o atual).
+    total-partitions-label: Total de Partições
+    increase: Aumentar
+    delete-topic-title: Deletar Tópico
+    delete-topic-confirm: Tem certeza que deseja deletar o tópico %s? Esta ação não pode ser desfeita e todos os dados serão perdidos.
+    delete: Deletar
+    new-message: Nova Mensagem
+    key-label: Chave
+    message-key-placeholder: Chave da mensagem (opcional)
+    value-label: Value
+    message-value-placeholder: Conteúdo da mensagem (valor) — texto ou JSON
+    send: Enviar
+    offset: Offset
+    timestamp: Timestamp
+    topic-details: Detalhes do tópico
+    group-details: Detalhes e lag do grupo consumidor
+    state: Estado
+    total-lag: Lag Total
+    topic: Tópico
+    group-offset: Group Offset
+    lag: Lag
+    member: Membro
+    member-id: Member ID
+    client-id: ID do Cliente
+    total-groups: Total de Grupos
+    search-groups: Buscar grupos
+    group-name: Nome do Grupo
+    topics-lag: Tópicos e Lag
+    no-lag-detected: Sem lag detectado
+    manage-consumer-groups: Gerencie os grupos consumidores do cluster
+    cluster-id-label: Cluster ID
+    valid-from-label: Válido desde
+    expires-at-label: Expira em
+    create-new-topic: Criar Novo Tópico
+    required-field: obrigatório
+    retention-ms-help: Tempo de retenção em milissegundos
+    max-message-bytes: Max Message Bytes
+    default-option: -- Default --
+    no-groups-found: Nenhum Grupo Consumidor encontrado
+    optional: (opcional)

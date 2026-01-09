@@ -1,0 +1,639 @@
+package pages
+
+import (
+	"fmt"
+	"sort"
+	"strings"
+	"strconv"
+
+	"encoding/binary"
+    "encoding/hex"
+    "encoding/json"
+    "unicode/utf8"
+
+	layout "github.com/OliveiraNt/maned-scout/internal/adapters/http/ui/templates/layout"
+	"github.com/OliveiraNt/maned-scout/internal/domain"
+	"github.com/invopop/ctxi18n/i18n"
+)
+
+templ Imports(clusterName string, topicName string) {
+	<script>
+        const clusterName = "{{ clusterName }}";
+        const topicName = "{{ topicName }}";
+     </script>
+	<script src="/static/topic.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/htmx-ext-ws@2.0.4" integrity="sha384-1RwI/nvUSrMRuNj7hX1+27J8XDdCoSLf0EjEyF69nacuWyiJYoQ/j39RT1mSnd2G" crossorigin="anonymous"></script>
+}
+
+templ TopicDetail(clusterName string, topic *domain.TopicDetail) {
+	@layout.BaseWithSidebar("generics.topic-details", clusterName, Imports(clusterName, topic.Name)) {
+		<nav class="mb-6 text-sm">
+			<ol class="flex items-center space-x-2 text-neutral-600 dark:text-neutral-400">
+				<li><a href={ templ.URL(fmt.Sprintf("/clusters/%s", clusterName)) } class="hover:text-guara-600 dark:hover:text-guara-400">{ clusterName }</a></li>
+				<li><i class="fas fa-chevron-right text-xs"></i></li>
+				<li><a href={ templ.URL(fmt.Sprintf("/clusters/%s/topics", clusterName)) } class="hover:text-guara-600 dark:hover:text-guara-400">{ i18n.T(ctx, "topic.title") }</a></li>
+				<li><i class="fas fa-chevron-right text-xs"></i></li>
+				<li class="text-neutral-900 dark:text-white font-medium">{ topic.Name }</li>
+			</ol>
+		</nav>
+		<div class="mb-6">
+			<div class="flex items-center justify-between">
+				<div>
+					<h2 class="text-3xl font-bold text-neutral-900 dark:text-white">{ topic.Name }</h2>
+					<p class="text-neutral-600 dark:text-neutral-400 mt-2">{ i18n.T(ctx, "generics.topics-details") }</p>
+				</div>
+				<div class="flex items-center space-x-3">
+					<button
+						onclick="showUpdateConfigModal()"
+						class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition flex items-center space-x-2"
+					>
+						<i class="fas fa-edit"></i>
+						<span>{ i18n.T(ctx, "generics.edit-configs") }</span>
+					</button>
+					<button
+						onclick="showIncreasePartitionsModal()"
+						class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition flex items-center space-x-2"
+					>
+						<i class="fas fa-plus"></i>
+						<span>{ i18n.T(ctx, "generics.increase-partitions") }</span>
+					</button>
+					<button
+						onclick="confirmDeleteTopic()"
+						class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition flex items-center space-x-2 shadow-lg shadow-red-600/30"
+					>
+						<i class="fas fa-trash"></i>
+						<span>{ i18n.T(ctx, "generics.delete-topic") }</span>
+					</button>
+				</div>
+			</div>
+		</div>
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">{ i18n.T(ctx, "generics.partitions") }</p>
+						<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2">{ fmt.Sprintf("%d", topic.Partitions) }</p>
+					</div>
+					<div class="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-lg">
+						<i class="fas fa-layer-group text-purple-600 dark:text-purple-400 text-2xl"></i>
+					</div>
+				</div>
+			</div>
+			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">{ i18n.T(ctx, "generics.replication-factor-label") }</p>
+						<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2">{ fmt.Sprintf("%d", topic.ReplicationFactor) }</p>
+					</div>
+					<div class="bg-green-100 dark:bg-green-900/30 p-3 rounded-lg">
+						<i class="fas fa-copy text-green-600 dark:text-green-400 text-2xl"></i>
+					</div>
+				</div>
+			</div>
+			<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6">
+				<div class="flex items-center justify-between">
+					<div>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400">{ i18n.T(ctx, "generics.configurations") }</p>
+						<p class="text-3xl font-bold text-neutral-900 dark:text-white mt-2">{ fmt.Sprintf("%d", len(topic.Configs)) }</p>
+					</div>
+					<div class="bg-guara-100 dark:bg-guara-900/30 p-3 rounded-lg">
+						<i class="fas fa-cog text-guara-500 dark:text-guara-400 text-2xl"></i>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+			<!-- Tab Navigation -->
+			<div class="bg-neutral-50 dark:bg-neutral-900/50 border-b border-neutral-200 dark:border-neutral-700">
+				<div class="flex overflow-x-auto">
+					<button
+						onclick="switchTab('partitions-tab')"
+						class="tab-button tab-button-active px-6 py-4 font-semibold text-guara-600 dark:text-guara-400 border-b-2 border-guara-500 transition-all duration-200 whitespace-nowrap flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+						data-tab="partitions-tab"
+					>
+						<i class="fas fa-layer-group"></i>{ i18n.T(ctx, "generics.partitions") }
+					</button>
+					<button
+						onclick="switchTab('messages-tab')"
+						class="tab-button px-6 py-4 font-semibold text-neutral-600 dark:text-neutral-400 border-b-2 border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"
+						data-tab="messages-tab"
+					>
+						<i class="fas fa-envelope"></i>{ i18n.T(ctx, "generics.messages") }
+					</button>
+					<button
+						onclick="switchTab('consumer-groups-tab')"
+						class="tab-button px-6 py-4 font-semibold text-neutral-600 dark:text-neutral-400 border-b-2 border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"
+						data-tab="consumer-groups-tab"
+					>
+						<i class="fas fa-users"></i>{ i18n.T(ctx, "consumer-groups.title") }
+					</button>
+					<button
+						onclick="switchTab('config-tab')"
+						class="tab-button px-6 py-4 font-semibold text-neutral-600 dark:text-neutral-400 border-b-2 border-transparent transition-all duration-200 whitespace-nowrap flex items-center gap-2 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800"
+						data-tab="config-tab"
+					>
+						<i class="fas fa-sliders-h"></i>{ i18n.T(ctx, "generics.configurations") }
+					</button>
+				</div>
+			</div>
+			<!-- Tab Content -->
+			<div class="p-6">
+				<!-- Partitions Tab -->
+				<div id="partitions-tab" class="tab-content">
+					<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-700">
+						<table class="w-full">
+							<thead class="bg-neutral-50 dark:bg-neutral-900">
+								<tr>
+								<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{ i18n.T(ctx, "generics.partition-label") }</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{ i18n.T(ctx, "generics.leader") }</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{ i18n.T(ctx, "generics.replicas") }</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{ i18n.T(ctx, "generics.isr") }</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{ i18n.T(ctx, "generics.status") }</th>
+								</tr>
+							</thead>
+							<tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">
+								for _, partition := range topic.PartitionDetails {
+									<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+										<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900 dark:text-white">
+											{ fmt.Sprintf("%d", partition.Partition) }
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-600 dark:text-neutral-300">
+											if partition.Leader >= 0 {
+												{ fmt.Sprintf("%d", partition.Leader) }
+											} else {
+												<span class="text-red-600 dark:text-red-400">-1 (offline)</span>
+											}
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-600 dark:text-neutral-300">
+											{ formatInt32Slice(partition.Replicas) }
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-600 dark:text-neutral-300">
+											{ formatInt32Slice(partition.ISR) }
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap">
+											if partition.Offline {
+												<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+													<i class="fas fa-times-circle mr-1"></i> Offline
+												</span>
+											} else if len(partition.Replicas) != len(partition.ISR) {
+												<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+													<i class="fas fa-exclamation-triangle mr-1"></i> Under-replicated
+												</span>
+											} else {
+												<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+													<i class="fas fa-check-circle mr-1"></i> Healthy
+												</span>
+											}
+										</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<!-- Messages Tab -->
+				<div id="messages-tab" class="tab-content hidden">
+					<div class="flex items-center justify-between mb-6">
+						<div>
+						<h3 class="text-lg font-semibold text-neutral-900 dark:text-white">{ i18n.T(ctx, "generics.message-stream") }</h3>
+						<p class="text-sm text-neutral-600 dark:text-neutral-400 mt-1">{ i18n.T(ctx, "generics.read-write-messages") }</p>
+					</div>
+					<div class="flex items-center space-x-3">
+						<button
+							class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white text-white rounded-lg font-medium transition flex items-center space-x-2"
+							onclick="showWriteMessageModal()"
+						>
+							<i class="fas fa-paper-plane"></i>
+							<span>{ i18n.T(ctx, "generics.write-message") }</span>
+							</button>
+							<div id="topic-actions">
+								@readButton(clusterName, topic.Name)
+							</div>
+						</div>
+					</div>
+					<div id="message-stream-view"></div>
+				</div>
+				<!-- Consumer Groups Tab -->
+				<div id="consumer-groups-tab" class="tab-content hidden">
+					<div class="text-center py-16">
+					    <div
+                    			id="consumer-groups-list"
+                    			hx-get={ templ.URL(fmt.Sprintf("/api/clusters/%s/topics/%s/consumer-groups", clusterName, topic.Name)) }
+                    			hx-include="[name=showInternal]"
+                    			hx-trigger="load"
+                    			hx-swap="outerHTML"
+                    			class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
+                    		>
+                    			<div class="p-6 text-center text-gray-500 dark:text-gray-400">
+                    				<i class="fas fa-rotate fa-spin mr-2"></i> { i18n.T(ctx, "generics.loading-groups") }
+                    			</div>
+                    		</div>
+					</div>
+				</div>
+				<!-- Configuration Tab -->
+				<div id="config-tab" class="tab-content hidden">
+					<div class="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-700">
+						<table class="w-full">
+							<thead class="bg-neutral-50 dark:bg-neutral-900">
+								<tr>
+								<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{ i18n.T(ctx, "generics.configuration-name") }</th>
+								<th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{ i18n.T(ctx, "generics.value") }</th>
+								</tr>
+							</thead>
+							<tbody class="divide-y divide-neutral-200 dark:divide-neutral-700">
+								for _, key := range getSortedConfigKeys(topic.Configs) {
+									<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+										<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900 dark:text-white">
+											{ key }
+										</td>
+										<td class="px-6 py-4 text-sm text-neutral-600 dark:text-neutral-300 font-mono break-all">
+											{ topic.Configs[key] }
+										</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		@updateConfigModal()
+		@increasePartitionsModal(topic.Partitions)
+		@deleteTopicModal(topic.Name)
+		@writeMessageModal()
+	}
+}
+
+templ updateConfigModal() {
+	<div id="updateConfigModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+		<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-xl max-w-2xl w-full mx-4">
+			<div class="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
+				<h3 class="text-lg font-semibold text-neutral-900 dark:text-white">{ i18n.T(ctx, "generics.update-configs") }</h3>
+			</div>
+			<div class="px-6 py-4">
+				<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+					{ i18n.T(ctx, "generics.update-configs-desc") }
+				</p>
+				<form id="updateConfigForm" onsubmit="updateTopicConfig(event)">
+					<div class="space-y-4">
+						<div>
+							<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+								Retention MS
+							</label>
+							<input
+								type="number"
+								name="retention.ms"
+								class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white"
+								placeholder="604800000 (7 days)"
+							/>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+								Cleanup Policy
+							</label>
+							<select
+								name="cleanup.policy"
+								class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white"
+							>
+								<option value="">{ i18n.T(ctx, "generics.keep-current") }</option>
+								<option value="delete">delete</option>
+								<option value="compact">compact</option>
+								<option value="compact,delete">compact,delete</option>
+							</select>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+								Compression Type
+							</label>
+							<select
+								name="compression.type"
+								class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white"
+							>
+								<option value="">{ i18n.T(ctx, "generics.keep-current") }</option>
+								<option value="uncompressed">uncompressed</option>
+								<option value="gzip">gzip</option>
+								<option value="snappy">snappy</option>
+								<option value="lz4">lz4</option>
+								<option value="zstd">zstd</option>
+							</select>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+								Max Message Bytes
+							</label>
+							<input
+								type="number"
+								name="max.message.bytes"
+								class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white"
+								placeholder="1048576 (1 MB)"
+							/>
+						</div>
+					</div>
+					<div class="flex justify-end space-x-3 mt-6">
+						<button
+							type="button"
+							onclick="closeUpdateConfigModal()"
+							class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 rounded-lg font-medium transition hover:bg-neutral-50 dark:hover:bg-neutral-700"
+						>
+							{ i18n.T(ctx, "generics.cancel") }
+						</button>
+						<button
+							type="submit"
+							class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition"
+						>
+							{ i18n.T(ctx, "generics.update") }
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+}
+
+templ increasePartitionsModal(currentPartitions int) {
+	<div id="increasePartitionsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+		<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+			<div class="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
+				<h3 class="text-lg font-semibold text-neutral-900 dark:text-white">{ i18n.T(ctx, "generics.increase-partitions") }</h3>
+			</div>
+			<div class="px-6 py-4">
+				<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+					{ i18n.T(ctx, "generics.increase-partitions-desc", currentPartitions) }
+				</p>
+				<form id="increasePartitionsForm" onsubmit="increasePartitions(event)">
+					<div class="mb-4">
+						<label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+							{ i18n.T(ctx, "generics.total-partitions-label") }
+						</label>
+						<input
+							type="number"
+							name="totalPartitions"
+							required
+							min={ fmt.Sprintf("%d", currentPartitions+1) }
+							class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white"
+						/>
+					</div>
+					<div class="flex justify-end space-x-3">
+						<button
+							type="button"
+							onclick="closeIncreasePartitionsModal()"
+							class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 rounded-lg font-medium transition hover:bg-neutral-50 dark:hover:bg-neutral-700"
+						>
+							{ i18n.T(ctx, "generics.cancel") }
+						</button>
+						<button
+							type="submit"
+							class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition"
+						>
+							{ i18n.T(ctx, "generics.increase") }
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+}
+
+templ deleteTopicModal(topicName string) {
+	<div id="deleteTopicModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+		<div class="bg-white dark:bg-neutral-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+			<div class="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
+				<h3 class="text-lg font-semibold text-neutral-900 dark:text-white">{ i18n.T(ctx, "generics.delete-topic") }</h3>
+			</div>
+			<div class="px-6 py-4">
+				<p class="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+					{ i18n.T(ctx, "generics.delete-topic-confirm", topicName) }
+				</p>
+				<div class="flex justify-end space-x-3">
+					<button
+						type="button"
+						onclick="closeDeleteTopicModal()"
+						class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 rounded-lg font-medium transition hover:bg-neutral-50 dark:hover:bg-neutral-700"
+					>
+						{ i18n.T(ctx, "generics.cancel") }
+					</button>
+					<button
+						type="button"
+						onclick="deleteTopic()"
+						class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition shadow-lg shadow-red-600/30"
+					>
+						{ i18n.T(ctx, "generics.delete") }
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+templ writeMessageModal() {
+    <div id="writeMessageModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white dark:bg-neutral-800 rounded-lg shadow-xl max-w-2xl w-full mx-4">
+            <div class="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
+                <h3 class="text-lg font-semibold text-neutral-900 dark:text-white">{ i18n.T(ctx, "generics.new-message") }</h3>
+            </div>
+            <div class="px-6 py-4">
+                <form id="writeMessageForm" onsubmit="sendMessage(event)">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{ i18n.T(ctx, "generics.key-label") }</label>
+                            <input
+                                type="text"
+                                name="key"
+                                class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white font-mono"
+                                placeholder= { i18n.T(ctx, "generics.message-key-placeholder") }
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{ i18n.T(ctx, "generics.value-label") }</label>
+                            <textarea
+                                name="value"
+                                required
+                                rows="6"
+                                class="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-guara-500 dark:bg-neutral-700 dark:text-white font-mono"
+                                placeholder= { i18n.T(ctx, "generics.message-value-placeholder") }
+                            ></textarea>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button
+                            type="button"
+                            onclick="closeWriteMessageModal()"
+                            class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 rounded-lg font-medium transition hover:bg-neutral-50 dark:hover:bg-neutral-700"
+                        >
+                            { i18n.T(ctx, "generics.cancel") }
+                        </button>
+                        <button
+                            type="submit"
+                            class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition"
+                        >
+                            { i18n.T(ctx, "generics.send") }
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+func formatInt32Slice(slice []int32) string {
+	if len(slice) == 0 {
+		return "[]"
+	}
+	parts := make([]string, len(slice))
+	for i, v := range slice {
+		parts[i] = fmt.Sprintf("%d", v)
+	}
+	return "[" + strings.Join(parts, ", ") + "]"
+}
+
+func getSortedConfigKeys(configs map[string]string) []string {
+	keys := make([]string, 0, len(configs))
+	for k := range configs {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+templ readButton(clusterName string, topicName string) {
+	<button
+		id="toggle-read-btn"
+		hx-get={ templ.SafeURL(fmt.Sprintf("/api/clusters/%s/topics/%s/ws-on", clusterName, topicName)) }
+		hx-target="#message-stream-view"
+		hx-swap="outerHTML"
+		class="px-4 py-2 bg-guara-500 hover:bg-guara-600 text-white rounded-lg font-medium transition flex items-center space-x-2"
+	>
+		<i class="fas fa-play"></i>
+		<span>{ i18n.T(ctx, "generics.read-messages") }</span>
+	</button>
+}
+
+templ stopButton(clusterName string, topicName string) {
+	<button
+		hx-get={ templ.SafeURL(fmt.Sprintf("/api/clusters/%s/topics/%s/ws-off", clusterName, topicName)) }
+		hx-target="#message-stream"
+		hx-swap="innerHTML"
+		class="px-4 py-2 bg-guara-700 hover:bg-guara-900 text-white text-white rounded-lg font-medium transition flex items-center space-x-2"
+	>
+		<i class="fas fa-stop"></i>
+		<span>{ i18n.T(ctx, "generics.stop-reading") }</span>
+	</button>
+}
+
+templ MessageView(clusterName string, topicName string) {
+	<div id="message-stream-view" class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 mt-6 mb-6">
+		<div class="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-neutral-900 dark:text-white">{ i18n.T(ctx, "generics.messages") }</h3>
+            <div id="message-spinner" class="p-6 text-center text-neutral-500 dark:text-neutral-400">
+                <i class="fas fa-rotate fa-spin mr-2"></i>
+            </div>
+        </div>
+		<div class="px-6 py-4">
+			<div
+				hx-ext="ws"
+				ws-connect={ templ.SafeURL(fmt.Sprintf("/api/clusters/%s/topics/%s/ws", clusterName, topicName)) }
+				ws-receive
+				hx-target="#messages"
+				hx-swap="beforeend"
+				id="message-stream"
+			>
+				<form ws-send hx-trigger="load">
+					<input type="hidden" name="message" value="start"/>
+				</form>
+			</div>
+			<div id="messages"></div>
+		</div>
+	</div>
+	<div hx-swap-oob="innerHTML:#topic-actions">
+		@stopButton(clusterName, topicName)
+	</div>
+}
+
+templ StopView(clusterName string, topicName string) {
+	<div hx-swap-oob="outerHTML:#message-stream"></div>
+	<div hx-swap-oob="innerHTML:#topic-actions">
+		@readButton(clusterName, topicName)
+	</div>
+	<div hx-swap-oob="innerHTML:#message-spinner"></div>
+}
+
+func renderKafkaBytes(b []byte) string {
+    if len(b) == 0 {
+        return "<empty>"
+    }
+
+    if json.Valid(b) {
+        return string(b)
+    }
+
+    if isPrintableText(b) {
+        return string(b)
+    }
+
+    if n, ok := tryBinaryNumber(b); ok {
+        return n
+    }
+
+    return "0x" + hex.EncodeToString(b)
+}
+
+func tryBinaryNumber(b []byte) (string, bool) {
+    switch len(b) {
+    case 4:
+        return strconv.FormatInt(int64(binary.BigEndian.Uint32(b)), 10), true
+    case 8:
+        return strconv.FormatInt(int64(binary.BigEndian.Uint64(b)), 10), true
+    default:
+        return "", false
+    }
+}
+
+func isPrintableText(b []byte) bool {
+    if !utf8.Valid(b) {
+        return false
+    }
+    for _, r := range string(b) {
+        if r == '\u0000' {
+            return false
+        }
+        if r < 32 && r != '\n' && r != '\r' && r != '\t' {
+            return false
+        }
+    }
+    return true
+}
+
+templ Message(m domain.Message) {
+	<div id="messages" hx-swap-oob="beforeend" class="px-3 py-2 rounded bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+		<div class="flex flex-wrap items-center justify-between text-xs text-neutral-500 dark:text-neutral-400 gap-2">
+			<div class="flex items-center gap-3">
+				<span class="inline-flex items-center gap-1">
+					<i class="fas fa-stream"></i>
+					<span class="font-semibold">{ fmt.Sprintf("%s:", i18n.T(ctx, "generics.partition-label")) }</span>
+					<span class="font-mono">{ fmt.Sprintf("%d", m.Partition) }</span>
+				</span>
+				<span class="inline-flex items-center gap-1">
+					<i class="fas fa-hashtag"></i>
+					<span class="font-semibold">{ fmt.Sprintf("%s:", i18n.T(ctx, "generics.offset")) }</span>
+					<span class="font-mono">{ fmt.Sprintf("%d", m.Offset) }</span>
+				</span>
+			</div>
+			<div class="inline-flex items-center gap-1">
+				<i class="fas fa-clock"></i>
+				<span class="font-semibold">{ fmt.Sprintf("%s:", i18n.T(ctx, "generics.timestamp")) }</span>
+				<span class="font-mono">{ m.Timestamp.Format("2006-01-02 15:04:05.000") }</span>
+			</div>
+		</div>
+		<div class="mt-2">
+			<div class="text-[11px] uppercase tracking-wide text-neutral-400">{ i18n.T(ctx, "generics.key-label") }</div>
+			<pre class="whitespace-pre-wrap break-words font-mono text-sm text-neutral-800 dark:text-neutral-200 bg-neutral-50 dark:bg-neutral-900/40 rounded px-2 py-1">{ renderKafkaBytes(m.Key) }</pre>
+		</div>
+		<div class="mt-2">
+			<div class="text-[11px] uppercase tracking-wide text-neutral-400">{ i18n.T(ctx, "generics.value-label") }</div>
+			<pre class="whitespace-pre-wrap break-words font-mono text-sm text-neutral-800 dark:text-neutral-200 bg-neutral-50 dark:bg-neutral-900/40 rounded px-2 py-1">{ renderKafkaBytes(m.Value) }</pre>
+		</div>
+	</div>
+	<div id="messages" hx-swap-oob="beforeend">
+		<hr class="my-2 border-neutral-200 dark:border-neutral-700"/>
+	</div>
+}
