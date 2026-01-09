@@ -49,9 +49,3 @@ jobs:
 
       - name: Test
         run: go test -tags testing -v -race -coverprofile=coverage.txt -covermode=atomic ./...
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          file: ./coverage.txt
-          fail_ci_if_error: false
